@@ -1,0 +1,30 @@
+.game { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: var(--space-10); }
+.wheelBox { position: relative; width: min(100%, 360px, 52dvh); margin: 0 auto; aspect-ratio: 1; }
+.pointer {
+  position: absolute; left: 50%; top: -6px; z-index: 1;
+  width: 28px; height: 34px; transform: translateX(-50%);
+  background: var(--ink);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  filter: drop-shadow(0 2px 0 var(--bg));
+  transform-origin: 50% 0;
+}
+/* Lẫy kim: bật sang một bên khi chạm vạch rồi về giữa. */
+.flap { animation: flap 140ms ease-out; }
+@keyframes flap { 30% { transform: translateX(-50%) rotate(-14deg); } }
+.wheel {
+  display: block; width: 100%; height: 100%; padding: 0; border-radius: 50%;
+  transform: rotate(var(--rot));
+  transition: transform var(--spin-ms) cubic-bezier(0.33, 1, 0.68, 1);
+  box-shadow: 0 18px 40px -20px var(--shadow);
+}
+.wheel:disabled { cursor: default; }
+.face { display: block; width: 100%; height: 100%; }
+.label { font-size: 15px; font-weight: 600; dominant-baseline: central; text-anchor: middle; font-family: var(--font-ui); }
+.rim { fill: none; stroke: var(--bg); stroke-width: 6; }
+.hub { fill: var(--bg); stroke: var(--ink); stroke-width: 3; }
+.face path { stroke: var(--bg); stroke-width: 2; }
+.spin { height: 60px; font-size: var(--fs-lg); font-weight: var(--fw-medium); }
+
+.history { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); margin: 0; color: var(--ink-secondary); font-size: var(--fs-sm); }
+.historyItem { padding: var(--space-1) var(--space-5); border-radius: 999px; background: var(--cell-raised); color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .flap { animation: none; } }

@@ -1,0 +1,64 @@
+.game { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: var(--space-8); }
+
+.idle { display: grid; justify-items: center; gap: var(--space-6); padding: var(--space-14) var(--space-8); text-align: center; }
+.bigMark {
+  display: grid; place-items: center; width: 120px; height: 120px; border-radius: 50%;
+  background: var(--accent); color: var(--on-accent);
+  font-size: 72px; line-height: 1; font-weight: var(--fw-medium);
+}
+.idleText { margin: 0; font-size: var(--fs-xl); color: var(--ink-secondary); }
+.cta { height: 60px; font-size: var(--fs-lg); font-weight: var(--fw-medium); }
+
+.timer { display: flex; align-items: center; gap: var(--space-6); }
+.track { flex: 1; height: 10px; border-radius: 999px; background: var(--cell-raised); overflow: hidden; }
+.fill { display: block; height: 100%; border-radius: inherit; background: var(--accent); transform-origin: left; animation: drain var(--secs) linear forwards; }
+.paused { animation-play-state: paused; }
+.left { min-width: 2ch; text-align: right; font-size: var(--fs-2xl); font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; }
+.urgent { color: var(--danger); }
+
+.question { margin: 0; font-size: clamp(24px, 7vw, 32px); line-height: var(--lh-snug); letter-spacing: -0.01em; font-weight: var(--fw-medium); text-wrap: balance; }
+
+.options { display: grid; gap: var(--space-4); }
+.option {
+  display: flex; align-items: center; gap: var(--space-6);
+  min-height: 60px; padding: var(--space-4) var(--space-7) var(--space-4) var(--space-4);
+  background: var(--cell); border: var(--size-rule) solid var(--rule-soft); border-radius: var(--control-radius);
+  box-shadow: var(--key-shadow);
+  font-size: var(--fs-lg); text-align: left;
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-base);
+}
+.option:active:not(:disabled) { transform: scale(0.98); }
+.option:disabled { cursor: default; }
+.letter {
+  display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--cell-raised); font-size: var(--fs-md); font-weight: var(--fw-medium);
+}
+.right { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.right .letter { background: color-mix(in srgb, currentColor 14%, transparent); }
+.wrong { border-color: var(--danger); color: var(--danger); box-shadow: inset 0 0 0 1px var(--danger); }
+:global(:root[data-look="soft"]) .option { border-color: transparent; }
+:global(:root[data-look="soft"]) .wrong { border-color: var(--danger); }
+
+.art { display: grid; place-items: center; width: 120px; height: 120px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-size: 76px; line-height: 1; font-weight: var(--fw-medium); }
+
+.qHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: calc(-1 * var(--space-4)); }
+.topicTag { padding: var(--space-1) var(--space-5); border-radius: 999px; background: var(--cell-raised); color: var(--ink-secondary); font-size: var(--fs-sm); }
+.fifty {
+  min-height: 34px; padding: 0 var(--space-7); border-radius: 999px;
+  background: var(--ink); color: var(--bg); font-size: var(--fs-sm); font-weight: var(--fw-medium);
+}
+.fifty:disabled { background: var(--cell-raised); color: var(--ink-muted); cursor: default; }
+.hidden { opacity: 0.25; text-decoration: line-through; box-shadow: none; }
+
+/* Bảng điểm */
+.board { display: grid; gap: var(--space-4); }
+.boardTitle { margin: 0; font-size: var(--fs-md); font-weight: var(--fw-medium); color: var(--ink-secondary); }
+.boardList { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.boardRow { display: flex; align-items: center; gap: var(--space-6); min-height: 44px; padding: 0 var(--space-7); border-radius: var(--control-radius); background: var(--cell); }
+.leader { background: color-mix(in srgb, var(--accent) 24%, var(--cell)); }
+.rank { width: 1.5em; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.boardName { flex: 1; min-width: 0; font-weight: var(--fw-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.streak { padding: var(--space-1) var(--space-4); border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: var(--fs-xs); }
+.points { font-variant-numeric: tabular-nums; color: var(--ink-secondary); font-size: var(--fs-sm); }
+
+@keyframes drain { to { transform: scaleX(0); } }

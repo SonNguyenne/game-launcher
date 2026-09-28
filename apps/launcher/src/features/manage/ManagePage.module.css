@@ -1,0 +1,4 @@
+.note { margin: 0; padding: var(--space-6) var(--space-7); border-bottom: var(--size-rule) solid var(--rule); color: var(--ink-secondary); font-size: var(--fs-sm); }
+.index { width: 24px; color: var(--ink-muted); font-size: var(--fs-sm); }
+.swatch { width: 14px; height: 14px; background: var(--key-fill, var(--cell)); border: var(--size-rule) solid var(--rule); }
+.empty { padding: var(--space-7); color: var(--ink-secondary); }

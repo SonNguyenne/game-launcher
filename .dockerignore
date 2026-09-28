@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+.git
+.playwright-mcp
+.vercel
+*.local
+.DS_Store
+Dockerfile
+docker-compose*.yml
+.dockerignore
+.env

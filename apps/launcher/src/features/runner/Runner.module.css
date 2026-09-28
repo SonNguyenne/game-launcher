@@ -1,0 +1,30 @@
+.runner {
+  position: fixed; inset: 0; z-index: var(--z-runner);
+  display: flex; flex-direction: column; background: var(--bg);
+  clip-path: inset(var(--o-top, 50%) var(--o-right, 50%) var(--o-bottom, 50%) var(--o-left, 50%));
+  transition: clip-path var(--dur-reveal) var(--ease-out);
+}
+.open { clip-path: inset(0 0 0 0); }
+.bar {
+  position: relative; display: grid;
+  grid-template-columns: var(--size-bar) 1fr var(--size-bar) var(--size-bar);
+  height: calc(var(--size-bar) + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  border-bottom: var(--size-rule) solid var(--rule);
+}
+.barButton { display: grid; place-items: center; }
+.barButton + .barButton, .title + .barButton { border-left: var(--size-rule) solid var(--rule); }
+.title { display: flex; align-items: center; gap: var(--space-6); padding: 0 var(--space-7); margin: 0; font-size: var(--fs-base); font-weight: var(--fw-medium); border-left: var(--size-rule) solid var(--rule); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.titleIndex { color: var(--ink-muted); font-weight: var(--fw-regular); }
+.progress { position: absolute; left: 0; right: 0; bottom: calc(-1 * var(--size-rule)); height: 2px; overflow: hidden; }
+.progress::after { content: ""; position: absolute; inset: 0; width: 30%; background: var(--accent); animation: progress 1s linear infinite; }
+@keyframes progress { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+.body { position: relative; flex: 1; overflow: auto; }
+.frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--frame-bg); }
+.frameHidden { opacity: 0; }
+
+.panel { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: var(--space-12); background: var(--bg); }
+.code { font-size: 64px; line-height: 1; letter-spacing: var(--ls-tight); color: var(--ink-muted); }
+.panelTitle { margin: var(--space-8) 0 var(--space-3); font-size: var(--fs-xl); font-weight: var(--fw-medium); }
+.panelText { margin: 0; color: var(--ink-secondary); max-width: 42ch; }
+.panelActions { display: flex; flex-direction: column; gap: var(--space-4); width: 100%; max-width: 320px; margin-top: var(--space-12); }

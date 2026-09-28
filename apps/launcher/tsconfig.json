@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@mini-apps/*": ["../../mini-apps/*"]
+    }
+  },
+  "include": ["src", "vite.config.ts", "../../packages/*/src", "../../mini-apps/*/src"]
+}

@@ -1,0 +1,10 @@
+.face { padding: var(--space-18) var(--space-7) var(--space-12); border-bottom: var(--size-rule) solid var(--rule); }
+.state { color: var(--ink-secondary); font-size: var(--fs-sm); }
+.count { font-size: var(--fs-hero); line-height: 1; letter-spacing: var(--ls-tighter); margin-top: var(--space-3); }
+.goal { color: var(--ink-muted); font-size: 0.4em; letter-spacing: var(--ls-normal); }
+.cups { display: grid; grid-template-columns: repeat(var(--goal), 1fr); gap: var(--size-rule); background: var(--rule); border-bottom: var(--size-rule) solid var(--rule); }
+.cup { height: 70px; background: var(--bg); position: relative; }
+.full::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 80%; background: var(--water, var(--ink)); }
+.actions { display: grid; grid-template-columns: 1fr 2fr; border-bottom: var(--size-rule) solid var(--rule); }
+.action { height: 64px; font-size: var(--fs-base); text-align: center; }
+.primary { background: var(--ink); color: var(--bg); border-left: var(--size-rule) solid var(--rule); }

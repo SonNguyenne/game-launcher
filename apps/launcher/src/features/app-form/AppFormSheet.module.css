@@ -1,0 +1,5 @@
+.preview { margin: 0 0 var(--space-9); border: var(--size-rule) solid var(--rule); max-width: 220px; }
+.preview > * { aspect-ratio: auto; height: 110px; }
+.note { margin: calc(-1 * var(--space-3)) 0 var(--space-9); color: var(--ink-muted); font-size: var(--fs-sm); }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.extra { margin-top: var(--space-4); }

@@ -1,0 +1,15 @@
+.scrim { position: fixed; inset: 0; z-index: var(--z-dialog-scrim); background: var(--scrim); }
+.dialog {
+  position: fixed; left: 50%; top: 50%; z-index: var(--z-dialog);
+  width: min(360px, calc(100% - 32px));
+  transform: translate(-50%, -50%);
+  background: var(--bg); border: var(--size-rule) solid var(--rule);
+  border-radius: var(--control-radius); overflow: hidden;
+}
+.title { margin: 0; padding: var(--space-7); font-size: var(--fs-base); font-weight: var(--fw-medium); border-bottom: var(--size-rule) solid var(--rule); }
+.text { margin: 0; padding: var(--space-7); color: var(--ink-secondary); font-size: var(--fs-md); }
+.actions { display: grid; grid-template-columns: 1fr 1fr; border-top: var(--size-rule) solid var(--rule); }
+.action { height: 50px; font-size: var(--fs-md); text-align: center; }
+.action + .action { border-left: var(--size-rule) solid var(--rule); }
+.confirm { background: var(--ink); color: var(--bg); }
+.danger { background: var(--danger); color: var(--on-danger); }

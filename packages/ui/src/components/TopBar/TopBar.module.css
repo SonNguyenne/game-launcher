@@ -1,0 +1,40 @@
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: var(--size-bar) 1fr auto;
+  align-items: stretch;
+  height: calc(var(--size-bar) + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  background: var(--bg);
+  border-bottom: var(--size-rule) solid var(--rule);
+}
+.title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-7);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  border-left: var(--size-rule) solid var(--rule);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.actions { display: flex; }
+.actions > * { border-left: var(--size-rule) solid var(--rule); }
+.iconButton { display: grid; place-items: center; width: var(--size-bar); }
+.textButton { padding: 0 var(--space-8); font-size: var(--fs-md); }
+
+/* Kiểu mềm: không kẻ khung, nút quay lại là ô tròn trắng như tham chiếu. */
+:global(:root[data-look="soft"]) .bar { border: 0; padding-left: var(--space-8); padding-right: var(--space-8); align-items: center; }
+:global(:root[data-look="soft"]) .title { border: 0; font-size: var(--fs-xl); }
+:global(:root[data-look="soft"]) .actions > * { border: 0; }
+:global(:root[data-look="soft"]) .iconButton {
+  width: 46px; height: 46px;
+  border-radius: 16px;
+  background: var(--cell);
+  box-shadow: var(--key-shadow);
+}

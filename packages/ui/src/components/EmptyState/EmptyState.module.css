@@ -1,0 +1,3 @@
+.empty { padding: 40px var(--space-10); background: var(--bg); }
+.title { margin: 0 0 var(--space-3); font-size: var(--fs-xl); font-weight: var(--fw-medium); }
+.body { margin: 0 0 var(--space-9); color: var(--ink-secondary); max-width: 40ch; }

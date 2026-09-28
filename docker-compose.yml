@@ -1,0 +1,9 @@
+services:
+  bang-app:
+    build:
+      context: .
+      platforms:
+        - linux/amd64
+      args:
+        VITE_PARTY_URL: ${VITE_PARTY_URL:-}
+    image: son29032001/game:${TAG:-latest}

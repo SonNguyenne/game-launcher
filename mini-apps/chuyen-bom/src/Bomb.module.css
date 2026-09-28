@@ -1,0 +1,157 @@
+.game { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-10); }
+
+/* Sân khấu của quả bom: chừa chỗ cho đường bay và mảnh vụn. */
+.arena { position: relative; display: grid; place-items: center; width: 100%; height: min(78vw, 320px, 46dvh); }
+
+.bomb {
+  --size: min(66vw, 280px, 42dvh);
+  width: var(--size); height: var(--size);
+  display: grid; place-items: center;
+  border-radius: 50%;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.bomb:disabled { cursor: default; }
+.bomb:focus-visible { outline: 3px solid var(--accent); outline-offset: 6px; }
+.bomb:active:not(:disabled) .shape { transform: scale(0.9, 0.86); }
+
+/* Rung liên tục, biên độ và tốc độ tăng theo --heat (0..1). */
+.wobble { display: block; width: 100%; height: 100%; animation: shake calc(900ms - var(--heat) * 720ms) linear infinite; }
+
+.shape { width: 100%; height: 100%; overflow: visible; transition: transform 90ms var(--ease-out); }
+/* Thân bom nóng đỏ dần. */
+/* Bom luôn đen ở cả sáng lẫn tối (--bomb đặt từ keyColors), viền mờ để nổi trên nền tối; nóng đỏ dần. */
+.body {
+  fill: color-mix(in srgb, var(--danger) calc(var(--heat) * 55%), var(--bomb, var(--ink)));
+  stroke: color-mix(in srgb, var(--ink) 18%, transparent); stroke-width: 3;
+  transition: fill var(--dur-reveal);
+}
+.cap { fill: var(--ink-secondary); }
+.shine { fill: none; stroke: white; stroke-opacity: 0.3; stroke-width: 7; stroke-linecap: round; }
+
+/* Ngòi: phần đã cháy mờ và đứt, phần còn lại ngắn dần; đốm lửa bò chậm tới vị trí mới. */
+.fuseBurnt { fill: none; stroke: var(--ink-muted); stroke-opacity: 0.35; stroke-width: 3; stroke-dasharray: 2 5; stroke-linecap: round; }
+.fuse { fill: none; stroke: var(--ink-secondary); stroke-width: 5; stroke-linecap: round; transition: stroke-dasharray 1.6s linear; }
+.flame { offset-rotate: 0deg; transition: offset-distance 1.6s linear; }
+.glow { fill: var(--accent); opacity: 0.4; transform-box: fill-box; transform-origin: center; animation: glow 1.4s ease-in-out infinite alternate; }
+.spark { fill: color-mix(in srgb, var(--accent) 55%, white); transform-box: fill-box; transform-origin: center; animation: flicker 0.9s ease-in-out infinite alternate; }
+/* Tàn lửa bay lên chậm rồi tắt. */
+.ember {
+  fill: var(--accent);
+  transform-box: fill-box; transform-origin: center;
+  opacity: 0;
+  animation: ember 1.4s ease-out var(--d) infinite;
+}
+
+/*
+ * Chơi 1 máy: bom bay khỏi tay (0-34%), rồi tới tay người kế đang cầm máy, nảy nhẹ khi bắt (35-100%).
+ */
+.pass { animation: toss 560ms cubic-bezier(0.3, 0.7, 0.3, 1) both; }
+/* Mình vừa ném: bom bay vụt lên khỏi màn hình và không quay lại. */
+.out { animation: toss-out 420ms cubic-bezier(0.4, 0, 0.8, 0.6) forwards; }
+/* Mình được chuyền tới: bom rơi từ trên xuống tay rồi nảy. */
+.in { animation: toss-in 560ms cubic-bezier(0.3, 0.7, 0.3, 1) both; }
+
+@keyframes toss {
+  0% { transform: none; opacity: 1; }
+  34% { transform: translate(140%, -70%) rotate(260deg) scale(0.45); opacity: 0; }
+  35% { transform: translate(-140%, -40%) rotate(-150deg) scale(0.5); opacity: 0; }
+  72% { transform: translate(0, 4%) rotate(0) scale(1.08, 0.9); opacity: 1; }
+  86% { transform: translate(0, -3%) scale(0.97, 1.04); }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes toss-out {
+  0% { transform: none; opacity: 1; }
+  15% { transform: translateY(6%) scale(1.05, 0.92); }
+  100% { transform: translate(25%, -190%) rotate(220deg) scale(0.4); opacity: 0; }
+}
+@keyframes toss-in {
+  0% { transform: translate(-10%, -170%) rotate(-220deg) scale(0.5); opacity: 0; }
+  20% { opacity: 1; }
+  62% { transform: translate(0, 5%) rotate(0) scale(1.1, 0.86); }
+  80% { transform: translate(0, -4%) scale(0.96, 1.05); }
+  100% { transform: none; opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  25% { transform: translate(calc(var(--heat) * 4px), calc(var(--heat) * -2px)) rotate(calc(var(--heat) * 3deg)); }
+  75% { transform: translate(calc(var(--heat) * -4px), calc(var(--heat) * 2px)) rotate(calc(var(--heat) * -3deg)); }
+}
+@keyframes glow { to { transform: scale(1.4); opacity: 0.6; } }
+@keyframes flicker { 0% { transform: scale(0.85); } 50% { transform: scale(1.1); } 100% { transform: scale(0.95); } }
+@keyframes ember {
+  0% { transform: rotate(var(--a)) translateX(0) scale(1); opacity: 0.9; }
+  100% { transform: rotate(var(--a)) translateX(22px) translateY(-6px) scale(0.2); opacity: 0; }
+}
+
+/* Bom đang ở tay người khác (chơi phòng): mặt người cầm và quả bom nhỏ trong tay họ. */
+.elsewhere { position: relative; display: grid; place-items: center; animation: arrive 420ms var(--ease-out) both; }
+.holderFace > span { width: 128px; height: 128px; font-size: 52px; }
+.heldBomb { position: absolute; right: -44px; bottom: -18px; width: 96px; height: 96px; animation: catch 520ms var(--ease-out) both; }
+@keyframes arrive { from { transform: scale(0.85); opacity: 0; } }
+@keyframes catch { from { transform: translate(-120%, -80%) rotate(-200deg) scale(0.5); opacity: 0; } 70% { transform: translate(0, 4%) scale(1.08, 0.9); opacity: 1; } }
+
+/* Nổ */
+.shaking { animation: quake 480ms linear both; }
+.flash { position: fixed; inset: 0; z-index: 5; pointer-events: none; background: var(--accent); animation: flash 520ms ease-out forwards; }
+.exploded {
+  --size: min(72vw, 300px, 46dvh);
+  width: var(--size); height: var(--size);
+  display: grid; place-items: center;
+  background: var(--accent); color: var(--on-accent);
+  clip-path: polygon(50% 0, 61% 30%, 95% 20%, 72% 47%, 100% 62%, 67% 68%, 76% 100%, 50% 78%, 24% 100%, 33% 68%, 0 62%, 28% 47%, 5% 20%, 39% 30%);
+  animation: burst 460ms var(--ease-out) both;
+}
+.boom { font-size: clamp(40px, 13vw, 64px); font-weight: var(--fw-medium); letter-spacing: var(--ls-tight); }
+.debris { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.debris i {
+  position: absolute; left: calc(var(--s) / -2); top: calc(var(--s) / -2);
+  width: var(--s); height: var(--s); border-radius: 2px;
+  background: var(--ink);
+  animation: fly 700ms cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+.debris i:nth-child(3n) { background: var(--accent); border-radius: 50%; }
+.debris i:nth-child(4n) { background: var(--ink-secondary); }
+
+@keyframes quake {
+  0%, 100% { transform: none; }
+  15% { transform: translate(-8px, 4px); }
+  30% { transform: translate(7px, -6px); }
+  45% { transform: translate(-5px, -3px); }
+  60% { transform: translate(4px, 5px); }
+  80% { transform: translate(-2px, 1px); }
+}
+@keyframes flash { from { opacity: 0.85; } to { opacity: 0; } }
+@keyframes burst { from { transform: scale(0.3) rotate(-25deg); } 55% { transform: scale(1.12) rotate(5deg); } }
+@keyframes fly {
+  from { transform: rotate(var(--a)) translateX(0) rotate(0); opacity: 1; }
+  to { transform: rotate(var(--a)) translateX(var(--r)) rotate(220deg); opacity: 0; }
+}
+
+.caption { display: grid; gap: var(--space-2); text-align: center; }
+.caption strong { font-size: var(--fs-2xl); font-weight: var(--fw-medium); text-wrap: balance; }
+.caption span { color: var(--ink-secondary); font-size: var(--fs-md); font-variant-numeric: tabular-nums; }
+
+/* Hàng ghế: người đang cầm bom nhô lên, có quả bom nhỏ trên đầu. */
+.table {
+  list-style: none; margin: 0; padding: var(--space-8) var(--space-2) var(--space-2);
+  display: flex; gap: var(--space-4); max-width: 100%; overflow-x: auto;
+  scrollbar-width: none;
+}
+.seat { position: relative; display: grid; justify-items: center; gap: var(--space-2); width: 60px; flex: none; opacity: 0.6; transition: opacity var(--dur-base); }
+.seatName { max-width: 100%; font-size: var(--fs-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.me .seatName { font-weight: var(--fw-medium); }
+.holding { opacity: 1; animation: seat 420ms var(--ease-out); }
+.badge + span { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+.badge { position: absolute; top: -22px; width: 26px; height: 26px; animation: land 420ms var(--ease-out) both; }
+.badge .ember, .badge .glow { display: none; }
+@keyframes seat { 40% { transform: translateY(-6px); } }
+@keyframes land { from { transform: translateY(-26px) scale(0.4); opacity: 0; } 70% { transform: translateY(2px) scale(1.1); opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .wobble, .pass, .out, .in, .glow, .spark, .shaking, .flash, .exploded, .debris i, .holding, .badge, .elsewhere, .heldBomb { animation: none; }
+  .fuse, .flame { transition: none; }
+  .out { opacity: 0; }
+  .debris, .ember { display: none; }
+}

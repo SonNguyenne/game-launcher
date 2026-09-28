@@ -1,0 +1,68 @@
+.key {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  aspect-ratio: var(--key-ratio, 1.35);
+  padding: var(--space-5) var(--space-6) var(--space-6);
+  background: var(--key-fill, var(--cell));
+  color: var(--key-text, var(--ink));
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  border-radius: var(--key-radius);
+  box-shadow: inset 0 0 0 var(--key-outline) var(--rule-soft), var(--key-shadow);
+  transition: filter var(--dur-fast);
+  width: 100%;
+}
+.key:active { filter: brightness(0.92); }
+.top { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); font-size: var(--fs-sm); }
+.index { display: var(--index-display); opacity: 0.8; }
+.status { opacity: 0.8; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mark {
+  display: var(--mark-display);
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: color-mix(in srgb, currentColor 9%, transparent);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-medium);
+}
+.label {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-snug);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+.hot { --key-fill: var(--accent); --key-text: var(--on-accent); }
+.hot .status::before { content: "● "; }
+.add {
+  background: repeating-linear-gradient(135deg, var(--cell) 0 7px, var(--cell-raised) 7px 8px);
+  color: var(--ink-secondary);
+}
+.add .label { font-weight: var(--fw-regular); }
+.compact { --key-ratio: 1; }
+.compact .label { font-size: var(--fs-md); }
+.compact .mark { width: 36px; height: 36px; font-size: var(--fs-base); flex: none; }
+
+/* Kiểu mềm: trạng thái thành nhãn tròn, phím vừa dùng tô màu nhấn đậm. */
+:global(:root[data-look="soft"]) .hot .status::before { content: none; }
+:global(:root[data-look="soft"]) .mark { background: color-mix(in srgb, var(--accent) 24%, var(--key-fill, var(--cell))); }
+:global(:root[data-look="soft"]) .hot .mark { background: color-mix(in srgb, currentColor 10%, transparent); }
+:global(:root[data-look="soft"]) .status {
+  opacity: 1;
+  padding: var(--space-1) var(--space-4);
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 9%, transparent);
+  font-size: var(--fs-xs);
+}
+:global(:root[data-look="soft"]) .key:active { filter: none; transform: scale(0.97); }
+:global(:root[data-look="soft"]) .key { transition: transform var(--dur-fast) var(--ease-out); padding: var(--space-7); }
+:global(:root[data-look="soft"]) .add { background: var(--cell-raised); box-shadow: none; }
+:global(:root[data-look="soft"]) .compact .status { display: none; }

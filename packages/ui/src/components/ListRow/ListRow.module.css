@@ -1,0 +1,35 @@
+.row {
+  display: flex; align-items: center; gap: var(--space-5);
+  min-height: var(--size-row); width: 100%;
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-7);
+  border-bottom: var(--size-rule) solid var(--rule-soft);
+  background: var(--bg); text-align: left;
+}
+.main { flex: 1; min-width: 0; text-align: left; }
+.title { display: block; font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sub { display: block; color: var(--ink-muted); font-size: var(--fs-sm); }
+.value { color: var(--ink-secondary); font-size: var(--fs-md); padding-right: var(--space-3); }
+.danger { color: var(--danger); }
+.dim .main, .dim .lead { opacity: 0.4; }
+.lead { display: flex; align-items: center; gap: var(--space-5); flex: none; }
+.section { display: flex; justify-content: space-between; padding: var(--space-9) var(--space-7) var(--space-4); font-size: var(--fs-md); color: var(--ink-secondary); border-bottom: var(--size-rule) solid var(--rule); }
+.tag { font-size: var(--fs-xs); border: var(--size-rule) solid var(--rule-soft); padding: 0 var(--space-2); margin-right: var(--space-3); color: var(--ink-secondary); }
+.iconButton { width: 38px; height: 40px; display: grid; place-items: center; color: var(--ink-secondary); }
+.iconButton:disabled { opacity: 0.2; cursor: default; }
+
+/* Kiểu mềm: các dòng giữa hai tiêu đề mục gom thành một thẻ bo góc. */
+:global(:root[data-look="soft"]) .section {
+  border: 0;
+  padding: var(--space-12) var(--space-9) var(--space-4);
+  font-size: var(--fs-base); font-weight: var(--fw-medium); color: var(--ink);
+}
+:global(:root[data-look="soft"]) .section > :last-child { display: none; }
+:global(:root[data-look="soft"]) .row {
+  width: calc(100% - 2 * var(--space-8));
+  margin: 0 var(--space-8);
+  background: var(--cell);
+  border-bottom-color: var(--rule-soft);
+}
+:global(:root[data-look="soft"]) .section + .row { border-top-left-radius: 20px; border-top-right-radius: 20px; }
+:global(:root[data-look="soft"]) .row:has(+ .section),
+:global(:root[data-look="soft"]) .row:last-child { border-bottom: 0; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }

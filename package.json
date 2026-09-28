@@ -1,0 +1,17 @@
+{
+  "name": "bang-app",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev": "pnpm --filter @bang/launcher dev",
+    "build": "pnpm --filter @bang/launcher build",
+    "preview": "pnpm --filter @bang/launcher preview",
+    "typecheck": "pnpm --filter @bang/launcher typecheck",
+    "party-server": "pnpm --filter @bang/party-server start",
+    "serve": "pnpm build && pnpm party-server",
+    "new-app": "node scripts/create-mini-app.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

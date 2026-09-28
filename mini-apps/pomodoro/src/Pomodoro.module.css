@@ -1,0 +1,10 @@
+.face { padding: var(--space-18) var(--space-7) var(--space-14); border-bottom: var(--size-rule) solid var(--rule); }
+.state { color: var(--ink-secondary); font-size: var(--fs-sm); }
+.clock { font-size: var(--fs-hero); line-height: 1; letter-spacing: var(--ls-tighter); margin-top: var(--space-3); }
+.track { height: 6px; background: var(--rule-soft); margin-top: var(--space-9); }
+.fill { display: block; height: 100%; background: var(--accent); }
+.actions { display: grid; grid-template-columns: 2fr 1fr; border-bottom: var(--size-rule) solid var(--rule); }
+.action { height: 64px; font-size: var(--fs-base); text-align: center; }
+.primary { background: var(--ink); color: var(--bg); }
+.action + .action { border-left: var(--size-rule) solid var(--rule); }
+.count { margin: 0; padding: var(--space-7); color: var(--ink-secondary); font-size: var(--fs-md); }

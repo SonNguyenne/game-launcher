@@ -1,0 +1,8 @@
+.screen {
+  position: fixed; inset: 0; z-index: var(--z-screen);
+  background: var(--bg); overflow-y: auto;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  animation: slide-in var(--dur-slide) var(--ease-out);
+}
+.content { max-width: var(--size-content-max); margin: 0 auto; }
+@keyframes slide-in { from { transform: translateX(100%); } to { transform: none; } }

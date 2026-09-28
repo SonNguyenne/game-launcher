@@ -1,0 +1,8 @@
+{
+  "id": "chuyen-bom",
+  "name": "chuyền bom",
+  "group": "trò chơi",
+  "color": "auto",
+  "description": "Bấm để chuyền bom cho người kế. Bom nổ trên tay ai, người đó uống.",
+  "version": "1.0.0"
+}

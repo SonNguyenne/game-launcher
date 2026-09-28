@@ -1,0 +1,12 @@
+.toast {
+  position: fixed; left: 50%; z-index: var(--z-toast);
+  bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  transform: translate(-50%, 10px); opacity: 0; pointer-events: none;
+  background: var(--ink); color: var(--bg);
+  padding: var(--space-5) var(--space-7); font-size: var(--fs-md);
+  max-width: calc(100% - 32px);
+  border-radius: var(--control-radius);
+  transition: transform var(--dur-base), opacity var(--dur-base);
+}
+.show { transform: translate(-50%, 0); opacity: 1; }
+.toast::before { content: ""; display: inline-block; width: 8px; height: 8px; background: var(--accent); margin-right: var(--space-5); vertical-align: 1px; }

@@ -1,0 +1,4 @@
+.item { display: flex; align-items: center; gap: var(--space-6); width: 100%; height: 54px; padding: 0 var(--space-7); border-bottom: var(--size-rule) solid var(--rule-soft); font-size: var(--fs-base); }
+.item:last-child { border-bottom: 0; }
+.index { color: var(--ink-muted); font-size: var(--fs-sm); width: 20px; }
+.danger { color: var(--danger); }

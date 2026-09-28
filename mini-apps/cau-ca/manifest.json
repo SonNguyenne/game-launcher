@@ -1,0 +1,8 @@
+{
+  "id": "cau-ca",
+  "name": "câu cá",
+  "group": "trò chơi",
+  "color": "auto",
+  "description": "52 lá úp, lật 2 lá: trùng số +1 điểm, trượt thì quay vòng phạt. Hết bài, người thua chịu phạt cuối ván.",
+  "version": "1.0.0"
+}

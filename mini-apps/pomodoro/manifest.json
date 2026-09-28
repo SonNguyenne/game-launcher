@@ -1,0 +1,8 @@
+{
+  "id": "pomodoro",
+  "name": "pomodoro",
+  "group": "hằng ngày",
+  "color": "auto",
+  "description": "Hẹn giờ tập trung 25 phút, nghỉ 5 phút.",
+  "version": "1.0.0"
+}

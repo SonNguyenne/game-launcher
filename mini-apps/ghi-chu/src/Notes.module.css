@@ -1,0 +1,11 @@
+.notes { display: flex; flex-direction: column; height: 100%; }
+.area {
+  flex: 1; width: 100%; border: 0; resize: none; outline: none;
+  padding: var(--space-8) var(--space-7);
+  font-size: var(--fs-xl); line-height: 26px;
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--rule-soft) 1px, transparent 1px);
+  background-size: 100% 26px;
+  background-position: 0 41px;
+}
+.meta { display: flex; justify-content: space-between; color: var(--ink-muted); font-size: var(--fs-sm); padding: var(--space-5) var(--space-7); border-top: var(--size-rule) solid var(--rule); }
