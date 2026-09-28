@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 import { Button, Icon, Menu, Sheet, cx, durationMs, pad2, type MenuItem } from '@bang/ui';
 import { t } from '@/i18n/vi';
 import { useAppNavigation } from '@/hooks/useAppNavigation';
+import { useLockPageScroll } from '@/hooks/useLockPageScroll';
 import { useUiStore } from '@/store/uiStore';
 import { useNavigate } from 'react-router-dom';
 import { paths, type OriginRect } from '@/routes/paths';
@@ -19,6 +20,7 @@ export function RunnerPage() {
   const { goBack } = useAppNavigation();
   const navigate = useNavigate();
   const openSheet = useUiStore((st) => st.openSheet);
+  useLockPageScroll();
 
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);

@@ -8,6 +8,8 @@
 :global(:root[data-look="soft"]) .stage { --card-border: transparent; }
 
 .scroll { flex: 1; overflow: auto; padding: var(--space-8) var(--space-8) var(--space-12); display: flex; flex-direction: column; gap: var(--space-8); }
+/* Nội dung dài hơn màn thì cuộn, không bóp dẹt nút / ô nhập. */
+.scroll > * { flex-shrink: 0; }
 .footer { padding: var(--space-6) var(--space-8) calc(var(--space-8) + env(safe-area-inset-bottom, 0px)); display: grid; gap: var(--space-4); }
 .play { position: relative; flex: 1; overflow: auto; display: flex; flex-direction: column; padding: var(--space-6) var(--space-8) calc(var(--space-8) + env(safe-area-inset-bottom, 0px)); }
 
