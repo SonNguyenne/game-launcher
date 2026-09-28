@@ -16,13 +16,14 @@ export interface WheelState extends BaseState {
   history: { playerId: string; short: string }[];
 }
 
-export type WheelAction = { type: 'spin' } | { type: 'level'; level: Level };
+export type WheelAction = { type: 'spin' } | { type: 'config'; config: Partial<Pick<WheelState, 'level'>> };
 
 export const wheelOf = (level: Level): readonly Slice[] => strings.wheels[level];
 
 export const wheelGame: GameDef<WheelState, WheelAction> = {
   id: 'vong-quay',
   init: () => ({ ...baseState(), level: 'vua', spin: null, history: [] }),
+  configOf: (s) => ({ level: s.level }),
   advance(s) {
     // "Quay thêm lần nữa": xóa kết quả nhưng giữ nguyên người đang tới lượt.
     const again = s.spin && wheelOf(s.level)[s.spin.slice]?.kind === 'again';
@@ -30,10 +31,11 @@ export const wheelGame: GameDef<WheelState, WheelAction> = {
     return again ? { ...next, turn: s.turn } : next;
   },
   reduce(s, a, c) {
-    if (a.type === 'level') {
-      // Đổi mức giữa hai lượt, lúc vòng không quay; chỉ chủ phòng.
-      if (!c.host || s.result || !(a.level in strings.wheels)) return s;
-      return { ...s, level: a.level, spin: null, seq: s.seq + 1 };
+    if (a.type === 'config') {
+      // Mức độ chọn ở phòng chờ, áp vào lúc bắt đầu ván.
+      const { level } = a.config;
+      if (!c.host || s.result || !level || !(level in strings.wheels)) return s;
+      return { ...s, level, spin: null, seq: s.seq + 1 };
     }
     if (a.type !== 'spin' || s.result || !isTurnOf(s, c)) return s;
     const wheel = wheelOf(s.level);

@@ -34,7 +34,7 @@ export type TriviaAction =
   | { type: 'answer'; round: number; choice: number; fast: boolean }
   | { type: 'timeout'; round: number }
   | { type: 'fifty'; round: number }
-  | { type: 'topic'; topic: TopicChoice };
+  | { type: 'config'; config: Partial<Pick<TriviaState, 'topic'>> };
 
 export const questionOf = (r: Round) => questions[r.question];
 export const correctChoice = (r: Round) => r.order.indexOf(0);
@@ -55,15 +55,18 @@ function pickQuestion(topic: TopicChoice, used: number[]) {
 export const triviaGame: GameDef<TriviaState, TriviaAction> = {
   id: 'do-vui',
   init: () => ({ ...baseState(), topic: 'mix', round: null, picked: null, used: [], scores: {}, fiftyUsed: [] }),
+  configOf: (s) => ({ topic: s.topic }),
   advance: (s) => ({ ...nextTurn(s), round: null, picked: null }),
   reduce(s, a, c) {
     if (s.result) return s;
     const who = playerAt(c.players, s.turn)?.id ?? '';
     const score = s.scores[who] ?? { points: 0, streak: 0 };
 
-    if (a.type === 'topic') {
-      if (!c.host || s.round || !(a.topic in strings.topics)) return s;
-      return { ...s, topic: a.topic, seq: s.seq + 1 };
+    if (a.type === 'config') {
+      // Chủ đề chọn ở phòng chờ, áp vào lúc bắt đầu ván.
+      const { topic } = a.config;
+      if (!c.host || s.round || !topic || !(topic in strings.topics)) return s;
+      return { ...s, topic, seq: s.seq + 1 };
     }
     if (a.type === 'ask') {
       if (s.round || !isTurnOf(s, c)) return s;

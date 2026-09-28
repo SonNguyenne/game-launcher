@@ -57,7 +57,6 @@ export type FishAction =
   | { type: 'shuffle' }
   | { type: 'spin' }
   | { type: 'lot'; index: number }
-  | { type: 'mode'; mode: PunishMode }
   | { type: 'config'; config: Config }
   | { type: 'restart' };
 
@@ -137,13 +136,8 @@ export const fishGame: GameDef<FishState, FishAction> = {
   reduce(s, a, c) {
     // Ván mới: đếm tiếp số lần xáo để máy nào cũng chạy hiệu ứng xáo.
     if (a.type === 'restart') return c.host && s.phase === 'done' ? { ...fresh(), penalty: s.penalty, finale: s.finale ?? 'wheel', again: !!s.again, shuffles: s.shuffles + 1, seq: s.seq + 1 } : s;
-    if (a.type === 'mode') {
-      // Chủ phòng đổi cách phạt, trước khi người đang bị phạt ra tay.
-      if (!c.host || s.phase !== 'punish' || !s.punish || s.result || s.punish.picked !== null) return s;
-      return { ...s, punish: { ...s.punish, mode: a.mode }, seq: s.seq + 1 };
-    }
     if (a.type === 'config') {
-      // Chủ phòng chỉnh cách phạt, chỉ trước khi lật lá đầu tiên.
+      // Cài đặt chọn ở phòng chờ, áp vào lúc bắt đầu ván.
       if (!c.host || s.started) return s;
       const { penalty, finale, again } = a.config;
       const next = { ...s };

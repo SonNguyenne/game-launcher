@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { MiniAppProps } from '@bang/sdk';
-import { Chips, PartyShell, ResultCard, useParty, vibrate, type Party, type PartyData } from '@bang/party';
+import { Chips, PartyShell, ResultCard, SettingsCard, useParty, vibrate, type Party, type PartyData } from '@bang/party';
 import { Button, keyColors } from '@bang/ui';
 import { wheelGame, wheelOf, type Spin, type WheelAction, type WheelState } from './game';
 import { strings, type Level, type Slice } from './strings';
@@ -139,13 +139,6 @@ function WheelGame({ party }: { party: Party<WheelState, WheelAction> }) {
 
   return (
     <div className={s.game}>
-      <Chips
-        label={strings.levelLabel}
-        options={levelOptions}
-        value={state.level}
-        disabled={!party.isHost || spinning || !!result}
-        onChange={(level) => party.dispatch({ type: 'level', level })}
-      />
       <div className={s.wheelBox}>
         <span ref={pointerRef} className={s.pointer} aria-hidden="true" />
         <button
@@ -179,7 +172,16 @@ function WheelGame({ party }: { party: Party<WheelState, WheelAction> }) {
 export default function VongQuay({ ctx }: MiniAppProps<PartyData>) {
   const party = useParty(wheelGame, ctx);
   return (
-    <PartyShell party={party} info={{ title: strings.title, rule: strings.rule, art: <WheelArt /> }}>
+    <PartyShell party={party} info={{
+        title: strings.title,
+        rule: strings.rule,
+        art: <WheelArt />,
+        settings: ({ value, onChange, editable }) => (
+          <SettingsCard editable={editable}>
+            <Chips label={strings.levelLabel} options={levelOptions} value={value.level ?? 'vua'} disabled={!editable} onChange={(level) => onChange({ level })} />
+          </SettingsCard>
+        ),
+      }}>
       {party.state && <WheelGame party={party} />}
     </PartyShell>
   );

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { MiniAppProps } from '@bang/sdk';
-import { Chips, PartyShell, ResultCard, partyStyles, useParty, vibrate, type Party, type PartyData } from '@bang/party';
+import { Chips, PartyShell, ResultCard, SettingsCard, partyStyles, useParty, vibrate, type Party, type PartyData } from '@bang/party';
 import { Button, cx } from '@bang/ui';
 import { FAST_SECONDS, SECONDS, correctChoice, questionOf, triviaGame, type TriviaAction, type TriviaState } from './game';
 import { strings, type TopicChoice } from './strings';
@@ -71,13 +71,6 @@ function TriviaGame({ party }: { party: Party<TriviaState, TriviaAction> }) {
   if (!round) {
     return (
       <div className={s.game}>
-        <Chips
-          label={strings.topicLabel}
-          options={topicOptions}
-          value={state.topic}
-          disabled={!party.isHost}
-          onChange={(topic) => dispatch({ type: 'topic', topic })}
-        />
         <div className={cx(partyStyles.card, s.idle)}>
           <span className={s.bigMark} aria-hidden="true">?</span>
           <p className={s.idleText}>{party.myTurn ? strings.ready : strings.waitAsk(party.current?.name ?? '')}</p>
@@ -164,7 +157,16 @@ function Scoreboard({ party }: { party: Party<TriviaState, TriviaAction> }) {
 export default function DoVui({ ctx }: MiniAppProps<PartyData>) {
   const party = useParty(triviaGame, ctx);
   return (
-    <PartyShell party={party} info={{ title: strings.title, rule: strings.rule, art: <TriviaArt /> }}>
+    <PartyShell party={party} info={{
+        title: strings.title,
+        rule: strings.rule,
+        art: <TriviaArt />,
+        settings: ({ value, onChange, editable }) => (
+          <SettingsCard editable={editable}>
+            <Chips label={strings.topicLabel} options={topicOptions} value={value.topic ?? 'mix'} disabled={!editable} onChange={(topic) => onChange({ topic })} />
+          </SettingsCard>
+        ),
+      }}>
       {party.state && <TriviaGame party={party} />}
     </PartyShell>
   );

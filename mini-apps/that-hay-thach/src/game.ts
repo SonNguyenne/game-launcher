@@ -24,7 +24,7 @@ export type TdAction =
   | { type: 'swap' }
   | { type: 'done' }
   | { type: 'refuse' }
-  | { type: 'level'; level: Level };
+  | { type: 'config'; config: Partial<Pick<TdState, 'level'>> };
 
 function fill(template: string, players: Player[], selfId: string) {
   const others = players.filter((p) => p.id !== selfId);
@@ -44,12 +44,15 @@ function draw(s: TdState, kind: Kind, players: Player[], random?: boolean): TdSt
 export const tdGame: GameDef<TdState, TdAction> = {
   id: 'that-hay-thach',
   init: () => ({ ...baseState(), level: 'vui', card: null, swapped: false, used: {} }),
+  configOf: (s) => ({ level: s.level }),
   advance: (s) => ({ ...nextTurn(s), card: null, swapped: false }),
   reduce(s, a, c) {
     if (s.result) return s;
-    if (a.type === 'level') {
-      if (!c.host || s.card || !(a.level in decks)) return s;
-      return { ...s, level: a.level, seq: s.seq + 1 };
+    if (a.type === 'config') {
+      // Mức độ chọn ở phòng chờ, áp vào lúc bắt đầu ván.
+      const { level } = a.config;
+      if (!c.host || s.card || !level || !(level in decks)) return s;
+      return { ...s, level, seq: s.seq + 1 };
     }
     // "Xong" thì chủ phòng bấm hộ được, khi người chơi quên.
     if (a.type === 'done') return s.card && (isTurnOf(s, c) || c.host) ? tdGame.advance(s) : s;

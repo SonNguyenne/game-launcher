@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { MiniAppProps } from '@bang/sdk';
-import { Chips, PartyShell, ResultCard, playerAt, useParty, vibrate, type Party, type PartyData } from '@bang/party';
+import { Chips, PartyShell, ResultCard, SettingsCard, playerAt, useParty, vibrate, type Party, type PartyData } from '@bang/party';
 import { Button, cx } from '@bang/ui';
 import { tdGame, type TdAction, type TdState } from './game';
 import { strings, type Kind, type Level } from './strings';
@@ -37,20 +37,10 @@ function TruthDareGame({ party }: { party: Party<TdState, TdAction> }) {
     if (resultSeq) sfxRef.current('buzz');
   }, [resultSeq]);
 
-  const levelChips = (
-    <Chips
-      label={strings.levelLabel}
-      options={levelOptions}
-      value={state.level}
-      disabled={!party.isHost || !!card}
-      onChange={(level) => party.dispatch({ type: 'level', level })}
-    />
-  );
 
   if (!card) {
     return (
       <div className={s.game}>
-        {levelChips}
         <p className={s.prompt}>{party.myTurn ? strings.choose : strings.waitChoose(name)}</p>
         <div className={s.choices}>
           {kinds.map((k) => (
@@ -77,7 +67,6 @@ function TruthDareGame({ party }: { party: Party<TdState, TdAction> }) {
 
   return (
     <div className={s.game}>
-      {levelChips}
       {/* Lá bài úp rồi lật ra; mỗi lần rút hoặc đổi câu là một lá mới. */}
       <div key={card.id} className={s.flipper} aria-live="polite">
         <div className={cx(s.face, s.back, s[`${card.kind}Back`])} aria-hidden="true">
@@ -113,7 +102,16 @@ function TruthDareGame({ party }: { party: Party<TdState, TdAction> }) {
 export default function ThatHayThach({ ctx }: MiniAppProps<PartyData>) {
   const party = useParty(tdGame, ctx);
   return (
-    <PartyShell party={party} info={{ title: strings.title, rule: strings.rule, art: <TruthDareArt /> }}>
+    <PartyShell party={party} info={{
+        title: strings.title,
+        rule: strings.rule,
+        art: <TruthDareArt />,
+        settings: ({ value, onChange, editable }) => (
+          <SettingsCard editable={editable}>
+            <Chips label={strings.levelLabel} options={levelOptions} value={value.level ?? 'vui'} disabled={!editable} onChange={(level) => onChange({ level })} />
+          </SettingsCard>
+        ),
+      }}>
       {party.state && <TruthDareGame party={party} />}
     </PartyShell>
   );

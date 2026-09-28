@@ -24,6 +24,16 @@ export interface GameInfo<S = BaseState> {
   settings?: (props: SettingsProps<S>) => ReactNode;
 }
 
+/** Khung cài đặt ở phòng chờ cho game chỉ có vài lựa chọn: đặt các Chips vào trong, khách chỉ xem. */
+export function SettingsCard({ editable, children }: { editable: boolean; children: ReactNode }) {
+  return (
+    <section className={cx(s.card, s.settingsCard)} aria-label={t.settings}>
+      {children}
+      {!editable && <p className={s.hint}>{t.hostSets}</p>}
+    </section>
+  );
+}
+
 function LobbySettings<S extends BaseState, A extends GameAction>({ party, info }: { party: Party<S, A>; info: GameInfo<S> }) {
   if (!info.settings || !party.config) return null;
   return <>{info.settings({ value: party.config, onChange: party.setConfig, editable: party.isHost, online: party.mode === 'online' })}</>;

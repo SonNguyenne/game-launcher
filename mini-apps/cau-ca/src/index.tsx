@@ -3,12 +3,11 @@ import type { MiniAppProps } from '@bang/sdk';
 import { Avatar, Chips, PartyShell, ResultCard, partyStyles, useParty, vibrate, type Party, type PartyData } from '@bang/party';
 import { Button, Icon, Sheet, cx, keyColors } from '@bang/ui';
 import { cardsLeft, fishGame, isRed, leaders, type Card, type Config, type FishAction, type FishState, type Spin } from './game';
-import { strings, type Finale, type Penalty, type PunishMode } from './strings';
+import { strings, type Finale, type Penalty } from './strings';
 import s from './Fish.module.css';
 
 type FishParty = Party<FishState, FishAction>;
 
-const modeOptions = (Object.keys(strings.modes) as PunishMode[]).map((v) => ({ value: v, label: strings.modes[v] }));
 const penaltyOptions = (['on', 'off'] as const).map((v) => ({ value: v, label: strings.penaltyOptions[v] }));
 const againOptions = (['on', 'off'] as const).map((v) => ({ value: v, label: strings.againOptions[v] }));
 const finaleOptions = (Object.keys(strings.finaleOptions) as Finale[]).map((v) => ({ value: v, label: strings.finaleOptions[v] }));
@@ -205,7 +204,7 @@ function WinnerBanner({ party }: { party: FishParty }) {
   );
 }
 
-/* ---------- Cài đặt: ở phòng chờ và trước khi lật lá đầu tiên ---------- */
+/* ---------- Cài đặt ở phòng chờ ---------- */
 
 type FishConfig = Required<Config>;
 
@@ -222,7 +221,7 @@ function SettingsSheet({ value, onChange, open, onClose }: { value: FishConfig; 
   );
 }
 
-export function FishSettings({ value, onChange, editable }: { value: Config; onChange: (c: Config) => void; editable: boolean }) {
+function FishSettings({ value, onChange, editable }: { value: Config; onChange: (c: Config) => void; editable: boolean }) {
   const [open, setOpen] = useState(false);
   // Ván lưu từ bản cũ có thể thiếu field mới.
   const v: FishConfig = { penalty: value.penalty ?? true, again: value.again ?? false, finale: value.finale ?? 'wheel' };
@@ -411,13 +410,6 @@ function FishGame({ party }: { party: FishParty }) {
         <WinnerBanner party={party} />
         <section className={s.punish}>
           <h3 className={s.panelTitle}>{strings.punishTitle(party.current?.name ?? '')}</h3>
-          <Chips
-            label={strings.modeLabel}
-            options={modeOptions}
-            value={mode}
-            disabled={!party.isHost || st.punish.picked !== null}
-            onChange={(m) => party.dispatch({ type: 'mode', mode: m })}
-          />
           <p className={s.panelHint}>{strings.punishHint[mode]}</p>
           {mode === 'wheel' ? <SpinWheel key={`final-${st.turn}`} party={party} slices={strings.finals} onRevealed={onRevealed} /> : <Lots party={party} />}
         </section>
@@ -474,7 +466,6 @@ function FishGame({ party }: { party: FishParty }) {
         })}
       </div>
 
-      {!st.started && <FishSettings value={st} editable={party.isHost} onChange={(config) => party.dispatch({ type: 'config', config })} />}
       <Scores party={party} />
 
       {showPenalty && (

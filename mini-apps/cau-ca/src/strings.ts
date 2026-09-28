@@ -61,8 +61,6 @@ export const strings = {
 
   punishTitle: (name: string) => `phạt cuối ván: ${name}`,
   punishHint: { wheel: 'Quay vòng phạt nặng.', lots: 'Bốc 1 trong 6 lá thăm.' } satisfies Record<PunishMode, string>,
-  modeLabel: 'phạt bằng',
-  modes: { wheel: 'quay', lots: 'bốc thăm' } satisfies Record<PunishMode, string>,
   lot: (n: number) => `lá thăm ${n}`,
   pickLot: 'chọn một lá thăm',
   waitLot: (name: string) => `chờ ${name} bốc thăm`,

@@ -19,6 +19,7 @@
   border-radius: var(--key-radius);
   box-shadow: var(--key-shadow);
 }
+.settingsCard { display: grid; gap: var(--space-6); padding: var(--space-7) var(--space-8); }
 
 /* Màn đầu */
 .hero { display: grid; justify-items: center; text-align: center; padding: var(--space-8) 0 var(--space-4); }

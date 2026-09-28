@@ -177,4 +177,3 @@
 }
 
 .previewActions { display: flex; gap: var(--space-3); }
-.ghostButton { background: var(--cell); color: var(--ink); box-shadow: inset 0 0 0 1px var(--rule-soft); }

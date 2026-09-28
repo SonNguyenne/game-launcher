@@ -31,6 +31,8 @@ export const partyStrings = {
   you: 'bạn',
   offline: 'mất kết nối',
   waitHost: 'Chờ chủ phòng bắt đầu.',
+  hostSets: 'Chủ phòng chỉnh cài đặt.',
+  settings: 'cài đặt',
   waitMore: 'Cần ít nhất 2 người trong phòng.',
   leave: 'rời phòng',
   connecting: 'Đang kết nối tới phòng…',

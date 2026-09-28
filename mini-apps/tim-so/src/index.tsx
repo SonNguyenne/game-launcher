@@ -539,9 +539,10 @@ function LookSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   );
 }
 
-/** Tóm tắt cài đặt + nút mở bảng chỉnh. Dùng ở phòng chờ và màn chờ trước mỗi vòng. */
+/** Cài đặt ở phòng chờ: tóm tắt + nút mở bảng chỉnh (chủ phòng), và giao diện riêng của từng máy. */
 function FindSettings({ value, onChange, editable, online }: { value: Config; onChange: (c: Config) => void; editable: boolean; online: boolean }) {
   const [open, setOpen] = useState(false);
+  const [lookOpen, setLookOpen] = useState(false);
   // Phòng chờ đã gộp mặc định; chơi 1 máy luôn là chơi lần lượt.
   const state = { ...value, ...(online ? {} : { play: 'turns' }) } as FindConfig;
   const race = state.play === 'race';
@@ -571,7 +572,11 @@ function FindSettings({ value, onChange, editable, online }: { value: Config; on
       ) : (
         <p className={s.summaryHint}>{strings.hostSets}</p>
       )}
+      <Button variant="ghost" block onClick={() => setLookOpen(true)}>
+        <Icon name="eye" /> {strings.look}
+      </Button>
       {editable && <SettingsSheet value={state} onChange={onChange} online={online} open={open} onClose={() => setOpen(false)} />}
+      <LookSheet open={lookOpen} onClose={() => setLookOpen(false)} />
     </section>
   );
 }
@@ -584,8 +589,6 @@ function Setup({ party, anim }: { party: FindParty; anim: Rewrite | null }) {
   const busy = !!anim;
   const canStart = (race ? host : party.myTurn) && !busy;
   const inGame = party.mode === 'local' || party.players.some((p) => p.id === party.me);
-  const [lookOpen, setLookOpen] = useState(false);
-
   return (
     <div className={s.setup}>
       <p className={s.idleText}>{race ? strings.readyRace : strings.readyTurn(party.current?.name ?? '', state.turnSeconds, state.penalty)}</p>
@@ -594,9 +597,6 @@ function Setup({ party, anim }: { party: FindParty; anim: Rewrite | null }) {
         <div className={s.previewHead}>
           <span className={s.previewTitle} aria-live="polite">{busy ? strings.shuffling : strings.preview}</span>
           <div className={s.previewActions}>
-            <button className={cx(s.shuffleButton, s.ghostButton)} onClick={() => setLookOpen(true)}>
-              <Icon name="eye" size={18} /> {strings.look}
-            </button>
             {inGame && (
               <button className={s.shuffleButton} disabled={busy} onClick={() => dispatch({ type: 'shuffle' })}>
                 <Icon name="shuffle" size={18} /> {strings.shuffle}
@@ -607,8 +607,6 @@ function Setup({ party, anim }: { party: FindParty; anim: Rewrite | null }) {
         <PreviewBoard dots={state.dots} anim={anim} />
       </section>
 
-      <FindSettings value={state} editable={host} online={party.mode === 'online'} onChange={(config) => dispatch({ type: 'config', config })} />
-
       {(race ? host : party.myTurn) ? (
         <Button variant="primary" block className={s.cta} disabled={!canStart} onClick={() => dispatch({ type: 'start' })}>
           {strings.start}
@@ -617,7 +615,6 @@ function Setup({ party, anim }: { party: FindParty; anim: Rewrite | null }) {
         <p className={s.wait}>{race ? strings.waitStart : strings.waitTurn(party.current?.name ?? '')}</p>
       )}
       <Scoreboard party={party} />
-      <LookSheet open={lookOpen} onClose={() => setLookOpen(false)} />
     </div>
   );
 }
