@@ -6,10 +6,12 @@ export interface Penalty {
 }
 
 export type PunishMode = 'wheel' | 'lots';
+/** Cách phạt cuối ván chọn trước khi chơi; off: hết bài là xong, không phạt. */
+export type Finale = PunishMode | 'off';
 
 export const strings = {
   title: 'câu cá',
-  rule: 'Lật 2 lá: trùng số thì câu được, +1 điểm. Không trùng thì quay vòng phạt (chủ phòng có thể tắt, khi đó chỉ mất lượt). Hết bài, ai nhiều điểm nhất thắng, những người còn lại quay hoặc bốc thăm hình phạt.',
+  rule: 'Lật 2 lá: trùng số thì câu được, +1 điểm. Không trùng thì quay vòng phạt. Hết bài, ai nhiều điểm nhất thắng, những người còn lại quay hoặc bốc thăm hình phạt. Chủ phòng có thể tắt từng kiểu phạt trong cài đặt.',
   ranks: ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'],
   suits: ['♠', '♣', '♥', '♦'],
   suitNames: ['bích', 'chuồn', 'cơ', 'rô'],
@@ -27,6 +29,12 @@ export const strings = {
   caught: 'câu được, +1 điểm',
   penaltyLabel: 'lật trượt',
   penaltyOptions: { on: 'quay phạt', off: 'chỉ mất lượt' },
+  finaleLabel: 'phạt cuối ván',
+  finaleOptions: { wheel: 'quay', lots: 'bốc thăm', off: 'tắt' } satisfies Record<Finale, string>,
+  settings: 'cài đặt',
+  settingsTitle: 'cài đặt ván chơi',
+  settingsDone: 'xong',
+  hostSets: 'Chủ phòng chỉnh cài đặt.',
   missed: 'không trùng, mất lượt',
   missTitle: 'không trùng',
   missHint: 'Quay xem phải uống bao nhiêu.',

@@ -1,15 +1,16 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import type { MiniAppProps } from '@bang/sdk';
-import { Avatar, Chips, PartyShell, ResultCard, useParty, vibrate, type Party, type PartyData } from '@bang/party';
-import { Button, Icon, cx, keyColors } from '@bang/ui';
+import { Avatar, Chips, PartyShell, ResultCard, partyStyles, useParty, vibrate, type Party, type PartyData } from '@bang/party';
+import { Button, Icon, Sheet, cx, keyColors } from '@bang/ui';
 import { cardsLeft, fishGame, isRed, leaders, type Card, type FishAction, type FishState, type Spin } from './game';
-import { strings, type Penalty, type PunishMode } from './strings';
+import { strings, type Finale, type Penalty, type PunishMode } from './strings';
 import s from './Fish.module.css';
 
 type FishParty = Party<FishState, FishAction>;
 
 const modeOptions = (Object.keys(strings.modes) as PunishMode[]).map((v) => ({ value: v, label: strings.modes[v] }));
 const penaltyOptions = (['on', 'off'] as const).map((v) => ({ value: v, label: strings.penaltyOptions[v] }));
+const finaleOptions = (Object.keys(strings.finaleOptions) as Finale[]).map((v) => ({ value: v, label: strings.finaleOptions[v] }));
 
 /** Chờ một nhịp cho cả bàn nhìn bài trước khi hiện vòng phạt / thẻ kết quả. */
 const LOOK_MS = 900;
@@ -200,6 +201,60 @@ function WinnerBanner({ party }: { party: FishParty }) {
       <h2 className={s.finalTitle}>{strings.winner(names, top)}</h2>
       {ids.length === party.players.length && <p className={s.finalHint}>{strings.allTie}</p>}
     </div>
+  );
+}
+
+/* ---------- Cài đặt (trước khi lật lá đầu tiên) ---------- */
+
+function SettingsSheet({ party, open, onClose }: { party: FishParty; open: boolean; onClose: () => void }) {
+  const st = party.state!;
+  return (
+    <Sheet open={open} title={strings.settingsTitle} closeLabel={strings.settingsDone} onClose={onClose}>
+      <div className={s.settings}>
+        <Chips
+          label={strings.penaltyLabel}
+          options={penaltyOptions}
+          value={st.penalty ? 'on' : 'off'}
+          onChange={(v) => party.dispatch({ type: 'config', config: { penalty: v === 'on' } })}
+        />
+        <Chips
+          label={strings.finaleLabel}
+          options={finaleOptions}
+          value={st.finale ?? 'wheel'}
+          onChange={(finale) => party.dispatch({ type: 'config', config: { finale } })}
+        />
+        <Button variant="primary" block onClick={onClose}>{strings.settingsDone}</Button>
+      </div>
+    </Sheet>
+  );
+}
+
+function SettingsSummary({ party }: { party: FishParty }) {
+  const st = party.state!;
+  const [open, setOpen] = useState(false);
+  const rows = [
+    { label: strings.penaltyLabel, value: strings.penaltyOptions[st.penalty ? 'on' : 'off'] },
+    { label: strings.finaleLabel, value: strings.finaleOptions[st.finale ?? 'wheel'] },
+  ];
+  return (
+    <section className={cx(partyStyles.card, s.summary)} aria-label={strings.settings}>
+      <dl className={s.summaryList}>
+        {rows.map((row) => (
+          <div key={row.label} className={s.summaryRow}>
+            <dt>{row.label}</dt>
+            <dd>{row.value}</dd>
+          </div>
+        ))}
+      </dl>
+      {party.isHost ? (
+        <Button block onClick={() => setOpen(true)}>
+          <Icon name="sliders" /> {strings.settings}
+        </Button>
+      ) : (
+        <p className={s.summaryHint}>{strings.hostSets}</p>
+      )}
+      {party.isHost && <SettingsSheet party={party} open={open} onClose={() => setOpen(false)} />}
+    </section>
   );
 }
 
@@ -400,16 +455,6 @@ function FishGame({ party }: { party: FishParty }) {
         )}
       </div>
 
-      {!st.started && (
-        <Chips
-          label={strings.penaltyLabel}
-          options={penaltyOptions}
-          value={st.penalty ? 'on' : 'off'}
-          disabled={!party.isHost}
-          onChange={(v) => party.dispatch({ type: 'penalty', on: v === 'on' })}
-        />
-      )}
-
       <div className={cx(s.board, shuffling && s.shuffling)} ref={boardRef}>
         {st.cards.map((card, i) => {
           const owner = st.taken[i];
@@ -434,6 +479,7 @@ function FishGame({ party }: { party: FishParty }) {
         })}
       </div>
 
+      {!st.started && <SettingsSummary party={party} />}
       <Scores party={party} />
 
       {showPenalty && (

@@ -60,6 +60,15 @@
 .caughtCard { animation: caught 520ms var(--ease-out) 380ms both; }
 @keyframes caught { 40% { transform: translateY(-10%) scale(1.12); } }
 
+/* Tóm tắt cài đặt trước khi lật lá đầu; chỉnh trong bảng trượt. */
+.summary { display: grid; gap: var(--space-6); padding: var(--space-7) var(--space-8); }
+.summaryList { margin: 0; display: grid; gap: var(--space-3); }
+.summaryRow { display: flex; justify-content: space-between; gap: var(--space-6); }
+.summaryRow dt { color: var(--ink-secondary); }
+.summaryRow dd { margin: 0; font-weight: var(--fw-medium); text-align: right; }
+.summaryHint { margin: 0; color: var(--ink-muted); font-size: var(--fs-sm); }
+.settings { display: grid; gap: var(--space-8); }
+
 /* Điểm */
 .scores { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: flex; gap: var(--space-3); overflow-x: auto; scrollbar-width: none; }
 .score { display: flex; align-items: center; gap: var(--space-4); flex: none; padding: var(--space-2) var(--space-6) var(--space-2) var(--space-2); border-radius: 999px; background: var(--cell); }

@@ -1,5 +1,5 @@
 import { baseState, isTurnOf, nextTurn, playerAt, randomInt, shuffle, withResult, type BaseState, type GameDef, type Player } from '@bang/party';
-import { strings, type PunishMode } from './strings';
+import { strings, type Finale, type PunishMode } from './strings';
 
 /** r: 0..12 (A..K), s: 0..3 (♠ ♣ ♥ ♦). */
 export interface Card {
@@ -44,7 +44,11 @@ export interface FishState extends BaseState {
   started: boolean;
   /** Lật trượt thì quay vòng phạt; tắt thì chỉ mất lượt. */
   penalty: boolean;
+  /** Cách phạt cuối ván; off thì hết bài là xong ván. */
+  finale: Finale;
 }
+
+export type Config = Partial<Pick<FishState, 'penalty' | 'finale'>>;
 
 export type FishAction =
   | { type: 'flip'; index: number }
@@ -52,7 +56,7 @@ export type FishAction =
   | { type: 'spin' }
   | { type: 'lot'; index: number }
   | { type: 'mode'; mode: PunishMode }
-  | { type: 'penalty'; on: boolean }
+  | { type: 'config'; config: Config }
   | { type: 'restart' };
 
 export const isRed = (c: Card) => c.s >= 2;
@@ -84,6 +88,7 @@ const fresh = (): FishState => ({
   shuffles: 1,
   started: false,
   penalty: true,
+  finale: 'wheel',
 });
 
 const newSpin = (s: FishState, slices: number): Spin => ({
@@ -123,16 +128,20 @@ export const fishGame: GameDef<FishState, FishAction> = {
   },
   reduce(s, a, c) {
     // Ván mới: đếm tiếp số lần xáo để máy nào cũng chạy hiệu ứng xáo.
-    if (a.type === 'restart') return c.host && s.phase === 'done' ? { ...fresh(), penalty: s.penalty, shuffles: s.shuffles + 1, seq: s.seq + 1 } : s;
+    if (a.type === 'restart') return c.host && s.phase === 'done' ? { ...fresh(), penalty: s.penalty, finale: s.finale ?? 'wheel', shuffles: s.shuffles + 1, seq: s.seq + 1 } : s;
     if (a.type === 'mode') {
       // Chủ phòng đổi cách phạt, trước khi người đang bị phạt ra tay.
       if (!c.host || s.phase !== 'punish' || !s.punish || s.result || s.punish.picked !== null) return s;
       return { ...s, punish: { ...s.punish, mode: a.mode }, seq: s.seq + 1 };
     }
-    if (a.type === 'penalty') {
-      // Chủ phòng bật/tắt vòng phạt, chỉ trước khi lật lá đầu tiên.
+    if (a.type === 'config') {
+      // Chủ phòng chỉnh cách phạt, chỉ trước khi lật lá đầu tiên.
       if (!c.host || s.started) return s;
-      return { ...s, penalty: a.on, seq: s.seq + 1 };
+      const { penalty, finale } = a.config;
+      const next = { ...s };
+      if (typeof penalty === 'boolean') next.penalty = penalty;
+      if (finale && finale in strings.finaleOptions) next.finale = finale;
+      return { ...next, seq: s.seq + 1 };
     }
     if (a.type === 'shuffle') {
       // Ai trong phòng cũng xáo được, nhưng chỉ trước khi lật lá đầu tiên.
@@ -159,7 +168,11 @@ export const fishGame: GameDef<FishState, FishAction> = {
       const scored: FishState = { ...s, flipped, taken, scores: { ...s.scores, [who]: (s.scores[who] ?? 0) + 1 } };
       // Cặp cuối cùng: tính luôn ai bị phạt cuối ván (reducer mới có danh sách người chơi).
       const last = taken.every((t) => t !== null);
-      const punish: Punish | null = last ? { mode: 'wheel', order: losersOrder(scored, c.players), lots: newLots(), picked: null } : null;
+      // Tắt phạt cuối ván: danh sách rỗng, hết bài là xong ván. Ván lưu từ bản cũ chưa có finale thì phạt bằng quay.
+      const finale = s.finale ?? 'wheel';
+      const punish: Punish | null = last
+        ? { mode: finale === 'off' ? 'wheel' : finale, order: finale === 'off' ? [] : losersOrder(scored, c.players), lots: newLots(), picked: null }
+        : null;
       return withResult({ ...scored, punish }, { playerId: who, text: strings.caught, safe: true });
     }
 
