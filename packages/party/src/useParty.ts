@@ -19,6 +19,11 @@ interface Room {
   members: Player[];
 }
 
+/** Ở phòng chờ chưa có ván: chủ phòng gửi cài đặt nháp trong gói này thay cho trạng thái ván. */
+const LOBBY_KEY = '__lobby';
+type LobbyPacket<S> = { [LOBBY_KEY]: Partial<S> };
+const isLobby = <S,>(v: unknown): v is LobbyPacket<S> => !!v && typeof v === 'object' && LOBBY_KEY in v;
+
 const PROFILE_KEY = 'bang-party-profile';
 const ID_KEY = 'bang-party-id';
 
@@ -66,6 +71,9 @@ export function useParty<S extends BaseState, A extends GameAction>(game: GameDe
   const data = useMemo(() => ({ ...readProfile(), ...stored }), [stored]);
   const [mode, setMode] = useState<PartyMode>('start');
   const [state, setState] = useState<S | null>(null);
+  /** Cài đặt nháp ở phòng chờ, áp vào lúc bắt đầu ván. */
+  const [lobby, setLobby] = useState<Partial<S>>({});
+  const defaults = useMemo(() => game.configOf?.(game.init([])) ?? null, [game]);
   const [room, setRoom] = useState<Room | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>('closed');
   const [error, setError] = useState<RoomError | null>(null);
@@ -78,7 +86,7 @@ export function useParty<S extends BaseState, A extends GameAction>(game: GameDe
   const current = state ? playerAt(players, state.turn) : undefined;
 
   // Callback của WebSocket sống lâu hơn một lần render, nên đọc giá trị mới nhất qua ref.
-  const live = useRef({ state, players, isHost, mode });
+  const live = useRef({ state, players, isHost, mode, lobby });
   live.current = { ...live.current, players, isHost, mode };
   const clientRef = useRef<RoomClient | null>(null);
   const codeRef = useRef<string | null>(null);
@@ -93,6 +101,23 @@ export function useParty<S extends BaseState, A extends GameAction>(game: GameDe
     },
     [setData],
   );
+
+  const sendLobby = useCallback((next: Partial<S>) => {
+    live.current.lobby = next;
+    setLobby(next);
+    if (live.current.mode === 'online') clientRef.current?.send({ t: 'state', state: { [LOBBY_KEY]: next } });
+  }, []);
+
+  /** Trạng thái nhận từ server: gói phòng chờ thì chỉ cập nhật cài đặt nháp. */
+  const receive = useCallback((raw: unknown) => {
+    if (isLobby<S>(raw)) {
+      live.current.lobby = raw[LOBBY_KEY];
+      setLobby(raw[LOBBY_KEY]);
+      raw = null;
+    }
+    live.current.state = (raw as S | null) ?? null;
+    setState(live.current.state);
+  }, []);
 
   const commit = useCallback((next: S | null) => {
     live.current.state = next;
@@ -130,14 +155,14 @@ export function useParty<S extends BaseState, A extends GameAction>(game: GameDe
       if (m.t === 'joined') {
         codeRef.current = m.code;
         setRoom({ code: m.code, hostId: m.hostId, members: m.members });
-        live.current.state = (m.state as S | null) ?? null;
-        setState(live.current.state);
+        receive(m.state);
         setError(null);
+        // Chủ phòng vừa tạo phòng: đưa cài đặt đang có cho cả phòng thấy.
+        if (m.hostId === me && m.state == null) sendLobby(live.current.lobby);
       } else if (m.t === 'members') {
         setRoom((r) => (r ? { ...r, hostId: m.hostId, members: m.members } : r));
       } else if (m.t === 'state') {
-        live.current.state = (m.state as S | null) ?? null;
-        setState(live.current.state);
+        receive(m.state);
       } else if (m.t === 'action') {
         if (live.current.isHost) apply(m.action as A | CommonAction, m.from, false);
       } else if (m.t === 'error') {
@@ -148,13 +173,18 @@ export function useParty<S extends BaseState, A extends GameAction>(game: GameDe
         setMode('start');
       }
     },
-    [apply],
+    [apply, receive, sendLobby, me],
   );
 
   const connect = useCallback(
     (name: string, code: string | null) => {
       clientRef.current?.close();
       codeRef.current = code;
+      // Vào phòng người khác: dùng cài đặt của chủ phòng đó.
+      if (code) {
+        live.current.lobby = {};
+        setLobby({});
+      }
       setError(null);
       setRoom(null);
       setState(null);
@@ -222,17 +252,30 @@ export function useParty<S extends BaseState, A extends GameAction>(game: GameDe
       connect(name, code);
     },
     leave,
+    /** Cài đặt đang chọn ở phòng chờ (đã gộp mặc định của game); null nếu game không có cài đặt. */
+    config: defaults ? { ...defaults, ...lobby } : null,
+    /** Chủ phòng / chơi 1 máy chỉnh cài đặt ở phòng chờ. */
+    setConfig: (patch: Partial<S>) => {
+      if (live.current.isHost) sendLobby({ ...live.current.lobby, ...patch });
+    },
     /** Chủ phòng / chơi 1 máy: bắt đầu ván mới với danh sách người chơi hiện tại. */
     startGame: () => {
+      const list = mode === 'setup' ? localPlayers : players;
       if (mode === 'setup') {
         live.current.mode = 'local';
         live.current.players = localPlayers;
         setMode('local');
       }
-      commit(game.init(mode === 'setup' ? localPlayers : players));
+      let first = game.init(list);
+      if (game.configOf) first = game.reduce(first, { type: 'config', config: live.current.lobby } as unknown as A, { from: me, players: list, host: true });
+      commit(first);
     },
     endGame: () => {
-      commit(null);
+      // Về phòng chờ, giữ cài đặt của ván vừa chơi cho ván sau.
+      const s = live.current.state;
+      live.current.state = null;
+      setState(null);
+      sendLobby(s && game.configOf ? game.configOf(s) : live.current.lobby);
       if (mode === 'local') setMode('setup');
     },
   };

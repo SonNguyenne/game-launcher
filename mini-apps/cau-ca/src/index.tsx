@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type 
 import type { MiniAppProps } from '@bang/sdk';
 import { Avatar, Chips, PartyShell, ResultCard, partyStyles, useParty, vibrate, type Party, type PartyData } from '@bang/party';
 import { Button, Icon, Sheet, cx, keyColors } from '@bang/ui';
-import { cardsLeft, fishGame, isRed, leaders, type Card, type FishAction, type FishState, type Spin } from './game';
+import { cardsLeft, fishGame, isRed, leaders, type Card, type Config, type FishAction, type FishState, type Spin } from './game';
 import { strings, type Finale, type Penalty, type PunishMode } from './strings';
 import s from './Fish.module.css';
 
@@ -205,44 +205,31 @@ function WinnerBanner({ party }: { party: FishParty }) {
   );
 }
 
-/* ---------- Cài đặt (trước khi lật lá đầu tiên) ---------- */
+/* ---------- Cài đặt: ở phòng chờ và trước khi lật lá đầu tiên ---------- */
 
-function SettingsSheet({ party, open, onClose }: { party: FishParty; open: boolean; onClose: () => void }) {
-  const st = party.state!;
+type FishConfig = Required<Config>;
+
+function SettingsSheet({ value, onChange, open, onClose }: { value: FishConfig; onChange: (c: Config) => void; open: boolean; onClose: () => void }) {
   return (
     <Sheet open={open} title={strings.settingsTitle} closeLabel={strings.settingsDone} onClose={onClose}>
       <div className={s.settings}>
-        <Chips
-          label={strings.penaltyLabel}
-          options={penaltyOptions}
-          value={st.penalty ? 'on' : 'off'}
-          onChange={(v) => party.dispatch({ type: 'config', config: { penalty: v === 'on' } })}
-        />
-        <Chips
-          label={strings.againLabel}
-          options={againOptions}
-          value={st.again ? 'on' : 'off'}
-          onChange={(v) => party.dispatch({ type: 'config', config: { again: v === 'on' } })}
-        />
-        <Chips
-          label={strings.finaleLabel}
-          options={finaleOptions}
-          value={st.finale ?? 'wheel'}
-          onChange={(finale) => party.dispatch({ type: 'config', config: { finale } })}
-        />
+        <Chips label={strings.penaltyLabel} options={penaltyOptions} value={value.penalty ? 'on' : 'off'} onChange={(v) => onChange({ penalty: v === 'on' })} />
+        <Chips label={strings.againLabel} options={againOptions} value={value.again ? 'on' : 'off'} onChange={(v) => onChange({ again: v === 'on' })} />
+        <Chips label={strings.finaleLabel} options={finaleOptions} value={value.finale} onChange={(finale) => onChange({ finale })} />
         <Button variant="primary" block onClick={onClose}>{strings.settingsDone}</Button>
       </div>
     </Sheet>
   );
 }
 
-function SettingsSummary({ party }: { party: FishParty }) {
-  const st = party.state!;
+export function FishSettings({ value, onChange, editable }: { value: Config; onChange: (c: Config) => void; editable: boolean }) {
   const [open, setOpen] = useState(false);
+  // Ván lưu từ bản cũ có thể thiếu field mới.
+  const v: FishConfig = { penalty: value.penalty ?? true, again: value.again ?? false, finale: value.finale ?? 'wheel' };
   const rows = [
-    { label: strings.penaltyLabel, value: strings.penaltyOptions[st.penalty ? 'on' : 'off'] },
-    { label: strings.againLabel, value: strings.againOptions[st.again ? 'on' : 'off'] },
-    { label: strings.finaleLabel, value: strings.finaleOptions[st.finale ?? 'wheel'] },
+    { label: strings.penaltyLabel, value: strings.penaltyOptions[v.penalty ? 'on' : 'off'] },
+    { label: strings.againLabel, value: strings.againOptions[v.again ? 'on' : 'off'] },
+    { label: strings.finaleLabel, value: strings.finaleOptions[v.finale] },
   ];
   return (
     <section className={cx(partyStyles.card, s.summary)} aria-label={strings.settings}>
@@ -254,14 +241,14 @@ function SettingsSummary({ party }: { party: FishParty }) {
           </div>
         ))}
       </dl>
-      {party.isHost ? (
+      {editable ? (
         <Button block onClick={() => setOpen(true)}>
           <Icon name="sliders" /> {strings.settings}
         </Button>
       ) : (
         <p className={s.summaryHint}>{strings.hostSets}</p>
       )}
-      {party.isHost && <SettingsSheet party={party} open={open} onClose={() => setOpen(false)} />}
+      {editable && <SettingsSheet value={v} onChange={onChange} open={open} onClose={() => setOpen(false)} />}
     </section>
   );
 }
@@ -487,7 +474,7 @@ function FishGame({ party }: { party: FishParty }) {
         })}
       </div>
 
-      {!st.started && <SettingsSummary party={party} />}
+      {!st.started && <FishSettings value={st} editable={party.isHost} onChange={(config) => party.dispatch({ type: 'config', config })} />}
       <Scores party={party} />
 
       {showPenalty && (
@@ -505,7 +492,7 @@ function FishGame({ party }: { party: FishParty }) {
 export default function CauCa({ ctx }: MiniAppProps<PartyData>) {
   const party = useParty(fishGame, ctx);
   return (
-    <PartyShell party={party} info={{ title: strings.title, rule: strings.rule, art: <FishArt /> }}>
+    <PartyShell party={party} info={{ title: strings.title, rule: strings.rule, art: <FishArt />, settings: (p) => <FishSettings {...p} /> }}>
       {party.state && <FishGame party={party} />}
     </PartyShell>
   );

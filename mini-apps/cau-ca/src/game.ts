@@ -114,6 +114,7 @@ function losersOrder(s: FishState, players: Player[]) {
 export const fishGame: GameDef<FishState, FishAction> = {
   id: 'cau-ca',
   init: fresh,
+  configOf: (s) => ({ penalty: s.penalty, again: !!s.again, finale: s.finale ?? 'wheel' }),
   advance(s) {
     const next = { ...nextTurn(s), flipped: [] as number[] };
     if (s.phase === 'punish' && s.punish) {

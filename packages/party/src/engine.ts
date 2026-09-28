@@ -47,6 +47,11 @@ export interface GameDef<S extends BaseState, A extends GameAction> {
   reduce(state: S, action: A, ctx: ReduceContext): S;
   /** Sang lượt kế tiếp: dọn dữ liệu của lượt cũ. */
   advance(state: S): S;
+  /**
+   * Game có cài đặt: lấy phần cài đặt ra khỏi trạng thái.
+   * Chủ phòng chỉnh ở phòng chờ; lúc bắt đầu, launcher gửi { type: 'config', config } vào reduce để áp vào ván mới.
+   */
+  configOf?(state: S): Partial<S>;
 }
 
 /** Hành động chung cho mọi game, do launcher xử lý trước khi tới reducer của game. */

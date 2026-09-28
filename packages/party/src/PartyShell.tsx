@@ -5,12 +5,28 @@ import { partyStrings as t } from './strings';
 import type { Party } from './useParty';
 import s from './Party.module.css';
 
-export interface GameInfo {
+export interface SettingsProps<S> {
+  /** Cài đặt hiện tại (đã gộp mặc định). */
+  value: Partial<S>;
+  onChange: (patch: Partial<S>) => void;
+  /** Chủ phòng / chơi 1 máy mới được chỉnh. */
+  editable: boolean;
+  online: boolean;
+}
+
+export interface GameInfo<S = BaseState> {
   title: string;
   /** Một câu giải thích cách chơi. */
   rule: string;
   /** Hình minh họa nhỏ của game ở màn đầu. */
   art: ReactNode;
+  /** Cài đặt ván chơi, hiện ở phòng chờ và màn nhập người chơi (game cần có configOf). */
+  settings?: (props: SettingsProps<S>) => ReactNode;
+}
+
+function LobbySettings<S extends BaseState, A extends GameAction>({ party, info }: { party: Party<S, A>; info: GameInfo<S> }) {
+  if (!info.settings || !party.config) return null;
+  return <>{info.settings({ value: party.config, onChange: party.setConfig, editable: party.isHost, online: party.mode === 'online' })}</>;
 }
 
 const initial = (name: string) => name.trim().normalize('NFC').charAt(0).toLocaleUpperCase('vi') || '?';
@@ -21,7 +37,7 @@ export function Avatar({ name, dim }: { name: string; dim?: boolean }) {
 
 interface ShellProps<S extends BaseState, A extends GameAction> {
   party: Party<S, A>;
-  info: GameInfo;
+  info: GameInfo<S>;
   /** Màn chơi, chỉ hiện khi ván đã bắt đầu. */
   children: ReactNode;
   /** Cả phòng chơi cùng lúc, không chia lượt: thanh trên cùng không hiện tên người tới lượt. */
@@ -31,7 +47,7 @@ interface ShellProps<S extends BaseState, A extends GameAction> {
 /** Khung chung: màn đầu, nhập người chơi, phòng chờ, thanh lượt chơi. Game chỉ lo phần giữa. */
 export function PartyShell<S extends BaseState, A extends GameAction>({ party, info, children, together }: ShellProps<S, A>) {
   if (party.mode === 'start') return <Start party={party} info={info} />;
-  if (party.mode === 'setup') return <LocalSetup party={party} />;
+  if (party.mode === 'setup') return <LocalSetup party={party} info={info} />;
   if (party.mode === 'online' && (!party.room || !party.state)) return <Lobby party={party} info={info} />;
   return (
     <div className={s.stage}>
@@ -41,7 +57,7 @@ export function PartyShell<S extends BaseState, A extends GameAction>({ party, i
   );
 }
 
-function Start<S extends BaseState, A extends GameAction>({ party, info }: { party: Party<S, A>; info: GameInfo }) {
+function Start<S extends BaseState, A extends GameAction>({ party, info }: { party: Party<S, A>; info: GameInfo<S> }) {
   const [name, setName] = useState(party.name);
   const [code, setCode] = useState(party.initialCode);
   const [needName, setNeedName] = useState(false);
@@ -111,7 +127,7 @@ function Start<S extends BaseState, A extends GameAction>({ party, info }: { par
   );
 }
 
-function LocalSetup<S extends BaseState, A extends GameAction>({ party }: { party: Party<S, A> }) {
+function LocalSetup<S extends BaseState, A extends GameAction>({ party, info }: { party: Party<S, A>; info: GameInfo<S> }) {
   const names = party.localNames;
   const [draft, setDraft] = useState('');
 
@@ -149,6 +165,7 @@ function LocalSetup<S extends BaseState, A extends GameAction>({ party }: { part
           <Button type="submit" disabled={!draft.trim()}>{t.addPlayer}</Button>
         </form>
         <p className={s.hint}>{t.needTwo}</p>
+        <LobbySettings party={party} info={info} />
       </div>
       <div className={s.footer}>
         <Button variant="primary" block disabled={names.length < 2} onClick={party.startGame}>{t.start}</Button>
@@ -183,7 +200,7 @@ async function copyText(text: string) {
   return ok;
 }
 
-function Lobby<S extends BaseState, A extends GameAction>({ party, info }: { party: Party<S, A>; info: GameInfo }) {
+function Lobby<S extends BaseState, A extends GameAction>({ party, info }: { party: Party<S, A>; info: GameInfo<S> }) {
   const room = party.room;
   const [copy, setCopy] = useState<'idle' | 'copied' | 'failed'>('idle');
 
@@ -250,6 +267,7 @@ function Lobby<S extends BaseState, A extends GameAction>({ party, info }: { par
 
             <h3 className={s.listTitle}>{t.inRoom(room.members.length)}</h3>
             <MemberList party={party} members={room.members} hostId={room.hostId} />
+            <LobbySettings party={party} info={info} />
           </>
         )}
       </div>

@@ -458,15 +458,15 @@ function NumberInput({ value, min, max, label, hint, onCommit }: { value: number
   );
 }
 
-function SettingsSheet({ party, open, onClose }: { party: FindParty; open: boolean; onClose: () => void }) {
-  const state = party.state!;
-  const config = (c: Config) => party.dispatch({ type: 'config', config: c });
+type FindConfig = Required<Config>;
+
+function SettingsSheet({ value: state, onChange: config, online, open, onClose }: { value: FindConfig; onChange: (c: Config) => void; online: boolean; open: boolean; onClose: () => void }) {
   const race = state.play === 'race';
   return (
     <Sheet open={open} title={strings.settingsTitle} closeLabel={strings.settingsDone} onClose={onClose}>
       <div className={s.settings}>
         <Chips label={strings.orderLabel} options={orderOptions} value={state.order} onChange={(order) => config({ order })} />
-        {party.mode === 'online' && <Chips label={strings.playLabel} options={playOptions} value={state.play} onChange={(play) => config({ play })} />}
+        {online && <Chips label={strings.playLabel} options={playOptions} value={state.play} onChange={(play) => config({ play })} />}
 
         <section className={s.group}>
           <Chips label={strings.sizeLabel} options={sizeOptions} value={String(state.size)} onChange={(v) => config({ size: Number(v) })} />
@@ -539,6 +539,43 @@ function LookSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   );
 }
 
+/** Tóm tắt cài đặt + nút mở bảng chỉnh. Dùng ở phòng chờ và màn chờ trước mỗi vòng. */
+function FindSettings({ value, onChange, editable, online }: { value: Config; onChange: (c: Config) => void; editable: boolean; online: boolean }) {
+  const [open, setOpen] = useState(false);
+  // Phòng chờ đã gộp mặc định; chơi 1 máy luôn là chơi lần lượt.
+  const state = { ...value, ...(online ? {} : { play: 'turns' }) } as FindConfig;
+  const race = state.play === 'race';
+  const summary = [
+    { label: strings.orderLabel, value: strings.orders[state.order] },
+    { label: strings.sizeLabel, value: strings.size(state.size) },
+    race
+      ? { label: strings.secondsLabel, value: strings.seconds(state.seconds) }
+      : { label: strings.turnSecondsLabel, value: strings.seconds(state.turnSeconds) },
+    ...(race ? [] : [{ label: strings.penaltyLabel, value: strings.penaltyOptions[state.penalty ? 'on' : 'off'] }]),
+    ...(online ? [{ label: strings.playLabel, value: strings.plays[state.play] }] : []),
+  ];
+  return (
+    <section className={cx(partyStyles.card, s.summary)} aria-label={strings.settings}>
+      <dl className={s.summaryList}>
+        {summary.map((row) => (
+          <div key={row.label} className={s.summaryRow}>
+            <dt>{row.label}</dt>
+            <dd>{row.value}</dd>
+          </div>
+        ))}
+      </dl>
+      {editable ? (
+        <Button block onClick={() => setOpen(true)}>
+          <Icon name="sliders" /> {strings.settings}
+        </Button>
+      ) : (
+        <p className={s.summaryHint}>{strings.hostSets}</p>
+      )}
+      {editable && <SettingsSheet value={state} onChange={onChange} online={online} open={open} onClose={() => setOpen(false)} />}
+    </section>
+  );
+}
+
 function Setup({ party, anim }: { party: FindParty; anim: Rewrite | null }) {
   const state = party.state!;
   const { dispatch } = party;
@@ -547,18 +584,7 @@ function Setup({ party, anim }: { party: FindParty; anim: Rewrite | null }) {
   const busy = !!anim;
   const canStart = (race ? host : party.myTurn) && !busy;
   const inGame = party.mode === 'local' || party.players.some((p) => p.id === party.me);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [lookOpen, setLookOpen] = useState(false);
-
-  const summary = [
-    { label: strings.orderLabel, value: strings.orders[state.order] },
-    { label: strings.sizeLabel, value: strings.size(state.size) },
-    race
-      ? { label: strings.secondsLabel, value: strings.seconds(state.seconds) }
-      : { label: strings.turnSecondsLabel, value: strings.seconds(state.turnSeconds) },
-    ...(race ? [] : [{ label: strings.penaltyLabel, value: strings.penaltyOptions[state.penalty ? 'on' : 'off'] }]),
-    ...(party.mode === 'online' ? [{ label: strings.playLabel, value: strings.plays[state.play] }] : []),
-  ];
 
   return (
     <div className={s.setup}>
@@ -581,23 +607,7 @@ function Setup({ party, anim }: { party: FindParty; anim: Rewrite | null }) {
         <PreviewBoard dots={state.dots} anim={anim} />
       </section>
 
-      <section className={cx(partyStyles.card, s.summary)} aria-label={strings.settings}>
-        <dl className={s.summaryList}>
-          {summary.map((row) => (
-            <div key={row.label} className={s.summaryRow}>
-              <dt>{row.label}</dt>
-              <dd>{row.value}</dd>
-            </div>
-          ))}
-        </dl>
-        {host ? (
-          <Button block onClick={() => setSettingsOpen(true)}>
-            <Icon name="sliders" /> {strings.settings}
-          </Button>
-        ) : (
-          <p className={s.summaryHint}>{strings.hostSets}</p>
-        )}
-      </section>
+      <FindSettings value={state} editable={host} online={party.mode === 'online'} onChange={(config) => dispatch({ type: 'config', config })} />
 
       {(race ? host : party.myTurn) ? (
         <Button variant="primary" block className={s.cta} disabled={!canStart} onClick={() => dispatch({ type: 'start' })}>
@@ -607,7 +617,6 @@ function Setup({ party, anim }: { party: FindParty; anim: Rewrite | null }) {
         <p className={s.wait}>{race ? strings.waitStart : strings.waitTurn(party.current?.name ?? '')}</p>
       )}
       <Scoreboard party={party} />
-      {host && <SettingsSheet party={party} open={settingsOpen} onClose={() => setSettingsOpen(false)} />}
       <LookSheet open={lookOpen} onClose={() => setLookOpen(false)} />
     </div>
   );
@@ -656,7 +665,7 @@ export default function TimSo({ ctx }: MiniAppProps<PartyData>) {
   const [look, update] = useLook();
   return (
     <LookContext.Provider value={{ look, update }}>
-      <PartyShell party={party} together={party.state?.play === 'race'} info={{ title: strings.title, rule: strings.rule, art: <FindArt /> }}>
+      <PartyShell party={party} together={party.state?.play === 'race'} info={{ title: strings.title, rule: strings.rule, art: <FindArt />, settings: (p) => <FindSettings {...p} /> }}>
         {party.state && <FindGame party={party} />}
       </PartyShell>
     </LookContext.Provider>

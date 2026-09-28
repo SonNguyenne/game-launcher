@@ -169,6 +169,7 @@ export const findGame: GameDef<FindState, FindAction> = {
     dots: layout(50),
     shuffles: 1,
   }),
+  configOf: ({ order, size, seconds, turnSeconds, penalty, play }) => ({ order, size, seconds, turnSeconds, penalty, play }),
   advance(s) {
     // Chơi cùng lúc thì không có lượt riêng: giữ nguyên lượt, chỉ dọn vòng cũ.
     // Hết vòng thì viết sẵn bàn số mới cho vòng sau.
