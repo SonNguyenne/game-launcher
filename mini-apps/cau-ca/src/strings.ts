@@ -11,7 +11,7 @@ export type Finale = PunishMode | 'off';
 
 export const strings = {
   title: 'câu cá',
-  rule: 'Lật 2 lá: trùng số thì câu được, +1 điểm. Không trùng thì quay vòng phạt. Hết bài, ai nhiều điểm nhất thắng, những người còn lại quay hoặc bốc thăm hình phạt. Chủ phòng có thể tắt từng kiểu phạt trong cài đặt.',
+  rule: 'Lật 2 lá: trùng số thì câu được, +1 điểm. Không trùng thì quay vòng phạt. Hết bài, ai nhiều điểm nhất thắng, những người còn lại quay hoặc bốc thăm hình phạt. Chủ phòng chỉnh cách phạt, và cho câu được thì lật tiếp, trong cài đặt.',
   ranks: ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'],
   suits: ['♠', '♣', '♥', '♦'],
   suitNames: ['bích', 'chuồn', 'cơ', 'rô'],
@@ -27,8 +27,11 @@ export const strings = {
   taken: (name: string) => `${name} đã câu`,
 
   caught: 'câu được, +1 điểm',
+  caughtAgain: 'câu được, +1 điểm, lật tiếp',
   penaltyLabel: 'lật trượt',
   penaltyOptions: { on: 'quay phạt', off: 'chỉ mất lượt' },
+  againLabel: 'câu được',
+  againOptions: { on: 'chơi tiếp', off: 'sang lượt' },
   finaleLabel: 'phạt cuối ván',
   finaleOptions: { wheel: 'quay', lots: 'bốc thăm', off: 'tắt' } satisfies Record<Finale, string>,
   settings: 'cài đặt',

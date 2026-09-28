@@ -10,6 +10,7 @@ type FishParty = Party<FishState, FishAction>;
 
 const modeOptions = (Object.keys(strings.modes) as PunishMode[]).map((v) => ({ value: v, label: strings.modes[v] }));
 const penaltyOptions = (['on', 'off'] as const).map((v) => ({ value: v, label: strings.penaltyOptions[v] }));
+const againOptions = (['on', 'off'] as const).map((v) => ({ value: v, label: strings.againOptions[v] }));
 const finaleOptions = (Object.keys(strings.finaleOptions) as Finale[]).map((v) => ({ value: v, label: strings.finaleOptions[v] }));
 
 /** Chờ một nhịp cho cả bàn nhìn bài trước khi hiện vòng phạt / thẻ kết quả. */
@@ -218,6 +219,12 @@ function SettingsSheet({ party, open, onClose }: { party: FishParty; open: boole
           onChange={(v) => party.dispatch({ type: 'config', config: { penalty: v === 'on' } })}
         />
         <Chips
+          label={strings.againLabel}
+          options={againOptions}
+          value={st.again ? 'on' : 'off'}
+          onChange={(v) => party.dispatch({ type: 'config', config: { again: v === 'on' } })}
+        />
+        <Chips
           label={strings.finaleLabel}
           options={finaleOptions}
           value={st.finale ?? 'wheel'}
@@ -234,6 +241,7 @@ function SettingsSummary({ party }: { party: FishParty }) {
   const [open, setOpen] = useState(false);
   const rows = [
     { label: strings.penaltyLabel, value: strings.penaltyOptions[st.penalty ? 'on' : 'off'] },
+    { label: strings.againLabel, value: strings.againOptions[st.again ? 'on' : 'off'] },
     { label: strings.finaleLabel, value: strings.finaleOptions[st.finale ?? 'wheel'] },
   ];
   return (

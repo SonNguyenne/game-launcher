@@ -46,9 +46,11 @@ export interface FishState extends BaseState {
   penalty: boolean;
   /** Cách phạt cuối ván; off thì hết bài là xong ván. */
   finale: Finale;
+  /** Câu được thì lật tiếp, không chuyển lượt. */
+  again: boolean;
 }
 
-export type Config = Partial<Pick<FishState, 'penalty' | 'finale'>>;
+export type Config = Partial<Pick<FishState, 'penalty' | 'finale' | 'again'>>;
 
 export type FishAction =
   | { type: 'flip'; index: number }
@@ -89,6 +91,7 @@ const fresh = (): FishState => ({
   started: false,
   penalty: true,
   finale: 'wheel',
+  again: false,
 });
 
 const newSpin = (s: FishState, slices: number): Spin => ({
@@ -124,11 +127,15 @@ export const fishGame: GameDef<FishState, FishAction> = {
       if (!s.punish.order.length) return { ...next, phase: 'done' };
       return { ...next, phase: 'punish', turn: s.punish.order[0] };
     }
+    // Vừa câu được (2 lá ngửa đã thuộc về người chơi) và bật chơi tiếp: giữ lượt.
+    if (s.phase === 'pick' && s.again && s.flipped.length === 2 && s.taken[s.flipped[0]] !== null) {
+      return { ...next, turn: s.turn, phase: 'pick' };
+    }
     return { ...next, phase: 'pick' };
   },
   reduce(s, a, c) {
     // Ván mới: đếm tiếp số lần xáo để máy nào cũng chạy hiệu ứng xáo.
-    if (a.type === 'restart') return c.host && s.phase === 'done' ? { ...fresh(), penalty: s.penalty, finale: s.finale ?? 'wheel', shuffles: s.shuffles + 1, seq: s.seq + 1 } : s;
+    if (a.type === 'restart') return c.host && s.phase === 'done' ? { ...fresh(), penalty: s.penalty, finale: s.finale ?? 'wheel', again: !!s.again, shuffles: s.shuffles + 1, seq: s.seq + 1 } : s;
     if (a.type === 'mode') {
       // Chủ phòng đổi cách phạt, trước khi người đang bị phạt ra tay.
       if (!c.host || s.phase !== 'punish' || !s.punish || s.result || s.punish.picked !== null) return s;
@@ -137,9 +144,10 @@ export const fishGame: GameDef<FishState, FishAction> = {
     if (a.type === 'config') {
       // Chủ phòng chỉnh cách phạt, chỉ trước khi lật lá đầu tiên.
       if (!c.host || s.started) return s;
-      const { penalty, finale } = a.config;
+      const { penalty, finale, again } = a.config;
       const next = { ...s };
       if (typeof penalty === 'boolean') next.penalty = penalty;
+      if (typeof again === 'boolean') next.again = again;
       if (finale && finale in strings.finaleOptions) next.finale = finale;
       return { ...next, seq: s.seq + 1 };
     }
@@ -173,7 +181,7 @@ export const fishGame: GameDef<FishState, FishAction> = {
       const punish: Punish | null = last
         ? { mode: finale === 'off' ? 'wheel' : finale, order: finale === 'off' ? [] : losersOrder(scored, c.players), lots: newLots(), picked: null }
         : null;
-      return withResult({ ...scored, punish }, { playerId: who, text: strings.caught, safe: true });
+      return withResult({ ...scored, punish }, { playerId: who, text: s.again && !last ? strings.caughtAgain : strings.caught, safe: true });
     }
 
     if (a.type === 'spin') {
