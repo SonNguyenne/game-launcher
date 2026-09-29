@@ -69,7 +69,7 @@ export const questions: readonly Question[] = [
 
 export const strings = {
   title: 'đố nhanh',
-  rule: 'Mỗi người một câu, 10 giây để chọn. Sai hoặc hết giờ thì uống. Đúng 3 câu liền được chỉ định người uống. Mỗi người có một quyền 50/50.',
+  rule: 'Mỗi người một câu, 10 giây để chọn. Đúng +1 điểm, trả lời trong 4 giây đầu +2. Sai hoặc hết giờ thì uống. Đúng 3 câu liền được chỉ định người uống. Mỗi người có một quyền 50/50. Chủ phòng chọn chủ đề ở phòng chờ.',
   topicLabel: 'chủ đề',
   topics: { mix: 'trộn', vn: 'Việt Nam', world: 'thế giới', science: 'khoa học', fun: 'giải trí' } satisfies Record<TopicChoice, string>,
   ask: 'rút câu hỏi',

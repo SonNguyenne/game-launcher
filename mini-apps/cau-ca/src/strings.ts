@@ -11,7 +11,7 @@ export type Finale = PunishMode | 'off';
 
 export const strings = {
   title: 'câu cá',
-  rule: 'Lật 2 lá: trùng số thì câu được, +1 điểm. Không trùng thì quay vòng phạt. Hết bài, ai nhiều điểm nhất thắng, những người còn lại quay hoặc bốc thăm hình phạt. Chủ phòng chỉnh cách phạt, và cho câu được thì lật tiếp, trong cài đặt.',
+  rule: 'Lật 2 lá: trùng số thì câu được, +1 điểm; không trùng thì quay vòng phạt hoặc chỉ mất lượt. Hết bài, ai nhiều điểm nhất thắng, những người còn lại bị phạt cuối ván. Chủ phòng chọn cách phạt và cho câu được thì lật tiếp ở phòng chờ.',
   ranks: ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'],
   suits: ['♠', '♣', '♥', '♦'],
   suitNames: ['bích', 'chuồn', 'cơ', 'rô'],

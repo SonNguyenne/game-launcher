@@ -100,7 +100,7 @@ export const decks: Record<Level, Record<Kind, readonly string[]>> = {
 
 export const strings = {
   title: 'thật hay thách',
-  rule: 'Chọn trả lời thật, làm thử thách, hoặc để máy chọn. Không dám thì uống. Mỗi lượt được đổi câu 1 lần.',
+  rule: 'Chọn trả lời thật, làm thử thách, hoặc để máy chọn. Không dám thì uống. Mỗi lượt được đổi câu 1 lần. Chủ phòng chọn mức nhẹ, vui hay cháy ở phòng chờ.',
   levelLabel: 'mức',
   levels: { nhe: 'nhẹ', vui: 'vui', chay: 'cháy' } satisfies Record<Level, string>,
   choose: 'chọn một',

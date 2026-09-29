@@ -9,7 +9,7 @@ export interface Slice {
 
 export const strings = {
   title: 'vòng quay phạt',
-  rule: 'Tới lượt ai thì người đó quay. Kim chỉ vào ô nào, làm theo ô đó. Chủ phòng chọn mức nhẹ, vừa hay căng.',
+  rule: 'Tới lượt ai thì người đó quay. Kim chỉ vào ô nào, làm theo ô đó. Chủ phòng chọn mức nhẹ, vừa hay căng ở phòng chờ.',
   spin: 'quay',
   spinning: 'đang quay…',
   wait: (name: string) => `chờ ${name} quay`,

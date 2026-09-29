@@ -10,7 +10,7 @@ export interface Penalty {
 
 export const strings = {
   title: 'tìm số',
-  rule: 'Các con số nằm rải rác trên màn hình. Tìm đúng số được yêu cầu rồi chạm vào nó, hết giờ ai tìm nhiều nhất thắng.',
+  rule: 'Các con số nằm rải rác trên màn hình, chạm đúng số được yêu cầu. Chơi cùng lúc: ai chạm trước được số đó, hết giờ ai nhiều nhất thắng. Chơi lần lượt: mỗi người tìm 1 số trong thời gian của lượt, hết giờ thì quay phạt hoặc mất lượt. Chủ phòng chỉnh ở phòng chờ.',
 
   orderLabel: 'kiểu tìm',
   orders: { up: 'từ bé đến lớn', random: 'ngẫu nhiên' } satisfies Record<Order, string>,
