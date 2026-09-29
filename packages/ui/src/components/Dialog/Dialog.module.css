@@ -13,3 +13,14 @@
 .action + .action { border-left: var(--size-rule) solid var(--rule); }
 .confirm { background: var(--ink); color: var(--bg); }
 .danger { background: var(--danger); color: var(--on-danger); }
+
+/* Kiểu quán: hộp giấy bo, tiêu đề chữ bảng hiệu, hai nút tách rời. */
+:global(:root[data-look="quan"]) .dialog { border: 0; border-radius: 20px; padding: var(--space-4); animation: dialog-in var(--dur-reveal) var(--ease-expo); }
+:global(:root[data-look="quan"]) .title { padding: var(--space-8) var(--space-6) var(--space-2); border: 0; font-family: var(--font-display); font-size: 30px; font-weight: 400; line-height: 1; }
+:global(:root[data-look="quan"]) .text { padding: var(--space-2) var(--space-6) var(--space-9); font-size: var(--fs-base); }
+:global(:root[data-look="quan"]) .actions { gap: var(--space-4); border: 0; }
+:global(:root[data-look="quan"]) .action { height: 52px; border-radius: var(--control-radius); background: var(--cell-raised); font-weight: var(--fw-medium); }
+:global(:root[data-look="quan"]) .action + .action { border: 0; }
+:global(:root[data-look="quan"]) .confirm { background: var(--ink); color: var(--bg); }
+:global(:root[data-look="quan"]) .danger { background: var(--danger); color: var(--on-danger); }
+@keyframes dialog-in { from { opacity: 0; transform: translate(-50%, -46%) rotate(-1.5deg); } }

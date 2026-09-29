@@ -13,6 +13,14 @@
   transition: transform var(--dur-slide) var(--ease-out);
   outline: none;
 }
+.handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--rule-soft);
+  margin: var(--space-3) auto 0;
+  opacity: 0.8;
+}
 .open .scrim { opacity: 1; }
 .open .sheet { transform: none; }
 .head {
@@ -30,3 +38,44 @@
 }
 .body { padding: var(--space-8) var(--space-7); }
 .flush { padding: 0; }
+
+/* Kiểu sôi động (Arcade): drawer bo tròn hiện đại, thanh grab handle, tiêu đề cân đối. */
+:global(:root[data-look="quan"]) .sheet {
+  border: 1px solid var(--rule-soft);
+  border-bottom: 0;
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.28);
+  background: var(--bg);
+}
+:global(:root[data-look="quan"]) .head {
+  height: 52px;
+  padding: var(--space-1) var(--space-5) 0 var(--space-7);
+  border: 0;
+  border-bottom: 1px solid var(--rule-soft);
+  background: transparent;
+}
+:global(:root[data-look="quan"]) .head h2 {
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+:global(:root[data-look="quan"]) .close {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--cell-raised);
+  color: var(--ink-secondary);
+  transition: transform var(--dur-base) var(--ease-out), background var(--dur-base);
+}
+:global(:root[data-look="quan"]) .close:active {
+  transform: scale(0.92);
+}
+:global(:root[data-look="quan"]) .body {
+  padding: var(--space-5) var(--space-7) var(--space-10);
+}
+:global(:root[data-look="quan"]) .flush {
+  padding: 0 0 var(--space-8);
+}

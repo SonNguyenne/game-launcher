@@ -1,3 +1,13 @@
 .empty { padding: 40px var(--space-10); background: var(--bg); }
+.art { margin: 0 0 var(--space-8) calc(-1 * var(--space-4)); }
 .title { margin: 0 0 var(--space-3); font-size: var(--fs-xl); font-weight: var(--fw-medium); }
 .body { margin: 0 0 var(--space-9); color: var(--ink-secondary); max-width: 40ch; }
+
+:global(:root[data-look="quan"]) .empty { padding: var(--space-8) var(--space-4) var(--space-14); background: none; }
+:global(:root[data-look="quan"]) .title {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 0.95;
+  text-wrap: balance;
+}

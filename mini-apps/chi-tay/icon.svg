@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" style="stroke-linecap:round;stroke-linejoin:round">
+  <!-- Target circles in background -->
+  <circle cx="68" cy="48" r="22" style="fill:none;stroke:var(--art-pop,#FF4757);stroke-width:5;stroke-dasharray:6 6" />
+  <circle cx="68" cy="48" r="10" style="fill:var(--art-pop,#FF4757);opacity:0.25" />
+  <circle cx="68" cy="48" r="4" style="fill:var(--art-pop,#FF4757)" />
+
+  <!-- Hand pointing right -->
+  <!-- Hand shadow -->
+  <path transform="translate(3 3)" d="M12 40C12 36 15 32 20 32H38V22C38 18 42 16 46 16C50 16 54 18 54 22V42H68C72 42 75 45 75 49C75 53 72 56 68 56H52V62C52 66 49 69 45 69H32L12 52V40Z" style="fill:var(--art-pop,#FF4757);stroke:var(--art-pop,#FF4757);stroke-width:4" />
+  
+  <!-- Hand body -->
+  <path d="M14 42C14 38 18 34 22 34H40V24C40 20 44 18 48 18C52 18 56 20 56 24V42H72C76 42 79 45 79 49C79 53 76 56 72 56H54V62C54 66 50 70 46 70H32L14 54V42Z" style="fill:var(--art-paper,#FFFFFF);stroke:var(--art-ink,#0F172A);stroke-width:5" />
+  
+  <!-- Finger joint lines -->
+  <path d="M40 42H56M40 50H54M40 58H50" style="fill:none;stroke:var(--art-ink,#0F172A);stroke-width:4" />
+  <path d="M26 34V60" style="fill:none;stroke:var(--art-ink,#0F172A);stroke-width:4" />
+</svg>

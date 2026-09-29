@@ -5,7 +5,6 @@
   display: flex; flex-direction: column;
   background: var(--bg);
 }
-:global(:root[data-look="soft"]) .stage { --card-border: transparent; }
 
 .scroll { flex: 1; overflow: auto; padding: var(--space-8) var(--space-8) var(--space-12); display: flex; flex-direction: column; gap: var(--space-8); }
 /* Nội dung dài hơn màn thì cuộn, không bóp dẹt nút / ô nhập. */
@@ -23,8 +22,15 @@
 
 /* Màn đầu */
 .hero { display: grid; justify-items: center; text-align: center; padding: var(--space-8) 0 var(--space-4); }
-.art { width: 132px; height: 132px; display: grid; place-items: center; margin-bottom: var(--space-8); }
-.art > svg { width: 100%; height: 100%; overflow: visible; }
+/* Hình của game (SVG 96 ô, chỉ dùng 3 màu --art-*): khung này đặt 3 màu đó cho mọi kiểu hiển thị. */
+.art {
+  --art-ink: var(--paint-ink);
+  --art-paper: var(--paint-paper);
+  --art-pop: var(--paint-yellow);
+  width: 132px; height: 132px; display: grid; place-items: center; margin-bottom: var(--space-8);
+}
+.art > * { display: block; width: 100%; height: 100%; }
+.art svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .heroTitle { margin: 0; font-size: clamp(32px, 10vw, 44px); line-height: 1.05; letter-spacing: var(--ls-tight); font-weight: var(--fw-medium); text-wrap: balance; }
 .heroRule { margin: var(--space-5) 0 0; max-width: 32ch; color: var(--ink-secondary); font-size: var(--fs-base); line-height: var(--lh-normal); text-wrap: pretty; }
 .error { margin: 0; padding: var(--space-6) var(--space-7); border-radius: var(--control-radius); background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); font-size: var(--fs-md); }
@@ -38,6 +44,27 @@
   min-height: var(--size-button); margin-top: var(--space-4);
   color: var(--ink-secondary); font-size: var(--fs-md);
   text-decoration: underline; text-underline-offset: 3px;
+}
+.startSettings { margin-top: var(--space-6); }
+.headActions { display: flex; align-items: center; gap: var(--space-3); }
+.lobbySettingsBtn {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+  width: 100%; margin-top: var(--space-6); padding: var(--space-5) var(--space-6);
+  border-radius: var(--control-radius); background: var(--cell);
+  border: 1.5px solid var(--rule-soft); color: var(--ink); text-align: left;
+  transition: border-color var(--dur-base), transform var(--dur-base);
+}
+.lobbySettingsBtn:active { transform: translateY(1px); border-color: var(--accent); }
+.lobbySettingsBtnLabel { display: flex; align-items: center; gap: var(--space-3); font-size: var(--fs-base); font-weight: 700; }
+.lobbySettingsBtnHint { font-size: var(--fs-xs); color: var(--ink-secondary); }
+.drawerBody { display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-1) 0 var(--space-3); }
+.drawerBody .card,
+.drawerBody .settingsCard {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 /* Danh sách người */
@@ -88,19 +115,53 @@
 }
 .inviteLink:focus { outline: 2px solid var(--accent); outline-offset: 1px; color: var(--ink); }
 
-/* Chip chọn mức độ / chủ đề */
-.chips { display: flex; align-items: center; gap: var(--space-5); min-width: 0; }
-.chipsLabel { flex: none; color: var(--ink-secondary); font-size: var(--fs-sm); }
-.chipRow { display: flex; gap: var(--space-3); overflow-x: auto; scrollbar-width: none; padding: var(--space-1) 0; }
+/* Chip chọn mức độ / chủ đề: xếp nhãn phía trên, các chip co giãn đều không tràn viền */
+.chips {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+  width: 100%;
+  min-width: 0;
+}
+.chipsLabel {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-secondary);
+}
+.chipRow {
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+}
 .chip {
-  flex: none; min-height: 34px; padding: 0 var(--space-7);
-  border-radius: 999px; border: var(--size-rule) solid var(--rule-soft);
-  background: var(--cell); color: var(--ink); font-size: var(--fs-sm); white-space: nowrap;
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 var(--space-3);
+  border-radius: 999px;
+  border: 1.5px solid var(--rule-soft);
+  background: var(--cell-raised);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all var(--dur-base) var(--ease-out);
 }
 .chip:disabled { opacity: 0.45; cursor: default; }
-.chipOn { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-:global(:root[data-look="soft"]) .chip:not(.chipOn) { border-color: transparent; }
-
+.chipOn {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px color-mix(in oklab, var(--accent) 30%, transparent);
+}
 /* Thanh lượt chơi */
 .turn {
   display: flex; align-items: center; gap: var(--space-6);
@@ -142,8 +203,393 @@
 .resultText { margin: 0; font-size: clamp(30px, 9vw, 40px); line-height: var(--lh-tight); letter-spacing: var(--ls-tight); font-weight: var(--fw-medium); text-wrap: balance; }
 .resultDetail { margin: var(--space-3) 0 0; font-size: var(--fs-base); opacity: 0.85; }
 
+/*
+ * Kiểu quán: mỗi màn có đúng một tấm biển "ồn" (tên game, mã phòng, lượt, kết quả),
+ * phần còn lại là giấy ngà / nhựa đường yên tĩnh để đọc được trong quán tối.
+ */
+:global(:root[data-look="quan"]) .stage { --card-border: transparent; }
+:global(:root[data-look="quan"]) .card { border: 0; border-radius: 14px; box-shadow: none; }
+:global(:root[data-look="quan"]) .settingsCard { gap: var(--space-8); padding: var(--space-8); }
+:global(:root[data-look="quan"]) .iconButton { border-radius: var(--control-radius); }
+
+/* Màn đầu: tấm biển sơn nghiêng bên trái, tên game chữ bảng hiệu xếp chồng bên phải. */
+:global(:root[data-look="quan"]) .hero {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  justify-items: start;
+  column-gap: var(--space-10);
+  text-align: left;
+  padding: var(--space-10) 0 var(--space-4);
+}
+:global(:root[data-look="quan"]) .art {
+  width: 168px; height: 168px;
+  margin: 0 0 var(--space-3) var(--space-2);
+  padding: var(--space-7);
+  border-radius: 18px;
+  background: var(--paint-blue);
+  box-shadow: 0 6px 0 color-mix(in oklab, var(--paint-blue) 56%, var(--paint-ink));
+  transform: rotate(-4deg);
+  animation: tile-in var(--dur-enter) var(--ease-expo) backwards;
+}
+:global(:root[data-look="quan"]) .heroTitle {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(46px, 14vw, 62px);
+  line-height: 0.95;
+  letter-spacing: 0.005em;
+  text-shadow: 0.045em 0.045em 0 var(--paint-red);
+}
+:global(:root[data-look="quan"]) .heroRule {
+  grid-column: 1 / -1;
+  max-width: 40ch;
+  margin-top: var(--space-12);
+}
+:global(:root[data-look="quan"]) .or {
+  display: flex; align-items: baseline; gap: var(--space-5);
+  margin-top: var(--space-6);
+  font-family: var(--font-hand);
+  font-size: var(--fs-lg);
+}
+:global(:root[data-look="quan"]) .or::after { content: ""; flex: 1; border-bottom: 3px dotted var(--rule); }
+:global(:root[data-look="quan"]) .joinRow .codeInput {
+  font-family: var(--font-display);
+  font-size: 32px;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+}
+:global(:root[data-look="quan"]) .joinRow .codeInput:placeholder-shown {
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  letter-spacing: normal;
+  text-indent: 0;
+}
+/* Chơi một máy: tấm vé đường viền đứt, khác hẳn nút sơn phía trên. */
+:global(:root[data-look="quan"]) .local {
+  min-height: 56px;
+  margin-top: var(--space-6);
+  padding: 0 var(--space-8);
+  border: 2px dashed var(--rule);
+  border-radius: var(--control-radius);
+  color: var(--ink);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+  transition: transform 90ms var(--ease-out);
+}
+:global(:root[data-look="quan"]) .local:active { transform: translateY(2px); }
+:global(:root[data-look="quan"]) .local svg { color: var(--accent); }
+
+/* Tiêu đề như dòng trên bảng thực đơn: chữ bảng hiệu, chấm dẫn, số viết tay. */
+:global(:root[data-look="quan"]) .sectionHead { gap: var(--space-5); }
+:global(:root[data-look="quan"]) .sectionTitle {
+  display: flex; align-items: baseline; gap: var(--space-5);
+  min-width: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1;
+}
+:global(:root[data-look="quan"]) .sectionTitle::after,
+:global(:root[data-look="quan"]) .listTitle::after {
+  content: "";
+  flex: 1;
+  min-width: var(--space-8);
+  border-bottom: 3px dotted var(--rule);
+}
+:global(:root[data-look="quan"]) .count {
+  min-width: 0;
+  padding: 0 var(--space-3) 0 0;
+  background: none;
+  font-family: var(--font-hand);
+  font-size: var(--fs-2xl);
+  line-height: 1;
+  color: var(--accent);
+}
+:global(:root[data-look="quan"]) .listTitle {
+  display: flex; align-items: baseline; gap: var(--space-5);
+  margin-top: var(--space-8);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--ink);
+}
+
+/* Danh sách người: các dòng gom thành một tờ giấy, kẻ mảnh giữa các dòng. */
+:global(:root[data-look="quan"]) .people { gap: 0; }
+:global(:root[data-look="quan"]) .person {
+  min-height: 64px;
+  padding-left: var(--space-7);
+  border: 0;
+  border-bottom: var(--size-rule) solid var(--rule-soft);
+  border-radius: 0;
+  background: var(--cell);
+}
+:global(:root[data-look="quan"]) .person:first-child { border-top-left-radius: 14px; border-top-right-radius: 14px; }
+:global(:root[data-look="quan"]) .person:last-child { border-bottom: 0; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
+:global(:root[data-look="quan"]) .tag {
+  padding: 0;
+  background: none;
+  font-family: var(--font-hand);
+  font-size: var(--fs-md);
+  color: var(--ink-secondary);
+}
+:global(:root[data-look="quan"]) .tagYou { color: var(--accent); }
+/* Chủ phòng: tem sơn đỏ dán lệch. */
+:global(:root[data-look="quan"]) .tagHost {
+  padding: 0 var(--space-5) var(--space-1);
+  border-radius: 5px;
+  background: var(--paint-red);
+  color: var(--paint-paper);
+  transform: rotate(-4deg);
+  box-shadow: 0 2px 0 color-mix(in oklab, var(--paint-red) 56%, var(--paint-ink));
+}
+:global(:root[data-look="quan"]) .wait {
+  padding: var(--space-6) var(--space-8);
+  border: 2px dashed var(--rule);
+  background: none;
+  font-family: var(--font-hand);
+  font-size: var(--fs-xl);
+}
+
+/* Người chơi: miếng sơn vuông, chữ cái đầu viết bảng hiệu; màu và độ nghiêng cố định theo tên. */
+:global(:root[data-look="quan"]) .avatar {
+  --face: var(--paint-yellow);
+  --face-ink: var(--paint-ink);
+  --tilt: -2deg;
+  width: 42px; height: 42px;
+  padding-top: 0.08em;
+  border-radius: 9px;
+  background: var(--face);
+  color: var(--face-ink);
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1;
+  box-shadow: 0 3px 0 color-mix(in oklab, var(--face) 56%, var(--paint-ink));
+  transform: rotate(var(--tilt));
+}
+:global(:root[data-look="quan"]) .avatar[data-tone="0"] { --face: var(--paint-red); --face-ink: var(--paint-paper); --tilt: -3deg; }
+:global(:root[data-look="quan"]) .avatar[data-tone="1"] { --face: var(--paint-yellow); --face-ink: var(--paint-ink); --tilt: 2deg; }
+:global(:root[data-look="quan"]) .avatar[data-tone="2"] { --face: var(--paint-green); --face-ink: var(--paint-paper); --tilt: -1.5deg; }
+:global(:root[data-look="quan"]) .avatar[data-tone="3"] { --face: var(--paint-blue); --face-ink: var(--paint-paper); --tilt: 2.5deg; }
+
+/* Phòng chờ: mã phòng là tấm biển vàng bia treo hai đinh, số to đọc được từ đầu bàn kia. */
+:global(:root[data-look="quan"]) .codeCard {
+  position: relative;
+  gap: 0;
+  margin: var(--space-4) var(--space-3) var(--space-6);
+  padding: var(--space-12) var(--space-8) var(--space-10);
+  border: 0;
+  border-radius: 18px;
+  background: var(--paint-yellow);
+  color: var(--paint-ink);
+  box-shadow: 0 6px 0 color-mix(in oklab, var(--paint-yellow) 52%, var(--paint-ink));
+  transform: rotate(-1.5deg);
+  animation: sign-in var(--dur-enter) var(--ease-expo) backwards;
+}
+:global(:root[data-look="quan"]) .codeCard::before,
+:global(:root[data-look="quan"]) .codeCard::after {
+  content: "";
+  position: absolute;
+  top: var(--space-6);
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--paint-yellow) 40%, var(--paint-ink));
+}
+:global(:root[data-look="quan"]) .codeCard::before { left: var(--space-7); }
+:global(:root[data-look="quan"]) .codeCard::after { right: var(--space-7); }
+:global(:root[data-look="quan"]) .codeLabel {
+  color: var(--paint-ink);
+  font-family: var(--font-hand);
+  font-size: var(--fs-xl);
+  transform: rotate(-2deg);
+}
+:global(:root[data-look="quan"]) .code {
+  margin: var(--space-2) -0.06em var(--space-8) 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(104px, 34vw, 144px);
+  line-height: 0.9;
+  letter-spacing: 0.06em;
+  text-shadow: 0.05em 0.05em 0 var(--paint-red);
+}
+:global(:root[data-look="quan"]) .codeCard .codeShare {
+  padding: 0 var(--space-12);
+  background: var(--paint-ink);
+  color: var(--paint-paper);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+:global(:root[data-look="quan"]) .inviteLink {
+  min-height: 48px;
+  border: 2px dashed var(--rule);
+  border-radius: var(--control-radius);
+  background: none;
+}
+:global(:root[data-look="quan"]) .inviteLink:focus { outline: 0; border-style: solid; border-color: var(--ink); }
+
+/* Chip: kích thước vừa vặn, chia đều hàng, không bị to quá hay tràn chữ */
+:global(:root[data-look="quan"]) .chipsLabel {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-secondary);
+}
+:global(:root[data-look="quan"]) .chipRow {
+  gap: var(--space-2);
+  padding: 0;
+  width: 100%;
+}
+:global(:root[data-look="quan"]) .chip {
+  flex: 1;
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  border: 1.5px solid var(--rule-soft);
+  border-radius: 999px;
+  background: var(--cell-raised);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: normal;
+  box-shadow: none;
+  transition: all var(--dur-base) var(--ease-out);
+}
+:global(:root[data-look="quan"]) .chip:not(:disabled):active { transform: scale(0.97); }
+:global(:root[data-look="quan"]) .chipOn {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px color-mix(in oklab, var(--accent) 30%, transparent);
+}
+
+/* Thanh lượt: tên người tới lượt viết bảng hiệu; tới lượt mình thì cả thanh thành biển vàng. */
+:global(:root[data-look="quan"]) .turn {
+  position: relative; z-index: 1;
+  min-height: 78px;
+  padding: var(--space-5) var(--space-3) var(--space-5) var(--space-8);
+  border-bottom: 3px dotted var(--rule);
+  transition: background-color var(--dur-base), box-shadow var(--dur-base);
+}
+:global(:root[data-look="quan"]) .turn .avatar { width: 50px; height: 50px; font-size: 34px; }
+:global(:root[data-look="quan"]) .turnText small {
+  font-family: var(--font-hand);
+  font-size: var(--fs-md);
+  line-height: 1.3;
+  color: var(--accent);
+  opacity: 1;
+}
+:global(:root[data-look="quan"]) .turnText strong {
+  padding: 0.08em 0.1em 0.1em 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 40px;
+  line-height: 1;
+}
+:global(:root[data-look="quan"]) .turnMine {
+  border-bottom-color: transparent;
+  background: var(--paint-yellow);
+  color: var(--paint-ink);
+  box-shadow: 0 5px 0 color-mix(in oklab, var(--paint-yellow) 52%, var(--paint-ink));
+}
+:global(:root[data-look="quan"]) .turnMine .turnText small { color: var(--paint-ink); }
+:global(:root[data-look="quan"]) .turnMine .turnText strong {
+  text-shadow: 0.05em 0.05em 0 var(--paint-red);
+  animation: name-in 520ms var(--ease-expo) backwards;
+}
+:global(:root[data-look="quan"]) .turnMine .avatar { box-shadow: 0 3px 0 var(--paint-ink); }
+:global(:root[data-look="quan"]) .turnMine .avatar[data-tone="1"] { --face: var(--paint-paper); }
+:global(:root[data-look="quan"]) .turnMine .iconButton:active { background: color-mix(in oklab, currentColor 12%, transparent); }
+:global(:root[data-look="quan"]) .roomChip {
+  padding: var(--space-2) var(--space-4) 0;
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1.1;
+}
+:global(:root[data-look="quan"]) .notice {
+  padding: var(--space-5) var(--space-8);
+  background: color-mix(in oklab, var(--paint-yellow) 24%, var(--bg));
+  color: var(--ink);
+  font-weight: var(--fw-medium);
+}
+:global(:root[data-look="quan"]) .noticeAction {
+  flex: none;
+  min-height: var(--size-touch);
+  padding: var(--space-1) var(--space-8) 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 400;
+}
+
+/* Kết quả: tấm biển sơn treo lệch, đỏ khi bị phạt, xanh két khi thoát; tên người là tem dán ở góc. */
+:global(:root[data-look="quan"]) .result {
+  gap: var(--space-10);
+  padding: var(--space-14) var(--space-8) calc(var(--space-8) + env(safe-area-inset-bottom, 0px));
+  border-top: 0;
+  border-radius: 22px 22px 0 0;
+}
+:global(:root[data-look="quan"]) .resultHead {
+  --face: var(--paint-red);
+  position: relative;
+  gap: var(--space-2);
+  padding: var(--space-18) var(--space-10) var(--space-14);
+  border-radius: 16px;
+  background: var(--face);
+  color: var(--paint-paper);
+  box-shadow: 0 6px 0 color-mix(in oklab, var(--face) 52%, var(--paint-ink));
+  transform: rotate(-1.2deg);
+  animation: sign-in 620ms var(--ease-expo) 120ms backwards;
+}
+:global(:root[data-look="quan"]) .resultSafe .resultHead { --face: var(--paint-green); color: var(--paint-paper); }
+:global(:root[data-look="quan"]) .resultWho {
+  position: absolute;
+  top: calc(-1 * var(--space-8));
+  right: var(--space-8);
+  max-width: 70%;
+  padding: 0 var(--space-6) var(--space-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: var(--paint-paper);
+  color: var(--paint-ink);
+  font-family: var(--font-hand);
+  font-size: var(--fs-xl);
+  line-height: 1.5;
+  opacity: 1;
+  transform: rotate(4deg);
+  box-shadow: 0 2px 0 color-mix(in oklab, var(--paint-ink) 30%, transparent);
+}
+:global(:root[data-look="quan"]) .resultText {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(44px, 13vw, 60px);
+  line-height: 0.98;
+  letter-spacing: 0.005em;
+  text-shadow: 0.045em 0.045em 0 var(--paint-ink);
+}
+:global(:root[data-look="quan"]) .resultDetail { max-width: 34ch; margin-top: var(--space-5); opacity: 1; }
+/* Nút đi tiếp: sơn mực, để tấm biển kết quả là mảng màu duy nhất. */
+:global(:root[data-look="quan"]) .result .resultNext {
+  background: var(--ink);
+  color: var(--bg);
+  box-shadow: 0 4px 0 color-mix(in oklab, var(--ink) 55%, var(--bg));
+}
+:global(:root[data-look="quan"]) .result .resultNext:active { box-shadow: 0 1px 0 color-mix(in oklab, var(--ink) 55%, var(--bg)); }
+
 @keyframes fade { from { opacity: 0; } }
 @keyframes rise { from { transform: translate(-50%, 100%); } }
+@keyframes tile-in { from { opacity: 0; transform: translateY(16px) rotate(-12deg); } }
+@keyframes sign-in { from { opacity: 0; transform: translateY(-10px) rotate(-6deg) scale(1.06); } }
+@keyframes name-in { from { opacity: 0; transform: translateX(-12px); } }
 @media (prefers-reduced-motion: reduce) {
-  .scrim, .result { animation: none; }
+  .scrim, .result, .art, .codeCard, .resultHead, .turnText strong { animation: none; }
 }

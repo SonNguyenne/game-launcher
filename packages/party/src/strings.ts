@@ -19,6 +19,10 @@ export const partyStrings = {
   start: 'bắt đầu chơi',
   back: 'quay lại',
 
+  spin: 'quay',
+  spinning: 'đang quay…',
+  waitSpin: (name: string) => `chờ ${name} quay`,
+
   roomCode: 'mã phòng',
   share: 'mời bạn',
   shareText: (game: string, code: string) => `Vào chơi ${game} cùng mình, mã phòng ${code}`,

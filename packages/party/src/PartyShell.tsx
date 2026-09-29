@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
-import { Button, Field, Icon, TextInput, cx } from '@bang/ui';
+import { Button, Field, Icon, Sheet, TextInput, cx } from '@bang/ui';
 import type { BaseState, GameAction, Player } from './engine';
 import { partyStrings as t } from './strings';
 import type { Party } from './useParty';
@@ -39,10 +39,16 @@ function LobbySettings<S extends BaseState, A extends GameAction>({ party, info 
   return <>{info.settings({ value: party.config, onChange: party.setConfig, editable: party.isHost, online: party.mode === 'online' })}</>;
 }
 
-const initial = (name: string) => name.trim().normalize('NFC').charAt(0).toLocaleUpperCase('vi') || '?';
-
 export function Avatar({ name, dim }: { name: string; dim?: boolean }) {
-  return <span className={cx(s.avatar, dim && s.dim)} aria-hidden="true">{initial(name)}</span>;
+  const clean = name.trim().normalize('NFC');
+  // Màu sơn của huy hiệu cố định theo tên: một người luôn cùng một màu ở mọi màn.
+  let h = 0;
+  for (const ch of clean) h = (h * 31 + (ch.codePointAt(0) ?? 0)) | 0;
+  return (
+    <span className={cx(s.avatar, dim && s.dim)} data-tone={Math.abs(h) % 4} aria-hidden="true">
+      {clean.charAt(0).toLocaleUpperCase('vi') || '?'}
+    </span>
+  );
 }
 
 interface ShellProps<S extends BaseState, A extends GameAction> {
@@ -71,7 +77,7 @@ function Start<S extends BaseState, A extends GameAction>({ party, info }: { par
   const [name, setName] = useState(party.name);
   const [code, setCode] = useState(party.initialCode);
   const [needName, setNeedName] = useState(false);
-
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const withName = (go: (n: string) => void) => {
     const n = name.trim();
     if (!n) return setNeedName(true);
@@ -132,6 +138,31 @@ function Start<S extends BaseState, A extends GameAction>({ party, info }: { par
         <button className={s.local} onClick={party.goSetup}>
           <Icon name="users" /> {t.playLocal}
         </button>
+
+        {info.settings && (
+          <div className={s.startSettings}>
+            <button className={s.lobbySettingsBtn} onClick={() => setSettingsOpen(true)}>
+              <span className={s.lobbySettingsBtnLabel}>
+                <Icon name="sliders" size={18} />
+                <span>{t.settings}</span>
+              </span>
+              <span className={s.lobbySettingsBtnHint}>Tùy chỉnh luật, ô quay & hình phạt</span>
+            </button>
+            <Sheet
+              open={settingsOpen}
+              title={`${t.settings} · ${info.title}`}
+              closeLabel="Xong"
+              onClose={() => setSettingsOpen(false)}
+            >
+              <div className={s.drawerBody}>
+                <LobbySettings party={party} info={info} />
+                <Button variant="primary" block onClick={() => setSettingsOpen(false)}>
+                  Hoàn tất
+                </Button>
+              </div>
+            </Sheet>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -140,7 +171,7 @@ function Start<S extends BaseState, A extends GameAction>({ party, info }: { par
 function LocalSetup<S extends BaseState, A extends GameAction>({ party, info }: { party: Party<S, A>; info: GameInfo<S> }) {
   const names = party.localNames;
   const [draft, setDraft] = useState('');
-
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const add = (e: FormEvent) => {
     e.preventDefault();
     const n = draft.trim();
@@ -155,7 +186,14 @@ function LocalSetup<S extends BaseState, A extends GameAction>({ party, info }: 
         <div className={s.sectionHead}>
           <button className={s.iconButton} onClick={party.goStart} aria-label={t.back}><Icon name="back" size={20} /></button>
           <h2 className={s.sectionTitle}>{t.players}</h2>
-          <span className={s.count}>{names.length}</span>
+          <div className={s.headActions}>
+            <span className={s.count}>{names.length}</span>
+            {info.settings && (
+              <button className={s.iconButton} onClick={() => setSettingsOpen(true)} aria-label={t.settings}>
+                <Icon name="sliders" size={20} />
+              </button>
+            )}
+          </div>
         </div>
 
         <ul className={s.people}>
@@ -175,7 +213,30 @@ function LocalSetup<S extends BaseState, A extends GameAction>({ party, info }: 
           <Button type="submit" disabled={!draft.trim()}>{t.addPlayer}</Button>
         </form>
         <p className={s.hint}>{t.needTwo}</p>
-        <LobbySettings party={party} info={info} />
+        {info.settings && (
+          <button className={s.lobbySettingsBtn} onClick={() => setSettingsOpen(true)}>
+            <span className={s.lobbySettingsBtnLabel}>
+              <Icon name="sliders" size={18} />
+              <span>{t.settings}</span>
+            </span>
+            <span className={s.lobbySettingsBtnHint}>Chạm để tùy chỉnh</span>
+          </button>
+        )}
+        {info.settings && (
+          <Sheet
+            open={settingsOpen}
+            title={`${t.settings} · ${info.title}`}
+            closeLabel="Xong"
+            onClose={() => setSettingsOpen(false)}
+          >
+            <div className={s.drawerBody}>
+              <LobbySettings party={party} info={info} />
+              <Button variant="primary" block onClick={() => setSettingsOpen(false)}>
+                Hoàn tất
+              </Button>
+            </div>
+          </Sheet>
+        )}
       </div>
       <div className={s.footer}>
         <Button variant="primary" block disabled={names.length < 2} onClick={party.startGame}>{t.start}</Button>
@@ -200,7 +261,7 @@ async function copyText(text: string) {
   area.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
   document.body.appendChild(area);
   area.select();
-  let ok = false;
+  let ok: boolean;
   try {
     ok = document.execCommand('copy');
   } catch {
@@ -213,7 +274,7 @@ async function copyText(text: string) {
 function Lobby<S extends BaseState, A extends GameAction>({ party, info }: { party: Party<S, A>; info: GameInfo<S> }) {
   const room = party.room;
   const [copy, setCopy] = useState<'idle' | 'copied' | 'failed'>('idle');
-
+  const [settingsOpen, setSettingsOpen] = useState(false);
   useEffect(() => {
     if (copy !== 'copied') return;
     const id = setTimeout(() => setCopy('idle'), 2500);
@@ -249,7 +310,14 @@ function Lobby<S extends BaseState, A extends GameAction>({ party, info }: { par
       <div className={s.scroll}>
         <div className={s.sectionHead}>
           <h2 className={s.sectionTitle}>{info.title}</h2>
-          <Button onClick={party.leave}>{t.leave}</Button>
+          <div className={s.headActions}>
+            {info.settings && (
+              <Button onClick={() => setSettingsOpen(true)}>
+                <Icon name="sliders" /> {t.settings}
+              </Button>
+            )}
+            <Button onClick={party.leave}>{t.leave}</Button>
+          </div>
         </div>
 
         {!room ? (
@@ -259,7 +327,7 @@ function Lobby<S extends BaseState, A extends GameAction>({ party, info }: { par
             <div className={s.codeCard}>
               <span className={s.codeLabel}>{t.roomCode}</span>
               <strong className={s.code}>{room.code}</strong>
-              <Button onClick={invite}>{copy === 'copied' ? t.copied : t.share}</Button>
+              <Button className={s.codeShare} onClick={invite}>{copy === 'copied' ? t.copied : t.share}</Button>
             </div>
             <div className={s.invite}>
               <input
@@ -277,7 +345,32 @@ function Lobby<S extends BaseState, A extends GameAction>({ party, info }: { par
 
             <h3 className={s.listTitle}>{t.inRoom(room.members.length)}</h3>
             <MemberList party={party} members={room.members} hostId={room.hostId} />
-            <LobbySettings party={party} info={info} />
+            {info.settings && (
+              <button className={s.lobbySettingsBtn} onClick={() => setSettingsOpen(true)}>
+                <span className={s.lobbySettingsBtnLabel}>
+                  <Icon name="sliders" size={18} />
+                  <span>{t.settings}</span>
+                </span>
+                <span className={s.lobbySettingsBtnHint}>
+                  {party.isHost ? 'Chạm để tùy chỉnh luật & hình phạt' : 'Xem cài đặt ván chơi'}
+                </span>
+              </button>
+            )}
+            {info.settings && (
+              <Sheet
+                open={settingsOpen}
+                title={`${t.settings} · ${info.title}`}
+                closeLabel="Xong"
+                onClose={() => setSettingsOpen(false)}
+              >
+                <div className={s.drawerBody}>
+                  <LobbySettings party={party} info={info} />
+                  <Button variant="primary" block onClick={() => setSettingsOpen(false)}>
+                    Hoàn tất
+                  </Button>
+                </div>
+              </Sheet>
+            )}
           </>
         )}
       </div>
@@ -305,7 +398,7 @@ function MemberList<S extends BaseState, A extends GameAction>({ party, members,
           <Avatar name={m.name} dim={m.online === false} />
           <span className={s.personName}>{m.name}</span>
           {m.online === false && <span className={s.tag}>{t.offline}</span>}
-          {m.id === party.me && <span className={s.tag}>{t.you}</span>}
+          {m.id === party.me && <span className={cx(s.tag, s.tagYou)}>{t.you}</span>}
           {m.id === hostId && <span className={cx(s.tag, s.tagHost)}>{t.host}</span>}
         </li>
       ))}

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Illustration, type IllustrationName } from '@bang/ui';
 import s from './Runner.module.css';
 
 interface StatusPanelProps {
@@ -6,12 +7,15 @@ interface StatusPanelProps {
   title?: string;
   text?: string;
   actions?: ReactNode;
+  /** Hình vẽ thay cho mã trạng thái ở kiểu hiển thị có hình. */
+  art?: IllustrationName;
 }
 
 /** Màn trạng thái trong khung app: đang tải, lỗi, không tìm thấy. */
-export function StatusPanel({ code, title, text, actions }: StatusPanelProps) {
+export function StatusPanel({ code, title, text, actions, art }: StatusPanelProps) {
   return (
     <div className={s.panel}>
+      {art && <Illustration name={art} className={s.panelArt} />}
       <div className={s.code}>{code}</div>
       {title && <h2 className={s.panelTitle}>{title}</h2>}
       {text && <p className={s.panelText}>{text}</p>}

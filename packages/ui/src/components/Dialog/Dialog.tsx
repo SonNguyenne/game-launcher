@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { cx } from '../../utils/cx';
+import { useFocusTrap } from '../../utils/useFocusTrap';
 import s from './Dialog.module.css';
 
 export interface DialogProps {
@@ -15,6 +16,8 @@ export interface DialogProps {
 
 export function Dialog({ title, text, confirmLabel, cancelLabel, danger, onConfirm, onCancel }: DialogProps) {
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(boxRef, true);
 
   useEffect(() => {
     confirmRef.current?.focus();
@@ -28,7 +31,7 @@ export function Dialog({ title, text, confirmLabel, cancelLabel, danger, onConfi
   return createPortal(
     <>
       <div className={s.scrim} onClick={onCancel} />
-      <div className={s.dialog} role="alertdialog" aria-modal="true" aria-label={title}>
+      <div ref={boxRef} className={s.dialog} role="alertdialog" aria-modal="true" aria-label={title}>
         <h2 className={s.title}>{title}</h2>
         <p className={s.text}>{text}</p>
         <div className={s.actions}>

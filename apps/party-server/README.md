@@ -23,7 +23,10 @@ pnpm build
 PORT=8787 node apps/party-server/server.mjs
 ```
 
-Biến môi trường: `PORT` (8787), `HOST` (0.0.0.0), `STATIC_DIR` (apps/launcher/dist).
+Biến môi trường: `PORT` (8787), `HOST` (0.0.0.0), `STATIC_DIR` (apps/launcher/dist),
+`TRUST_PROXY=1` khi chạy sau Cloudflare/nginx (giới hạn kết nối theo IP thật).
+
+Server tự nén brotli/gzip và giữ file build trong RAM, không cần proxy lo phần này.
 Kiểm tra: `curl localhost:8787/healthz`.
 
 Nếu đặt sau nginx, cần cho phép nâng cấp WebSocket ở `/party`:

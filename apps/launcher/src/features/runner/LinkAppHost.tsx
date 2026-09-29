@@ -34,6 +34,7 @@ export function LinkAppHost({ name, url, index, reloadKey, onStateChange, onRetr
   if (state === 'error') {
     return (
       <StatusPanel
+        art={online ? 'error' : 'offline'}
         code={t.runner.errorCode}
         title={t.runner.errorTitle(name)}
         text={online ? t.runner.errorOnline : t.runner.errorOffline}

@@ -2,6 +2,9 @@
 
 /* Sân khấu của quả bom: chừa chỗ cho đường bay và mảnh vụn. */
 .arena { position: relative; display: grid; place-items: center; width: 100%; height: min(78vw, 320px, 46dvh); }
+.arena > * { grid-area: 1 / 1; }
+/* Vòng sơn dưới bom và bóng sơn lệch: chỉ kiểu quán. */
+.target, .paint { display: none; }
 
 .bomb {
   --size: min(66vw, 280px, 42dvh);
@@ -97,13 +100,18 @@
 .flash { position: fixed; inset: 0; z-index: 5; pointer-events: none; background: var(--accent); animation: flash 520ms ease-out forwards; }
 .exploded {
   --size: min(72vw, 300px, 46dvh);
+  position: relative;
   width: var(--size); height: var(--size);
   display: grid; place-items: center;
-  background: var(--accent); color: var(--on-accent);
-  clip-path: polygon(50% 0, 61% 30%, 95% 20%, 72% 47%, 100% 62%, 67% 68%, 76% 100%, 50% 78%, 24% 100%, 33% 68%, 0 62%, 28% 47%, 5% 20%, 39% 30%);
+  color: var(--on-accent);
   animation: burst 460ms var(--ease-out) both;
 }
-.boom { font-size: clamp(40px, 13vw, 64px); font-weight: var(--fw-medium); letter-spacing: var(--ls-tight); }
+.star {
+  position: absolute; inset: 0;
+  background: var(--accent);
+  clip-path: polygon(50% 0, 61% 30%, 95% 20%, 72% 47%, 100% 62%, 67% 68%, 76% 100%, 50% 78%, 24% 100%, 33% 68%, 0 62%, 28% 47%, 5% 20%, 39% 30%);
+}
+.boom { position: relative; font-size: clamp(40px, 13vw, 64px); font-weight: var(--fw-medium); letter-spacing: var(--ls-tight); }
 .debris { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
 .debris i {
   position: absolute; left: calc(var(--s) / -2); top: calc(var(--s) / -2);
@@ -149,8 +157,105 @@
 @keyframes seat { 40% { transform: translateY(-6px); } }
 @keyframes land { from { transform: translateY(-26px) scale(0.4); opacity: 0; } 70% { transform: translateY(2px) scale(1.1); opacity: 1; } }
 
+/*
+ * Kiểu quán: quả bom là tấm biển sơn tay. Bom đen có bóng sơn đỏ lệch, nằm trên một vòng
+ * sơn vàng đập nhanh dần theo --heat; nổ thì bung ngôi sao vàng viền đỏ, chữ "bùm" kiểu bảng hiệu.
+ */
+:global(:root[data-look="quan"]) .game { gap: var(--space-8); }
+
+:global(:root[data-look="quan"]) .target {
+  display: block;
+  width: min(72vw, 300px, 45dvh); aspect-ratio: 1;
+  background: var(--paint-yellow);
+  /* Vòng sơn quét tay, không tròn đều. */
+  border-radius: 52% 48% 50% 46% / 47% 53% 46% 52%;
+  rotate: -8deg;
+  box-shadow: 0 var(--key-lip) 0 color-mix(in oklab, var(--paint-yellow) 58%, var(--paint-ink));
+  animation: throb calc(1100ms - var(--heat) * 760ms) var(--ease-out) infinite alternate;
+}
+/* Vòng thứ hai mờ dần ra ngoài: nhịp tim của quả bom, dày lên khi nóng. */
+:global(:root[data-look="quan"]) .target::after {
+  content: "";
+  position: absolute; inset: -6%;
+  border-radius: inherit;
+  border: 3px dashed var(--paint-red);
+  opacity: calc(0.25 + var(--heat) * 0.6);
+  animation: ring calc(2400ms - var(--heat) * 1600ms) linear infinite;
+}
+:global(:root[data-look="quan"]) .target { position: relative; }
+@keyframes throb { to { transform: scale(calc(1.02 + var(--heat) * 0.06)); } }
+@keyframes ring { to { transform: rotate(360deg); } }
+
+:global(:root[data-look="quan"]) .bomb { --size: min(62vw, 262px, 40dvh); z-index: 1; }
+:global(:root[data-look="quan"]) .bomb:focus-visible { outline-color: var(--paint-red); }
+:global(:root[data-look="quan"]) .paint { display: inline; fill: var(--paint-red); }
+:global(:root[data-look="quan"]) .body {
+  fill: color-mix(in oklab, var(--paint-red) calc(var(--heat) * 62%), var(--paint-ink));
+  stroke: none;
+}
+:global(:root[data-look="quan"]) .cap { fill: var(--paint-green); stroke: var(--paint-ink); stroke-width: 4; }
+:global(:root[data-look="quan"]) .shine { stroke: var(--paint-paper); stroke-opacity: 0.55; stroke-width: 8; }
+/* Ngòi luôn nằm trên vòng sơn vàng nên dùng mực sơn, không đổi theo sáng/tối. */
+:global(:root[data-look="quan"]) .fuse { stroke: var(--paint-ink); stroke-width: 6; }
+:global(:root[data-look="quan"]) .fuseBurnt { stroke: var(--paint-ink); stroke-opacity: 0.3; }
+:global(:root[data-look="quan"]) .glow { fill: var(--paint-red); opacity: 0.55; }
+:global(:root[data-look="quan"]) .spark { fill: var(--paint-yellow); stroke: var(--paint-red); stroke-width: 2; }
+:global(:root[data-look="quan"]) .ember { fill: var(--paint-red); }
+:global(:root[data-look="quan"]) .ember:nth-child(even) { fill: var(--paint-yellow); }
+
+:global(:root[data-look="quan"]) .caption strong {
+  font-size: var(--fs-xl);
+  line-height: var(--lh-snug);
+}
+/* Số lần chuyền: chú thích viết tay nhỏ, hơi nghiêng. */
+:global(:root[data-look="quan"]) .caption span {
+  font-family: var(--font-hand);
+  font-size: var(--fs-lg);
+  color: var(--ink-secondary);
+  rotate: -2deg;
+}
+
+/* Nổ */
+:global(:root[data-look="quan"]) .flash { background: var(--paint-yellow); }
+:global(:root[data-look="quan"]) .exploded { color: var(--paint-ink); filter: drop-shadow(8px 9px 0 var(--paint-red)); }
+:global(:root[data-look="quan"]) .star { background: var(--paint-yellow); }
+:global(:root[data-look="quan"]) .boom {
+  font-family: var(--font-display);
+  font-size: clamp(64px, 22vw, 104px);
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: 0.01em;
+  rotate: -6deg;
+  text-shadow: 0.05em 0.05em 0 var(--paint-red);
+}
+:global(:root[data-look="quan"]) .debris i { background: var(--paint-red); border-radius: 1px; }
+:global(:root[data-look="quan"]) .debris i:nth-child(3n) { background: var(--paint-yellow); border-radius: 50%; }
+:global(:root[data-look="quan"]) .debris i:nth-child(4n) { background: var(--paint-green); }
+:global(:root[data-look="quan"]) .debris i:nth-child(5n) { background: var(--paint-blue); }
+
+/* Hàng ghế: người cầm bom có vòng sơn đỏ. */
+:global(:root[data-look="quan"]) .seat { opacity: 0.55; }
+:global(:root[data-look="quan"]) .holding { opacity: 1; }
+:global(:root[data-look="quan"]) .badge + span { box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px var(--paint-red); }
+:global(:root[data-look="quan"]) .holding .seatName { font-weight: var(--fw-medium); }
+
+.presetSection { display: flex; flex-direction: column; gap: var(--space-2); margin-top: calc(-1 * var(--space-4)); }
+.presetLabel { font-size: var(--fs-xs); font-weight: 700; color: var(--ink-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+.presetChips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.presetChip {
+  display: inline-flex; align-items: center; padding: var(--space-2) var(--space-5);
+  border-radius: 999px; background: var(--cell-raised); border: 1.5px solid var(--rule-soft);
+  color: var(--ink); font-family: var(--font-ui); font-size: var(--fs-sm); font-weight: 600;
+  cursor: pointer; transition: all var(--dur-base) var(--ease-out);
+}
+.presetChip:active { transform: scale(0.96); }
+.presetChipActive {
+  background: color-mix(in oklab, var(--accent) 15%, var(--cell));
+  border-color: var(--accent); color: var(--accent);
+  box-shadow: 0 2px 8px color-mix(in oklab, var(--accent) 25%, transparent);
+}
 @media (prefers-reduced-motion: reduce) {
-  .wobble, .pass, .out, .in, .glow, .spark, .shaking, .flash, .exploded, .debris i, .holding, .badge, .elsewhere, .heldBomb { animation: none; }
+  .wobble, .target, .target::after, .pass, .out, .in, .glow, .spark, .shaking, .flash, .exploded, .debris i, .holding, .badge, .elsewhere, .heldBomb { animation: none; }
   .fuse, .flame { transition: none; }
   .out { opacity: 0; }
   .debris, .ember { display: none; }

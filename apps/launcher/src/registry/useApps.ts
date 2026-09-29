@@ -11,6 +11,7 @@ export function buildAppList(s: Pick<PersistedState, 'links' | 'overrides' | 'or
     kind: 'code',
     id: d.id,
     description: d.description,
+    art: d.art,
     load: d.load,
     index: 0,
     ...d.defaults,

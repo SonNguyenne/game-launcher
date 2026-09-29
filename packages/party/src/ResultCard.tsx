@@ -35,7 +35,7 @@ export function ResultCard<S extends BaseState, A extends GameAction>({ party, s
           <p className={s.resultText}>{result.text}</p>
           {result.detail && <p className={s.resultDetail}>{result.detail}</p>}
         </div>
-        <Button variant="primary" block onClick={() => party.dispatch({ type: 'next', seq: result.seq })}>
+        <Button variant="primary" block className={s.resultNext} onClick={() => party.dispatch({ type: 'next', seq: result.seq })}>
           {actionLabel ?? (next ? t.nextTurn(next.name) : t.safe)}
         </Button>
       </div>

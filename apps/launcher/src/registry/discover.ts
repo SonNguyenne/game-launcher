@@ -7,20 +7,24 @@ export interface CodeAppDefinition {
   id: string;
   defaults: AppMeta;
   description?: string;
+  /** Mã SVG từ mini-apps/<id>/icon.svg, nếu app có hình vẽ. */
+  art?: string;
   load: () => Promise<{ default: MiniAppComponent }>;
 }
 
 /**
  * Tự tìm mọi mini app: mỗi thư mục trong mini-apps/ có manifest.json và src/index.tsx.
- * Thêm app mới không cần sửa file này. Code của app chỉ tải khi người dùng mở.
+ * Thêm app mới không cần sửa file này. Code của app chỉ tải khi người dùng mở; icon.svg (nếu có) đóng gói sẵn vì nhỏ.
  */
 const manifests = import.meta.glob<MiniAppManifest>('@mini-apps/*/manifest.json', { eager: true, import: 'default' });
 const entries = import.meta.glob<{ default: MiniAppComponent }>('@mini-apps/*/src/index.tsx');
+const arts = import.meta.glob<string>('@mini-apps/*/icon.svg', { eager: true, query: '?raw', import: 'default' });
 
 /** Lấy tên thư mục app từ đường dẫn file: ".../mini-apps/pomodoro/src/index.tsx" -> "pomodoro". */
 const folderOf = (path: string) => /mini-apps\/([^/]+)\//.exec(path)?.[1] ?? path;
 
 const entryByFolder = new Map(Object.entries(entries).map(([path, load]) => [folderOf(path), load]));
+const artByFolder = new Map(Object.entries(arts).map(([path, svg]) => [folderOf(path), svg]));
 
 export const codeAppDefinitions: CodeAppDefinition[] = Object.entries(manifests)
   .map(([path, m]): CodeAppDefinition | null => {
@@ -34,6 +38,7 @@ export const codeAppDefinitions: CodeAppDefinition[] = Object.entries(manifests)
     return {
       id: folder,
       description: m.description,
+      art: artByFolder.get(folder),
       load,
       defaults: {
         name: m.name || folder,

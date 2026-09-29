@@ -21,7 +21,7 @@ export function AppFormSheet({ appId, onDone }: AppFormSheetProps) {
       }}
     >
       <div className={s.preview} aria-hidden="true">
-        <Key tabIndex={-1} index={pad2(index)} status={t.form.preview} label={values.name || t.form.namePlaceholderLabel} color={values.color} />
+        <Key tabIndex={-1} index={pad2(index)} status={t.form.preview} label={values.name || t.form.namePlaceholderLabel} color={values.color} tone={0} />
       </div>
 
       <Field label={t.form.name} error={errors.name} htmlFor="f-name">

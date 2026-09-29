@@ -1,3 +1,4 @@
+import './styles/fonts';
 import './styles/base.css';
 
 export * from './tokens';
@@ -21,3 +22,4 @@ export * from './components/Menu';
 export * from './components/Toast';
 export * from './components/EmptyState';
 export * from './components/Banner';
+export * from './components/Illustration';

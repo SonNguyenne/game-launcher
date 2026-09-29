@@ -4,6 +4,9 @@ services:
     container_name: launcher-app
     pull_policy: always
     restart: unless-stopped
+    environment:
+      # Chạy sau Cloudflare: lấy IP thật của người chơi để giới hạn kết nối theo IP.
+      TRUST_PROXY: "1"
     ports:
       - "${APP_PORT:-8787}:8787"
     healthcheck:

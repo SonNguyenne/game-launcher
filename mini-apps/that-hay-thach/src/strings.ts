@@ -100,7 +100,7 @@ export const decks: Record<Level, Record<Kind, readonly string[]>> = {
 
 export const strings = {
   title: 'thật hay thách',
-  rule: 'Chọn trả lời thật, làm thử thách, hoặc để máy chọn. Không dám thì uống. Mỗi lượt được đổi câu 1 lần. Chủ phòng chọn mức nhẹ, vui hay cháy ở phòng chờ.',
+  rule: 'Chọn trả lời thật, làm thử thách, hoặc để máy chọn. Không dám thì chịu phạt. Mỗi lượt được đổi câu 1 lần. Chủ phòng chọn mức nhẹ, vui hay cháy ở phòng chờ.',
   levelLabel: 'mức',
   levels: { nhe: 'nhẹ', vui: 'vui', chay: 'cháy' } satisfies Record<Level, string>,
   choose: 'chọn một',
@@ -116,6 +116,6 @@ export const strings = {
   swap: 'đổi câu',
   swapUsed: 'đã đổi câu',
   refuse: (penalty: string) => `không dám, ${penalty}`,
-  penalty: { nhe: 'nhấp 1 ngụm', vui: 'uống nửa ly', chay: 'uống 1 ly' } satisfies Record<Level, string>,
+  penalty: { nhe: 'chịu phạt nhẹ', vui: 'chịu phạt vui nhộn', chay: 'chịu phạt cháy phố' } satisfies Record<Level, string>,
   tapToFlip: 'chạm để lật',
 } as const;

@@ -40,8 +40,8 @@ export function StyleSheet({ onDone }: { onDone: () => void }) {
   return (
     <>
       <div className={s.preview} aria-hidden="true">
-        <Key tabIndex={-1} index="01" label={t.style.previewKey} />
-        <Key tabIndex={-1} index="02" label={t.style.previewKey} status={t.common.hot} hot />
+        <Key tabIndex={-1} index="01" label={t.style.previewKey} tone={2} />
+        <Key tabIndex={-1} index="02" label={t.style.previewKey} status={t.common.hot} tone={1} hot />
       </div>
 
       <Field label={t.style.accent} aside={t.style.accentAside}>

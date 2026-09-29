@@ -1,19 +1,20 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { MiniAppProps } from '@bang/sdk';
-import { Chips, PartyShell, ResultCard, SettingsCard, useParty, vibrate, type Party, type PartyData } from '@bang/party';
+import { PartyShell, ResultCard, useParty, vibrate, type Party, type PartyData } from '@bang/party';
 import { Button, keyColors } from '@bang/ui';
 import { wheelGame, wheelOf, type Spin, type WheelAction, type WheelState } from './game';
-import { strings, type Level, type Slice } from './strings';
+import { WheelSettings } from './Settings';
+import { strings, type Slice } from './strings';
 import s from './Wheel.module.css';
+import iconSvg from '../icon.svg?raw';
 
 /** Mọi vòng đều 8 ô. */
 const SLICE = 360 / 8;
-const levelOptions = (Object.keys(strings.levels) as Level[]).map((v) => ({ value: v, label: strings.levels[v] }));
 const R = 140;
 const SPIN_MS = 4200;
 const REDUCED_SPIN_MS = 700;
 
-/** Bốn cặp nền/chữ xen kẽ, hai ô cạnh nhau không trùng màu. */
+/** Bốn cặp nền/chữ xen kẽ, hai ô cạnh nhau không trùng màu. Kiểu quán đổi sang màu sơn theo data-tone. */
 const tones = [
   { fill: 'var(--accent)', text: 'var(--on-accent)' },
   { fill: keyColors.yellow.fill, text: keyColors.yellow.text },
@@ -26,7 +27,7 @@ const point = (deg: number, r = R) => {
   return `${(r * Math.sin(a)).toFixed(2)} ${(-r * Math.cos(a)).toFixed(2)}`;
 };
 
-function WheelFace({ slices, labels }: { slices: readonly Slice[]; labels: boolean }) {
+function WheelFace({ slices }: { slices: readonly Slice[] }) {
   return (
     <svg viewBox="-150 -150 300 300" className={s.face} aria-hidden="true">
       {slices.map((item, i) => {
@@ -35,23 +36,23 @@ function WheelFace({ slices, labels }: { slices: readonly Slice[]; labels: boole
         // Nửa bên trái xoay ngược 180° để chữ không bị lộn đầu.
         const flip = center > 180;
         return (
-          <g key={i}>
-            <path d={`M0 0 L${point(i * SLICE)} A${R} ${R} 0 0 1 ${point((i + 1) * SLICE)} Z`} style={{ fill: tone.fill }} />
-            {labels && (
-              <text x={flip ? -R * 0.6 : R * 0.6} y={0} transform={`rotate(${flip ? center + 90 : center - 90})`} className={s.label} style={{ fill: tone.text }}>
-                {item.short}
-              </text>
-            )}
+          <g key={i} className={s.slice} data-tone={i % tones.length} style={{ '--tone-fill': tone.fill, '--tone-text': tone.text } as CSSProperties}>
+            <path d={`M0 0 L${point(i * SLICE)} A${R} ${R} 0 0 1 ${point((i + 1) * SLICE)} Z`} />
+            <text x={flip ? -R * 0.6 : R * 0.6} y={0} transform={`rotate(${flip ? center + 90 : center - 90})`} className={s.label}>
+              {item.short}
+            </text>
           </g>
         );
       })}
       <circle r={R} className={s.rim} />
+      {slices.map((_, i) => {
+        const [x, y] = point(i * SLICE).split(' ');
+        return <circle key={i} cx={x} cy={y} r={3.2} className={s.rivet} />;
+      })}
       <circle r={22} className={s.hub} />
     </svg>
   );
 }
-
-export const WheelArt = () => <WheelFace slices={wheelOf('vua')} labels={false} />;
 
 /** Góc quay mới, luôn lớn hơn góc cũ, để ô được chọn dừng đúng dưới kim ở đỉnh. */
 function targetFor(prev: number, spin: Spin) {
@@ -129,7 +130,7 @@ function WheelGame({ party }: { party: Party<WheelState, WheelAction> }) {
   }, [spinning, resultSeq, resultSafe]);
 
   const state = party.state!;
-  const slices = wheelOf(state.level);
+  const slices = wheelOf(state.level, state.customWheels);
   const again = !!spin && slices[spin.slice]?.kind === 'again';
   // Lúc đang quay chưa hiện kết quả mới nhất, để không lộ trước.
   const history = spinning ? state.history.slice(1) : state.history;
@@ -140,7 +141,12 @@ function WheelGame({ party }: { party: Party<WheelState, WheelAction> }) {
   return (
     <div className={s.game}>
       <div className={s.wheelBox}>
-        <span ref={pointerRef} className={s.pointer} aria-hidden="true" />
+        <span ref={pointerRef} className={s.pointer} aria-hidden="true">
+          <svg viewBox="0 0 32 40">
+            <path d="M3 3 H29 L16 37 Z" />
+            <circle cx="16" cy="12" r="4" />
+          </svg>
+        </span>
         <button
           className={s.wheel}
           style={{ '--rot': `${rotation}deg`, '--spin-ms': `${duration}ms` } as CSSProperties}
@@ -148,7 +154,7 @@ function WheelGame({ party }: { party: Party<WheelState, WheelAction> }) {
           disabled={!canSpin}
           aria-label={strings.spin}
         >
-          <WheelFace slices={slices} labels />
+          <WheelFace slices={slices} />
         </button>
       </div>
       <Button variant="primary" block className={s.spin} onClick={go} disabled={!canSpin}>
@@ -175,12 +181,8 @@ export default function VongQuay({ ctx }: MiniAppProps<PartyData>) {
     <PartyShell party={party} info={{
         title: strings.title,
         rule: strings.rule,
-        art: <WheelArt />,
-        settings: ({ value, onChange, editable }) => (
-          <SettingsCard editable={editable}>
-            <Chips label={strings.levelLabel} options={levelOptions} value={value.level ?? 'vua'} disabled={!editable} onChange={(level) => onChange({ level })} />
-          </SettingsCard>
-        ),
+        art: <span dangerouslySetInnerHTML={{ __html: iconSvg }} />,
+        settings: (p) => <WheelSettings {...p} />,
       }}>
       {party.state && <WheelGame party={party} />}
     </PartyShell>

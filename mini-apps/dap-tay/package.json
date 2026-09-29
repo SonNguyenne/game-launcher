@@ -1,0 +1,19 @@
+{
+  "name": "@bang/mini-dap-tay",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.tsx",
+  "dependencies": {
+    "@bang/party": "workspace:*",
+    "@bang/sdk": "workspace:*",
+    "@bang/ui": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0"
+  }
+}

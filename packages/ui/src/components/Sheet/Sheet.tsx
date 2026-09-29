@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { durationMs } from '../../tokens';
 import { cx } from '../../utils/cx';
+import { useFocusTrap } from '../../utils/useFocusTrap';
 import { Icon } from '../Icon';
 import s from './Sheet.module.css';
 
@@ -20,6 +21,7 @@ export function Sheet({ open, title, closeLabel, onClose, flush, children }: She
   const [mounted, setMounted] = useState(open);
   const [visible, setVisible] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(panelRef, open && mounted);
 
   useEffect(() => {
     if (open) {
@@ -56,6 +58,7 @@ export function Sheet({ open, title, closeLabel, onClose, flush, children }: She
     <div className={cx(visible && s.open)}>
       <div className={s.scrim} onClick={onClose} />
       <div ref={panelRef} className={s.sheet} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}>
+        <div className={s.handle} aria-hidden="true" />
         <div className={s.head}>
           <h2>{title}</h2>
           <button className={s.close} onClick={onClose} aria-label={closeLabel}>

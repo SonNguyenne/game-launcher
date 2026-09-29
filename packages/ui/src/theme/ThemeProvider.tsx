@@ -1,10 +1,9 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { buildTokenCss, customStyleVars, fontSource, type StyleCustom, type UiLook } from '../tokens';
+import { buildTokenCss, customStyleVars, type StyleCustom, type UiLook } from '../tokens';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
 const STYLE_ID = 'bang-ui-tokens';
-const FONT_ID = 'bang-ui-font';
 
 function ensureHead() {
   if (!document.getElementById(STYLE_ID)) {
@@ -12,13 +11,6 @@ function ensureHead() {
     style.id = STYLE_ID;
     style.textContent = buildTokenCss();
     document.head.prepend(style);
-  }
-  if (!document.getElementById(FONT_ID)) {
-    const link = document.createElement('link');
-    link.id = FONT_ID;
-    link.rel = 'stylesheet';
-    link.href = fontSource;
-    document.head.appendChild(link);
   }
 }
 

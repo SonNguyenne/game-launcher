@@ -27,6 +27,11 @@
 .preview > * { aspect-ratio: auto; height: 96px; }
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
 
-/* Kiểu mềm: khối giao diện thành thẻ như các nhóm dòng. */
-:global(:root[data-look="soft"]) .block { margin: 0 var(--space-8); padding: var(--space-9); background: var(--cell); border-radius: 20px 20px 0 0; border-bottom: var(--size-rule) solid var(--rule-soft); }
-:global(:root[data-look="soft"]) .preview { border: 0; border-radius: 20px; }
+/* Kiểu quán: khối giao diện là tấm giấy như các nhóm dòng; kiểu đang chọn đóng dấu mực. */
+:global(:root[data-look="quan"]) .block { margin: var(--space-4) var(--space-8) 0; padding: var(--space-9) var(--space-8); background: var(--cell); border-radius: 14px 14px 0 0; border-bottom: var(--size-rule) solid var(--rule-soft); }
+:global(:root[data-look="quan"]) .label { margin-bottom: var(--space-5); font-size: var(--fs-base); }
+:global(:root[data-look="quan"]) .look { border: 2px solid var(--rule-soft); background: var(--bg); transition: border-color var(--dur-base); }
+:global(:root[data-look="quan"]) .look[aria-checked="true"] { border-color: var(--ink); box-shadow: none; }
+:global(:root[data-look="quan"]) .look[aria-checked="true"]::before { border-color: var(--accent); background: radial-gradient(circle, var(--accent) 0 5px, transparent 6px); }
+:global(:root[data-look="quan"]) .preview { border: 0; border-radius: 14px; padding: var(--space-6) var(--space-6) var(--space-4); }
+:global(:root[data-look="quan"]) .card { border: 0; border-radius: 12px; background: var(--cell); }

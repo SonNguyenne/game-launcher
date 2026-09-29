@@ -1,5 +1,5 @@
-import { baseState, isTurnOf, nextTurn, playerAt, randomInt, shuffle, withResult, type BaseState, type GameDef, type Player } from '@bang/party';
-import { strings, type Finale, type PunishMode } from './strings';
+import { baseState, isTurnOf, nextTurn, playerAt, randomInt, shuffle, withResult, type BaseState, type GameDef, type Party, type Player } from '@bang/party';
+import { strings, type Finale, type Penalty, type PunishMode } from './strings';
 
 /** r: 0..12 (A..K), s: 0..3 (♠ ♣ ♥ ♦). */
 export interface Card {
@@ -46,11 +46,14 @@ export interface FishState extends BaseState {
   penalty: boolean;
   /** Cách phạt cuối ván; off thì hết bài là xong ván. */
   finale: Finale;
-  /** Câu được thì lật tiếp, không chuyển lượt. */
   again: boolean;
+  customPenalties?: Penalty[];
+  customFinals?: Penalty[];
 }
 
-export type Config = Partial<Pick<FishState, 'penalty' | 'finale' | 'again'>>;
+export type FishParty = Party<FishState, FishAction>;
+
+export type Config = Partial<Pick<FishState, 'penalty' | 'finale' | 'again' | 'customPenalties' | 'customFinals'>>;
 
 export type FishAction =
   | { type: 'flip'; index: number }
@@ -62,7 +65,8 @@ export type FishAction =
 
 export const isRed = (c: Card) => c.s >= 2;
 export const cardsLeft = (s: FishState) => s.taken.filter((t) => t === null).length;
-
+export const getPenalties = (s: FishState | Config): readonly Penalty[] => s.customPenalties ?? strings.penalties;
+export const getFinals = (s: FishState | Config): readonly Penalty[] => s.customFinals ?? strings.finals;
 /** Điểm cao nhất và những người đạt điểm đó. */
 export function leaders(s: FishState, players: Player[]) {
   const top = Math.max(0, ...players.map((p) => s.scores[p.id] ?? 0));
@@ -113,7 +117,13 @@ function losersOrder(s: FishState, players: Player[]) {
 export const fishGame: GameDef<FishState, FishAction> = {
   id: 'cau-ca',
   init: fresh,
-  configOf: (s) => ({ penalty: s.penalty, again: !!s.again, finale: s.finale ?? 'wheel' }),
+  configOf: (s) => ({
+    penalty: s.penalty,
+    again: !!s.again,
+    finale: s.finale ?? 'wheel',
+    customPenalties: s.customPenalties,
+    customFinals: s.customFinals,
+  }),
   advance(s) {
     const next = { ...nextTurn(s), flipped: [] as number[] };
     if (s.phase === 'punish' && s.punish) {
@@ -135,15 +145,29 @@ export const fishGame: GameDef<FishState, FishAction> = {
   },
   reduce(s, a, c) {
     // Ván mới: đếm tiếp số lần xáo để máy nào cũng chạy hiệu ứng xáo.
-    if (a.type === 'restart') return c.host && s.phase === 'done' ? { ...fresh(), penalty: s.penalty, finale: s.finale ?? 'wheel', again: !!s.again, shuffles: s.shuffles + 1, seq: s.seq + 1 } : s;
+    if (a.type === 'restart')
+      return c.host && s.phase === 'done'
+        ? {
+            ...fresh(),
+            penalty: s.penalty,
+            finale: s.finale ?? 'wheel',
+            again: !!s.again,
+            customPenalties: s.customPenalties,
+            customFinals: s.customFinals,
+            shuffles: s.shuffles + 1,
+            seq: s.seq + 1,
+          }
+        : s;
     if (a.type === 'config') {
       // Cài đặt chọn ở phòng chờ, áp vào lúc bắt đầu ván.
       if (!c.host || s.started) return s;
-      const { penalty, finale, again } = a.config;
+      const { penalty, finale, again, customPenalties, customFinals } = a.config;
       const next = { ...s };
       if (typeof penalty === 'boolean') next.penalty = penalty;
       if (typeof again === 'boolean') next.again = again;
       if (finale && finale in strings.finaleOptions) next.finale = finale;
+      if (customPenalties !== undefined) next.customPenalties = customPenalties;
+      if (customFinals !== undefined) next.customFinals = customFinals;
       return { ...next, seq: s.seq + 1 };
     }
     if (a.type === 'shuffle') {
@@ -181,15 +205,17 @@ export const fishGame: GameDef<FishState, FishAction> = {
 
     if (a.type === 'spin') {
       if (s.phase === 'penalty') {
-        const spin = newSpin(s, strings.penalties.length);
-        const p = strings.penalties[spin.slice];
+        const penalties = getPenalties(s);
+        const spin = newSpin(s, penalties.length);
+        const p = penalties[spin.slice];
         return withResult({ ...s, spin }, { playerId: who, text: p.text, safe: 'safe' in p && p.safe });
       }
       if (s.phase === 'punish' && s.punish?.mode === 'wheel' && s.punish.picked === null) {
-        const spin = newSpin(s, strings.finals.length);
+        const finals = getFinals(s);
+        const spin = newSpin(s, finals.length);
         return withResult(
           { ...s, spin, punish: { ...s.punish, picked: spin.slice } },
-          { playerId: who, text: strings.finals[spin.slice].text, detail: strings.punishDetail },
+          { playerId: who, text: finals[spin.slice].text, detail: strings.punishDetail },
         );
       }
       return s;
@@ -197,11 +223,12 @@ export const fishGame: GameDef<FishState, FishAction> = {
 
     if (a.type === 'lot') {
       if (s.phase !== 'punish' || s.punish?.mode !== 'lots' || s.punish.picked !== null) return s;
+      const finals = getFinals(s);
       const penalty = s.punish.lots[a.index];
-      if (penalty === undefined) return s;
+      if (penalty === undefined || !finals[penalty]) return s;
       return withResult(
         { ...s, punish: { ...s.punish, picked: a.index } },
-        { playerId: who, text: strings.finals[penalty].text, detail: strings.punishDetail },
+        { playerId: who, text: finals[penalty].text, detail: strings.punishDetail },
       );
     }
     return s;

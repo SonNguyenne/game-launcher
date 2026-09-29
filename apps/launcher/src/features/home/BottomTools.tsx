@@ -5,11 +5,10 @@ import { focusSearch } from './SearchBar';
 import s from './HomePage.module.css';
 
 /**
- * Thanh công cụ dưới cùng. Kiểu "mềm" thành dock tối 3 nút, nút thêm app ở giữa,
- * thêm nút tìm để khỏi với tay lên đầu màn hình.
+ * Thanh công cụ dưới cùng. Kiểu sôi động (arcade) thành dock bo 3 nút, nút thêm app là nút bấm arcade tròn nổi bật ở giữa.
  */
 export function BottomTools({ onAdd, onSettings }: { onAdd: () => void; onSettings: () => void }) {
-  const dock = useLauncherStore((st) => st.settings.look === 'soft');
+  const dock = useLauncherStore((st) => st.settings.look === 'quan');
 
   if (dock) {
     return (
@@ -19,7 +18,8 @@ export function BottomTools({ onAdd, onSettings }: { onAdd: () => void; onSettin
           <span>{t.home.searchLabel}</span>
         </button>
         <button className={s.dockMain} onClick={onAdd} aria-label={t.home.add}>
-          <Icon name="plus" size={26} />
+          <span className={s.dockMainPad} aria-hidden="true" />
+          <Icon name="plus" size={28} strokeWidth={2.8} />
         </button>
         <button className={s.dockButton} onClick={onSettings}>
           <Icon name="sliders" />

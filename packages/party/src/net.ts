@@ -6,6 +6,7 @@ import type { Player } from './engine';
  * nhận hành động của khách rồi đưa cho chủ phòng.
  */
 export type ClientMessage =
+  /** `id`: id bí mật của máy, chỉ gửi lên server để vào lại đúng chỗ; không ai khác thấy. */
   | { t: 'create'; game: string; id: string; name: string }
   | { t: 'join'; code: string; game: string; id: string; name: string }
   | { t: 'state'; state: unknown }
@@ -15,7 +16,8 @@ export type ClientMessage =
 export type RoomError = 'no-room' | 'wrong-game' | 'full' | 'busy' | 'bad';
 
 export type ServerMessage =
-  | { t: 'joined'; code: string; hostId: string; members: Player[]; state: unknown }
+  /** `you`: id công khai server cấp cho máy này (khác id bí mật máy gửi lên trong create/join). */
+  | { t: 'joined'; code: string; you: string; hostId: string; members: Player[]; state: unknown }
   | { t: 'members'; hostId: string; members: Player[] }
   | { t: 'state'; state: unknown }
   | { t: 'action'; from: string; action: unknown }

@@ -6,4 +6,5 @@ export { useParty, type Party, type PartyData, type PartyMode } from './useParty
 export { PartyShell, Avatar, SettingsCard, type GameInfo, type SettingsProps } from './PartyShell';
 export { ResultCard } from './ResultCard';
 export { Chips } from './Chips';
+export { SpinWheel, wheelTarget, type WheelSlice, type WheelSpin } from './SpinWheel';
 export { default as partyStyles } from './Party.module.css';

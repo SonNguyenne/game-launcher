@@ -1,4 +1,4 @@
-import { baseState, isTurnOf, nextTurn, playerAt, randomInt, shuffle, withResult, type BaseState, type GameDef, type Player } from '@bang/party';
+import { baseState, isTurnOf, nextTurn, playerAt, randomInt, shuffle, withResult, type BaseState, type GameDef, type Party, type Player } from '@bang/party';
 import { strings, type Order, type Play } from './strings';
 
 /** Lựa chọn nhanh; ngoài ra nhập được số bất kỳ trong khoảng LIMITS. */
@@ -40,6 +40,8 @@ export interface Round {
   phase: 'find' | 'spin';
   spin: Spin | null;
 }
+
+export type FindParty = Party<FindState, FindAction>;
 
 export interface Spin {
   id: number;

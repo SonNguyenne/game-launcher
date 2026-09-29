@@ -1,17 +1,16 @@
 const monoStack = '"IBM Plex Mono", "Noto Sans Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace';
 
-/** `ui` là font chữ chính của giao diện; kiểu "dễ nhìn" đổi nó sang sans (xem looks.ts). */
+/**
+ * `ui` là font chữ chính của giao diện; kiểu "dễ nhìn" đổi nó sang sans (xem looks.ts).
+ * `display` cho số và tiêu đề lớn (đồng hồ, mã phòng, tên phím), `hand` cho nhãn viết tay nhỏ.
+ * Kiểu "board" dùng mono cho cả ba; kiểu "quán" dùng chữ bảng hiệu và chữ viết tay.
+ */
 export const fontFamily = {
   ui: monoStack,
   mono: monoStack,
+  display: monoStack,
+  hand: monoStack,
 } as const;
-
-/**
- * Nguồn font web; đổi font chỉ cần sửa ở đây và fontFamily.
- * Nạp cả hai họ, trình duyệt chỉ tải file của họ đang được dùng.
- */
-export const fontSource =
-  'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Be+Vietnam+Pro:wght@400;600&display=swap';
 
 export const fontSize = {
   xs: '11px',

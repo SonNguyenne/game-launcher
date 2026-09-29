@@ -1,0 +1,272 @@
+.game {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: var(--space-4) 0 var(--space-8);
+}
+
+.centerBox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-6);
+  text-align: center;
+}
+
+.categoryTag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-4);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--paint-blue) 15%, var(--cell));
+  color: var(--paint-blue);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pairHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  width: 100%;
+}
+
+.playerCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.playerName {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--ink);
+  max-width: 8em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vsSpark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--accent) 15%, var(--cell));
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  animation: pulse 1.2s infinite alternate;
+}
+
+@keyframes pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
+}
+
+.promptCard {
+  width: 100%;
+  padding: var(--space-8) var(--space-6);
+  border-radius: 20px;
+  background: var(--cell);
+  border: 1.5px solid var(--rule-soft);
+  box-shadow: 0 8px 24px -12px var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  animation: promptIn 420ms var(--ease-expo) both;
+}
+
+@keyframes promptIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.promptText {
+  font-family: var(--font-ui);
+  font-size: clamp(22px, 6vw, 28px);
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.hintText {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--ink-secondary);
+  font-weight: 600;
+}
+
+/* Typing box */
+.typingBox {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-radius: var(--control-radius);
+  background: var(--cell);
+  border: 1.5px solid var(--rule-soft);
+}
+
+.waitingPill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  border-radius: 999px;
+  background: var(--cell-raised);
+  color: var(--ink-secondary);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+/* Revealed answers */
+.revealGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.answerCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  border-radius: var(--control-radius);
+  background: var(--cell);
+  border: 1.5px solid var(--rule-soft);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.answerLabel {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--ink-secondary);
+  text-transform: uppercase;
+}
+
+.answerValue {
+  font-family: var(--font-ui);
+  font-size: clamp(18px, 5vw, 24px);
+  font-weight: 800;
+  color: var(--ink);
+  text-align: center;
+  word-break: break-word;
+}
+
+/* Result status banners */
+.statusBanner {
+  width: 100%;
+  padding: var(--space-6);
+  border-radius: var(--control-radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  animation: bannerIn 480ms var(--ease-expo) both;
+}
+
+@keyframes bannerIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.statusMatched {
+  background: color-mix(in oklab, var(--paint-green) 12%, var(--cell));
+  border: 2px solid var(--paint-green);
+  color: var(--paint-green);
+}
+
+.statusMismatch {
+  background: color-mix(in oklab, var(--paint-red) 12%, var(--cell));
+  border: 2px solid var(--paint-red);
+  color: var(--paint-red);
+}
+
+.statusTitle {
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  margin: 0;
+}
+
+.statusDesc {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.judgeBar {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.judgeBar > * {
+  flex: 1;
+}
+
+/* Preset chips trong settings */
+.presetSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: calc(-1 * var(--space-4));
+}
+
+.presetLabel {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--ink-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.presetChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.presetChip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-5);
+  border-radius: 999px;
+  background: var(--cell-raised);
+  border: 1.5px solid var(--rule-soft);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--dur-base) var(--ease-out);
+}
+
+.presetChip:active {
+  transform: scale(0.96);
+}
+
+.presetChipActive {
+  background: color-mix(in oklab, var(--accent) 15%, var(--cell));
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 2px 8px color-mix(in oklab, var(--accent) 25%, transparent);
+}

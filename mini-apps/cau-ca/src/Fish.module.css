@@ -30,7 +30,7 @@
 .inner {
   position: absolute; inset: 0; display: grid;
   transform-style: preserve-3d;
-  transition: transform 380ms cubic-bezier(0.3, 0.7, 0.3, 1.2);
+  transition: transform 420ms var(--ease-out);
 }
 .up .inner { transform: rotateY(180deg); }
 .back, .faceUp {
@@ -59,6 +59,30 @@
 .caughtCard .faceUp { box-shadow: inset 0 0 0 2px var(--accent), 0 8px 18px -8px var(--accent); }
 .caughtCard { animation: caught 520ms var(--ease-out) 380ms both; }
 @keyframes caught { 40% { transform: translateY(-10%) scale(1.12); } }
+.matchBadge {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-8);
+  border-radius: 999px;
+  background: var(--paint-yellow);
+  color: var(--paint-ink);
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  box-shadow: 0 8px 24px color-mix(in oklab, var(--paint-yellow) 45%, transparent), 0 0 0 2px var(--cell);
+  animation: matchBounce 480ms var(--ease-expo) both;
+  pointer-events: none;
+}
+@keyframes matchBounce {
+  from { opacity: 0; transform: translate(-50%, -30%) scale(0.85); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
 
 /* Tóm tắt cài đặt trước khi lật lá đầu; chỉnh trong bảng trượt. */
 .summary { display: grid; gap: var(--space-6); padding: var(--space-7) var(--space-8); }
@@ -94,16 +118,6 @@
 .sheet > button, .punish > button { max-width: 360px; }
 .panelTitle { margin: 0; font-size: var(--fs-2xl); font-weight: var(--fw-medium); text-align: center; }
 .panelHint { margin: 0; color: var(--ink-secondary); font-size: var(--fs-md); text-align: center; }
-.wheelBox { position: relative; width: min(64vw, 260px, 34dvh); aspect-ratio: 1; }
-.pointer {
-  position: absolute; left: 50%; top: -6px; z-index: 1; width: 22px; height: 28px;
-  transform: translateX(-50%); background: var(--ink); clip-path: polygon(0 0, 100% 0, 50% 100%);
-}
-.wheel { width: 100%; height: 100%; transform: rotate(var(--rot)); transition: transform var(--spin-ms) cubic-bezier(0.33, 1, 0.68, 1); }
-.wheel path { stroke: var(--bg); stroke-width: 2; }
-.wheelLabel { font-size: 16px; font-weight: 600; dominant-baseline: central; text-anchor: middle; font-family: var(--font-ui); }
-.rim { fill: none; stroke: var(--bg); stroke-width: 6; }
-.hub { fill: var(--bg); stroke: var(--ink); stroke-width: 3; }
 
 /* Phạt cuối ván */
 .punish {
@@ -112,12 +126,11 @@
   border-radius: var(--key-radius); background: var(--cell);
   border: var(--size-rule) solid var(--rule-soft); box-shadow: var(--key-shadow);
 }
-:global(:root[data-look="soft"]) .punish { border-color: transparent; }
 .lots { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); width: 100%; max-width: 360px; }
 .lot { aspect-ratio: 3 / 4; padding: 0; perspective: 700px; }
 .lot:disabled { cursor: default; }
 .lot:not(:disabled):active .lotInner { transform: scale(0.94); }
-.lotInner { position: relative; display: grid; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 520ms cubic-bezier(0.3, 0.7, 0.3, 1.2); }
+.lotInner { position: relative; display: grid; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 520ms var(--ease-out); }
 .lotOpen .lotInner { transform: rotateY(180deg); }
 .lotBack, .lotFace {
   grid-area: 1 / 1; display: grid; place-items: center; padding: var(--space-4);
@@ -137,18 +150,164 @@
 .finalTitle { margin: 0; font-size: clamp(30px, 9vw, 40px); line-height: var(--lh-tight); font-weight: var(--fw-medium); letter-spacing: var(--ls-tight); text-wrap: balance; }
 .finalHint { margin: 0; color: var(--ink-secondary); }
 
-/* Màn đầu: một lá úp, hai lá 7 trùng nhau */
-.art { position: relative; width: 140px; height: 132px; }
-.artCard { position: absolute; top: 18px; width: 64px; height: 90px; border-radius: 8px; display: grid; }
-.artCard .faceUp { transform: none; }
-.artBack { left: 0; transform: rotate(-14deg); background: var(--accent); }
-.artA { left: 38px; transform: rotate(-2deg); z-index: 1; }
-.artB { left: 76px; transform: rotate(12deg); z-index: 2; }
-.artA .rank, .artB .rank { font-size: 24px; }
-.artA .suit, .artB .suit { font-size: 20px; }
+/* Hình màn đầu: hình vẽ của app, shell đặt cỡ và màu --art-*. */
+.heroArt { display: block; width: 100%; height: 100%; }
+.heroArt > svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+/*
+ * Kiểu quán: bộ bài in thật bày trên bàn nhựa. Lưng bài xanh ghế nhựa có viền giấy và lưới
+ * trám vàng như bài Tây; mặt bài giấy ngà, chữ số Vina Sans, chất đỏ bằng sơn đỏ.
+ * Mỗi lá có một gờ mỏng bên dưới (độ dày lá bài); nhấn thì lún xuống.
+ */
+:global(:root[data-look="quan"]) .game { gap: var(--space-7); }
+:global(:root[data-look="quan"]) .head { align-items: baseline; }
+:global(:root[data-look="quan"]) .status {
+  font-family: var(--font-display); font-size: 28px; font-weight: 400; line-height: 1;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+:global(:root[data-look="quan"]) .left { font-family: var(--font-hand); font-size: var(--fs-md); color: var(--accent); white-space: nowrap; }
+:global(:root[data-look="quan"]) .shuffleButton {
+  align-self: center; min-height: 40px; margin-bottom: 3px; border-radius: 10px;
+  background: var(--paint-yellow); color: var(--paint-ink);
+  box-shadow: 0 3px 0 color-mix(in oklab, var(--paint-yellow) 60%, var(--paint-ink));
+  transition: transform 90ms var(--ease-out), box-shadow 90ms var(--ease-out);
+}
+:global(:root[data-look="quan"]) .shuffleButton:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 color-mix(in oklab, var(--paint-yellow) 60%, var(--paint-ink)); }
+:global(:root[data-look="quan"]) .shuffleButton:disabled { background: var(--cell-raised); color: var(--ink-muted); box-shadow: none; }
+
+:global(:root[data-look="quan"]) .board { gap: 9px 6px; padding-bottom: 3px; }
+:global(:root[data-look="quan"]) .card,
+:global(:root[data-look="quan"]) .inner,
+:global(:root[data-look="quan"]) .back,
+:global(:root[data-look="quan"]) .faceUp,
+:global(:root[data-look="quan"]) .empty { border-radius: 5px; }
+:global(:root[data-look="quan"]) .card:not(:disabled):active .inner { transform: translateY(2px); }
+/* Chỗ lá đã bị câu: vệt mờ trên mặt bàn, không kẻ viền cho bàn đỡ rối. */
+:global(:root[data-look="quan"]) .empty { border: 0; background: var(--rule-soft); opacity: 0.55; }
+:global(:root[data-look="quan"]) .back {
+  --lattice: color-mix(in oklab, var(--paint-paper) 40%, var(--paint-blue));
+  background:
+    radial-gradient(circle at 50% 50%, var(--paint-yellow) 0 4px, transparent 4.5px),
+    repeating-linear-gradient(45deg, transparent 0 3.5px, var(--lattice) 3.5px 4.5px),
+    repeating-linear-gradient(-45deg, transparent 0 3.5px, var(--lattice) 3.5px 4.5px),
+    var(--paint-blue);
+  box-shadow:
+    inset 0 0 0 3px var(--paint-paper),
+    inset 0 0 0 5px var(--paint-blue),
+    0 3px 0 color-mix(in oklab, var(--paint-blue) 55%, var(--paint-ink));
+}
+:global(:root[data-look="quan"]) .card:not(:disabled):active .back { box-shadow: inset 0 0 0 3px var(--paint-paper), inset 0 0 0 5px var(--paint-blue), 0 1px 0 color-mix(in oklab, var(--paint-blue) 55%, var(--paint-ink)); }
+:global(:root[data-look="quan"]) .shuffling .back {
+  box-shadow: inset 0 0 0 3px var(--paint-paper), inset 0 0 0 5px var(--paint-blue), 0 8px 12px -6px var(--shadow);
+}
+:global(:root[data-look="quan"]) .faceUp {
+  gap: 1px;
+  background: var(--paint-paper); color: var(--paint-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--paint-paper) 78%, var(--paint-ink)), 0 3px 0 color-mix(in oklab, var(--paint-paper) 62%, var(--paint-ink));
+}
+:global(:root[data-look="quan"]) .red { color: var(--paint-red); }
+:global(:root[data-look="quan"]) .rank { font-family: var(--font-display); font-size: clamp(22px, 6.4vw, 28px); font-weight: 400; line-height: 0.85; letter-spacing: 0; }
+:global(:root[data-look="quan"]) .suit { font-size: clamp(13px, 3.8vw, 17px); line-height: 1; }
+/* Cặp vừa câu được: lá bài được tô vàng bia, nhấc lên cho cả bàn thấy. */
+:global(:root[data-look="quan"]) .caughtCard .faceUp {
+  background: var(--paint-yellow);
+  box-shadow: inset 0 0 0 2px var(--paint-ink), 0 3px 0 color-mix(in oklab, var(--paint-yellow) 55%, var(--paint-ink));
+}
+:global(:root[data-look="quan"]) .caughtCard .red { color: var(--paint-ink); }
+
+/* Bảng điểm: thẻ tên như tem giá, lượt hiện tại sơn đỏ; chữ cái đầu đã có ở thanh lượt nên bỏ. */
+:global(:root[data-look="quan"]) .scores { gap: var(--space-4); padding-bottom: 4px; margin: 0; }
+:global(:root[data-look="quan"]) .score {
+  gap: var(--space-5); min-height: 44px; padding: 0 var(--space-7);
+  border-radius: 10px; background: var(--cell-raised); color: var(--ink);
+}
+:global(:root[data-look="quan"]) .score > span:first-child { display: none; }
+:global(:root[data-look="quan"]) .scoreName { font-size: var(--fs-md); }
+:global(:root[data-look="quan"]) .scorePts { font-family: var(--font-display); font-size: 26px; font-weight: 400; line-height: 1; }
+:global(:root[data-look="quan"]) .scoreTurn {
+  background: var(--paint-red); color: var(--paint-paper);
+  box-shadow: 0 3px 0 color-mix(in oklab, var(--paint-red) 58%, var(--paint-ink));
+}
+/* Cuối ván: bảng thực đơn, tên ... điểm nối bằng hàng chấm. */
+:global(:root[data-look="quan"]) .scoresFinal { gap: 0; padding: 0; }
+:global(:root[data-look="quan"]) .scoresFinal .score {
+  align-items: baseline; gap: var(--space-5); padding: var(--space-6) var(--space-6) var(--space-5);
+  border-radius: 10px; background: none; box-shadow: none;
+}
+:global(:root[data-look="quan"]) .scoresFinal .scoreName { flex: none; max-width: 60%; font-size: var(--fs-lg); font-weight: var(--fw-medium); }
+:global(:root[data-look="quan"]) .scoresFinal .score::after {
+  content: ""; order: 1; flex: 1; align-self: baseline;
+  border-bottom: 3px dotted var(--rule);
+}
+:global(:root[data-look="quan"]) .scoresFinal .scorePts { order: 2; font-size: 24px; }
+:global(:root[data-look="quan"]) .scoresFinal .scoreWin { background: var(--paint-yellow); color: var(--paint-ink); }
+:global(:root[data-look="quan"]) .scoresFinal .scoreWin::after { border-bottom-color: color-mix(in oklab, var(--paint-yellow) 50%, var(--paint-ink)); }
+
+/* Hết ván: tên người thắng là chữ bảng hiệu có bóng đỏ lệch. */
+:global(:root[data-look="quan"]) .final { gap: var(--space-4); padding: var(--space-14) 0 var(--space-8); }
+:global(:root[data-look="quan"]) .finalTag {
+  padding: 0; background: none; color: var(--accent);
+  font-family: var(--font-hand); font-size: var(--fs-xl); transform: rotate(-3deg);
+}
+:global(:root[data-look="quan"]) .finalTitle {
+  font-family: var(--font-display); font-size: clamp(42px, 13vw, 60px); font-weight: 400;
+  line-height: 0.92; letter-spacing: 0.01em; text-shadow: 0.045em 0.045em 0 var(--paint-red);
+}
+:global(:root[data-look="quan"]) .finalHint { font-size: var(--fs-md); }
+
+/* Vòng phạt, phạt cuối ván, lá thăm */
+:global(:root[data-look="quan"]) .panelTitle { font-family: var(--font-display); font-size: 36px; font-weight: 400; line-height: 1; }
+:global(:root[data-look="quan"]) .sheet { gap: var(--space-6); border-top: 4px solid var(--paint-red); }
+:global(:root[data-look="quan"]) .punish { border: 0; background: var(--cell); box-shadow: none; }
+:global(:root[data-look="quan"]) .lots { gap: var(--space-6) var(--space-5); padding-bottom: 4px; }
+:global(:root[data-look="quan"]) .lot:not(:disabled):active .lotInner { transform: translateY(3px); }
+:global(:root[data-look="quan"]) .lotBack,
+:global(:root[data-look="quan"]) .lotFace { border-radius: 10px; }
+:global(:root[data-look="quan"]) .lotBack {
+  background: var(--paint-yellow); color: var(--paint-ink);
+  font-family: var(--font-display); font-size: 48px; font-weight: 400;
+  box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--paint-yellow) 70%, var(--paint-ink)), 0 4px 0 color-mix(in oklab, var(--paint-yellow) 55%, var(--paint-ink));
+}
+:global(:root[data-look="quan"]) .lotFace {
+  background: var(--paint-red); color: var(--paint-paper);
+  font-family: var(--font-display); font-size: 22px; font-weight: 400; line-height: 1;
+  box-shadow: 0 4px 0 color-mix(in oklab, var(--paint-red) 55%, var(--paint-ink));
+}
+
+/* Tóm tắt cài đặt: bảng thực đơn, hàng chấm nối tên và giá trị. */
+:global(:root[data-look="quan"]) .summaryList { gap: var(--space-4); }
+:global(:root[data-look="quan"]) .summaryRow { align-items: baseline; gap: var(--space-4); }
+:global(:root[data-look="quan"]) .summaryRow::after {
+  content: ""; order: 1; flex: 1; min-width: var(--space-6);
+  border-bottom: 3px dotted var(--rule);
+}
+:global(:root[data-look="quan"]) .summaryRow dd { order: 2; font-family: var(--font-display); font-size: 22px; font-weight: 400; line-height: 1; }
 
 @keyframes rise { from { transform: translate(-50%, 100%); } }
 @media (prefers-reduced-motion: reduce) {
   .inner { transition: none; }
   .caughtCard, .bonus { animation: none; }
 }
+
+.penaltyEditor { display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-2) 0 var(--space-8); }
+.guideBox { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-4) var(--space-5); border-radius: var(--control-radius); background: var(--cell-raised); border: 1px solid var(--rule-soft); }
+.guideText { margin: 0; font-size: var(--fs-sm); color: var(--ink); font-weight: 700; }
+.guideHint { margin: 0; font-size: var(--fs-xs); color: var(--ink-secondary); line-height: 1.4; }
+.editorActions { display: flex; justify-content: flex-end; }
+.penaltyList { display: flex; flex-direction: column; gap: var(--space-4); max-height: 50dvh; overflow-y: auto; padding-right: var(--space-1); }
+.penaltyCard { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4) var(--space-5); border-radius: var(--control-radius); background: var(--cell); border: 1.5px solid var(--rule-soft); }
+.penaltyCardHeader { display: flex; align-items: center; justify-content: space-between; }
+.penaltyBadge { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--fs-sm); font-weight: 700; color: var(--ink); }
+.penaltyBadgeDot { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-size: var(--fs-xs); font-weight: 700; }
+.fieldGroup { display: flex; flex-direction: column; gap: var(--space-1); }
+.fieldLabel { font-size: var(--fs-xs); font-weight: 600; color: var(--ink-secondary); }
+.editPenaltyBtn {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+  width: 100%; margin-top: var(--space-2); padding: var(--space-4) var(--space-5);
+  border-radius: var(--control-radius); background: var(--cell-raised);
+  border: 1.5px solid var(--rule-soft); color: var(--ink); text-align: left;
+  cursor: pointer; transition: all var(--dur-base) var(--ease-out);
+}
+.editPenaltyBtn:active { transform: translateY(1px); border-color: var(--accent); }
+.editPenaltyBtnLabel { display: flex; align-items: center; gap: var(--space-3); font-family: var(--font-ui); font-size: var(--fs-sm); font-weight: 700; color: var(--ink); }
+.editPenaltyBtnHint { font-size: var(--fs-xs); color: var(--ink-secondary); font-weight: 500; }

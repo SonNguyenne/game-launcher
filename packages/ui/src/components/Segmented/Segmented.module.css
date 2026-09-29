@@ -2,3 +2,8 @@
 .option { height: 40px; background: var(--bg); font-size: var(--fs-md); color: var(--ink-secondary); text-align: center; }
 .option[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 .flat { border-left: 0; border-right: 0; border-top: 0; }
+
+:global(:root[data-look="quan"]) .seg { border: 0; gap: var(--space-2); padding: var(--space-2); background: var(--cell-raised); }
+:global(:root[data-look="quan"]) .option { height: 42px; border-radius: 9px; background: transparent; font-weight: var(--fw-medium); transition: background var(--dur-base), color var(--dur-base); }
+:global(:root[data-look="quan"]) .option[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+:global(:root[data-look="quan"]) .flat { border: 0; margin: var(--space-2) var(--space-8) 0; }

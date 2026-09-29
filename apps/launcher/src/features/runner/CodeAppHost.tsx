@@ -35,6 +35,7 @@ export function CodeAppHost({ app, onClose }: CodeAppHostProps) {
     <ErrorBoundary
       fallback={(_, reset) => (
         <StatusPanel
+          art="error"
           code={t.runner.errorCode}
           title={t.runner.errorTitle(app.name)}
           actions={

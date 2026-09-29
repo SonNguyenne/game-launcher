@@ -23,7 +23,22 @@ export const palette = {
   signalRedBright: '#F0624F',
   yellow: '#FAB413',
   blue: '#0071BB',
+  green: '#1F7A45',
   white: '#FFFFFF',
+} as const;
+
+/**
+ * Màu sắc chủ đạo cho giao diện sôi động (arcade / party):
+ * Đỏ san hô, vàng arcade, xanh bạc hà, xanh điện tử, mực slate và giấy trắng sáng.
+ * Dùng cho kiểu "sôi động", ảnh minh họa và icon PWA.
+ */
+export const signPaint = {
+  red: '#FF4757',
+  yellow: '#FFC000',
+  green: '#05C46B',
+  blue: '#3867D6',
+  ink: '#0F172A',
+  paper: '#FFFFFF',
 } as const;
 
 /** Vai trò màu theo từng chế độ. Tên vai trò là tên biến CSS (--bg, --ink...). */
@@ -47,7 +62,25 @@ export interface ColorRoles {
   onDock: string;
   /** Màu bóng đổ dưới phím; trong suốt ở kiểu không dùng bóng. */
   shadow: string;
+  /** Bốn màu sơn cho phím, minh họa và game; chữ trên nền sơn dùng paintPaper (đỏ, xanh) hoặc paintInk (vàng). */
+  paintRed: string;
+  paintYellow: string;
+  paintGreen: string;
+  paintBlue: string;
+  /** Mực và giấy cố định, không đảo theo sáng/tối: chữ đặt trên màu sơn. */
+  paintInk: string;
+  paintPaper: string;
 }
+
+/** Màu sơn của kiểu "board" và "readable": cùng bộ màu sơn, chữ đen/trắng của bảng gốc. */
+export const basePaints = {
+  paintRed: signPaint.red,
+  paintYellow: palette.yellow,
+  paintGreen: palette.green,
+  paintBlue: palette.blue,
+  paintInk: palette.ink,
+  paintPaper: palette.bone,
+} as const;
 
 export const lightColors: ColorRoles = {
   bg: palette.aluminum,
@@ -67,6 +100,7 @@ export const lightColors: ColorRoles = {
   dock: palette.aluminum,
   onDock: palette.ink,
   shadow: 'transparent',
+  ...basePaints,
 };
 
 export const darkColors: ColorRoles = {
@@ -87,6 +121,7 @@ export const darkColors: ColorRoles = {
   dock: palette.night,
   onDock: palette.fog,
   shadow: 'transparent',
+  ...basePaints,
 };
 
 /**
@@ -95,10 +130,12 @@ export const darkColors: ColorRoles = {
  */
 export const keyColors = {
   auto: { label: 'mặc định', fill: null, text: null },
-  bone: { label: 'trắng', fill: palette.bone, text: palette.ink },
-  yellow: { label: 'vàng', fill: palette.yellow, text: palette.ink },
-  blue: { label: 'xanh', fill: palette.blue, text: palette.bone },
-  black: { label: 'đen', fill: palette.ink, text: palette.bone },
+  bone: { label: 'trắng', fill: '#FFFFFF', text: '#0F172A' },
+  yellow: { label: 'vàng', fill: '#FFC000', text: '#0F172A' },
+  blue: { label: 'xanh lam', fill: '#3867D6', text: '#FFFFFF' },
+  red: { label: 'đỏ', fill: '#FF4757', text: '#FFFFFF' },
+  green: { label: 'xanh lá', fill: '#05C46B', text: '#FFFFFF' },
+  black: { label: 'đen', fill: '#0F172A', text: '#FFFFFF' },
 } as const;
 
 export type KeyColorId = keyof typeof keyColors;

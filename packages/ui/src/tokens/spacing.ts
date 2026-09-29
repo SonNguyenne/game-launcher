@@ -25,7 +25,6 @@ export const size = {
   bar: '52px',
   row: '56px',
   tool: '52px',
-  pinKey: '72px',
   contentMax: '620px',
 } as const;
 
@@ -42,8 +41,10 @@ export const shape = {
   keyRadius: '0',
   keyOutline: '0',
   keyShadow: '0 0 0 transparent',
+  /** Độ dày gờ nhựa dưới phím; phím lún xuống đúng chừng này khi nhấn. */
+  keyLip: '0px',
   controlRadius: '0',
-  /** Kiểu "mềm" hiện chữ cái đầu trong ô tròn thay cho số thứ tự trên phím. */
+  /** Kiểu "quán" hiện hình vẽ của app (hoặc chữ cái đầu to) thay cho khoảng trống trên phím. */
   markDisplay: 'none',
   indexDisplay: 'inline',
 } as const;
@@ -57,5 +58,4 @@ export const zIndex = {
   dialog: '61',
   toast: '80',
   banner: '90',
-  lock: '100',
 } as const;

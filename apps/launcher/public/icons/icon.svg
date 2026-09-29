@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" stroke-linecap="round" stroke-linejoin="round">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF4757"/>
+      <stop offset="100%" stop-color="#FFC000"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <!-- Background squircle -->
+  <rect width="512" height="512" rx="120" fill="url(#bg)"/>
+  <rect x="12" y="12" width="488" height="488" rx="108" fill="none" stroke="#334155" stroke-width="4" opacity="0.6"/>
+
+  <!-- Console Gamepad Body -->
+  <g filter="url(#shadow)">
+    <!-- Controller Base -->
+    <path d="M168 180C140 180 114 196 102 224L82 272C70 300 76 332 96 352L116 372C132 388 158 392 178 380L216 356C228 348 244 344 256 344C268 344 284 348 296 356L334 380C354 392 380 388 396 372L416 352C436 332 442 300 430 272L410 224C398 196 372 180 344 180H168Z" fill="#1E293B" stroke="#475569" stroke-width="8"/>
+    
+    <!-- D-Pad Left -->
+    <g transform="translate(162, 276)">
+      <rect x="-14" y="-42" width="28" height="84" rx="8" fill="#334155"/>
+      <rect x="-42" y="-14" width="84" height="28" rx="8" fill="#334155"/>
+      <!-- Core Dpad Accent -->
+      <circle cx="0" cy="0" r="7" fill="#0F172A"/>
+      <!-- Direction indicators -->
+      <path d="M0 -30L-6 -22H6Z" fill="#94A3B8"/>
+      <path d="M0 30L-6 22H6Z" fill="#94A3B8"/>
+      <path d="M-30 0L-22 -6V6Z" fill="#94A3B8"/>
+      <path d="M30 0L22 -6V6Z" fill="#94A3B8"/>
+    </g>
+
+    <!-- Center Play Badge -->
+    <circle cx="256" cy="248" r="26" fill="url(#glow)"/>
+    <path d="M250 236L268 248L250 260Z" fill="#FFFFFF"/>
+
+    <!-- Action Buttons Right (4 vibrant youth party colors) -->
+    <g transform="translate(350, 276)">
+      <!-- Top: Yellow -->
+      <circle cx="0" cy="-30" r="16" fill="#FFC000"/>
+      <!-- Right: Coral Red -->
+      <circle cx="30" cy="0" r="16" fill="#FF4757"/>
+      <!-- Bottom: Mint Green -->
+      <circle cx="0" cy="30" r="16" fill="#05C46B"/>
+      <!-- Left: Electric Blue -->
+      <circle cx="-30" cy="0" r="16" fill="#3867D6"/>
+    </g>
+  </g>
+</svg>

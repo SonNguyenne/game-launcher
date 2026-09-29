@@ -2,3 +2,6 @@
 .item:last-child { border-bottom: 0; }
 .index { color: var(--ink-muted); font-size: var(--fs-sm); width: 20px; }
 .danger { color: var(--danger); }
+
+:global(:root[data-look="quan"]) .item { height: 58px; padding: 0 var(--space-10); font-weight: var(--fw-medium); }
+:global(:root[data-look="quan"]) .index { width: 28px; font-family: var(--font-display); font-size: var(--fs-xl); font-weight: 400; color: var(--accent); }

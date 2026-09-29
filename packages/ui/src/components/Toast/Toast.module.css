@@ -10,3 +10,8 @@
 }
 .show { transform: translate(-50%, 0); opacity: 1; }
 .toast::before { content: ""; display: inline-block; width: 8px; height: 8px; background: var(--accent); margin-right: var(--space-5); vertical-align: 1px; }
+
+/* Kiểu quán: mẩu giấy dán lệch, chấm đỏ như dấu mộc. */
+:global(:root[data-look="quan"]) .toast { border-radius: 10px; font-weight: var(--fw-medium); transform: translate(-50%, 16px) rotate(-1deg); transition: transform var(--dur-reveal) var(--ease-expo), opacity var(--dur-base); }
+:global(:root[data-look="quan"]) .show { transform: translate(-50%, 0) rotate(-1deg); }
+:global(:root[data-look="quan"]) .toast::before { border-radius: 50%; }

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { MiniAppProps } from '@bang/sdk';
-import { Avatar, PartyShell, ResultCard, playerAt, useParty, vibrate, type Party, type PartyData } from '@bang/party';
-import { cx, keyColors } from '@bang/ui';
+import { Avatar, PartyShell, ResultCard, SettingsCard, playerAt, useParty, vibrate, type Party, type PartyData } from '@bang/party';
+import { Field, TextInput, cx, keyColors } from '@bang/ui';
 import { bombGame, type BombAction, type BombState } from './game';
 import { strings } from './strings';
 import s from './Bomb.module.css';
+import iconSvg from '../icon.svg?raw';
 
 /** Ngòi nổ: đi từ nắp bom ra đầu ngòi. Đốm lửa chạy dọc đường này (CSS offset-path). */
 const FUSE_PATH = 'M142 44 C 150 18, 178 30, 178 4';
@@ -16,7 +17,7 @@ const FUSE_PATH = 'M142 44 C 150 18, 178 30, 178 4';
 const fuseLeft = (taps: number) => Math.max(12, 96 - taps * 5);
 
 /** `from`: độ dài ngòi lúc vừa hiện, để ngòi cháy dần tới `left` thay vì nhảy thẳng. */
-function BombShape({ left = 80, from }: { left?: number; from?: number }) {
+function BombShape({ left, from }: { left: number; from?: number }) {
   const [shown, setShown] = useState(from ?? left);
   useEffect(() => {
     // Hai khung hình để trình duyệt vẽ độ dài cũ trước, rồi mới chạy transition.
@@ -30,6 +31,8 @@ function BombShape({ left = 80, from }: { left?: number; from?: number }) {
 
   return (
     <svg viewBox="0 0 200 200" className={s.shape} style={bombColor} aria-hidden="true">
+      {/* Bóng sơn lệch như chữ bảng hiệu: chỉ kiểu quán hiện. */}
+      <circle cx="104" cy="120" r="72" className={s.paint} />
       <circle cx="96" cy="112" r="72" className={s.body} />
       <path d={FUSE_PATH} pathLength={100} className={s.fuseBurnt} />
       <path d={FUSE_PATH} pathLength={100} className={s.fuse} style={{ strokeDasharray: `${shown} 200` }} />
@@ -49,8 +52,6 @@ function BombShape({ left = 80, from }: { left?: number; from?: number }) {
 /** Bom luôn đen ở cả chế độ sáng lẫn tối. */
 const bombColor = { '--bomb': keyColors.black.fill } as CSSProperties;
 
-export const BombArt = () => <BombShape />;
-
 /**
  * Hướng bay của một lần chuyền, nhìn từ máy này:
  * - out: mình vừa ném đi (bom bay khỏi tay, không quay lại)
@@ -59,6 +60,8 @@ export const BombArt = () => <BombShape />;
  */
 type Toss = 'out' | 'in' | 'pass';
 const FLIGHT_MS = 560;
+/** Cho cả bàn thấy lúc nổ rồi mới kéo thẻ kết quả lên. */
+const BOOM_MS = 1100;
 
 /** Mảnh vụn khi nổ: góc và quãng bay cố định để lần nào cũng giống nhau. */
 const debris = Array.from({ length: 14 }, (_, i) => ({ a: i * (360 / 14) + (i % 3) * 9, r: 110 + (i % 4) * 34, s: 8 + (i % 3) * 5 }));
@@ -114,6 +117,15 @@ function BombGame({ party }: { party: Party<BombState, BombAction> }) {
     return () => clearTimeout(id);
   }, [toss]);
 
+  // Thẻ kết quả chờ tiếng nổ xong. Vào lại phòng lúc đã có kết quả thì hiện ngay.
+  const resultSeq = state.result?.seq;
+  const [cardSeq, setCardSeq] = useState(resultSeq);
+  useEffect(() => {
+    if (!resultSeq || resultSeq === cardSeq) return;
+    const id = setTimeout(() => setCardSeq(resultSeq), BOOM_MS);
+    return () => clearTimeout(id);
+  }, [resultSeq, cardSeq]);
+
   // Tích tắc nhanh dần như đồng hồ hẹn giờ.
   useEffect(() => {
     if (exploded) return;
@@ -125,7 +137,7 @@ function BombGame({ party }: { party: Party<BombState, BombAction> }) {
   const inHand = !online || party.myTurn;
   const throwing = online && !inHand && flying && toss?.kind === 'out';
   const canTap = party.myTurn && !exploded && !flying;
-  const caption = exploded ? strings.boom : party.myTurn ? strings.tapToPass(next) : strings.holding(holder?.name ?? '');
+  const caption = exploded ? strings.blewOn(holder?.name ?? '') : party.myTurn ? strings.tapToPass(next) : strings.holding(holder?.name ?? '');
 
   let stage;
   if (exploded) {
@@ -137,23 +149,28 @@ function BombGame({ party }: { party: Party<BombState, BombAction> }) {
           ))}
         </div>
         <div className={s.exploded} role="img" aria-label={strings.boom}>
+          <span className={s.star} />
           <span className={s.boom}>{strings.boom}</span>
         </div>
       </>
     );
   } else if (inHand || throwing) {
     stage = (
-      <button
-        key={toss?.seq ?? 'idle'}
-        className={cx(s.bomb, toss && s[toss.kind])}
-        disabled={!canTap}
-        onClick={() => party.dispatch({ type: 'tap' })}
-        aria-label={`${strings.bomb}. ${caption}`}
-      >
-        <span className={s.wobble}>
-          <BombShape left={left} from={prevLeft.current} />
-        </span>
-      </button>
+      <>
+        {/* Vòng sơn đứng yên dưới quả bom, đập nhanh dần theo độ nóng. */}
+        <span className={s.target} aria-hidden="true" />
+        <button
+          key={toss?.seq ?? 'idle'}
+          className={cx(s.bomb, toss && s[toss.kind])}
+          disabled={!canTap}
+          onClick={() => party.dispatch({ type: 'tap' })}
+          aria-label={`${strings.bomb}. ${caption}`}
+        >
+          <span className={s.wobble}>
+            <BombShape left={left} from={prevLeft.current} />
+          </span>
+        </button>
+      </>
     );
   } else {
     stage = (
@@ -197,15 +214,73 @@ function BombGame({ party }: { party: Party<BombState, BombAction> }) {
           );
         })}
       </ol>
-      <ResultCard party={party} />
+      <ResultCard party={party} show={cardSeq === resultSeq} />
     </div>
+  );
+}
+function BombSettings({
+  value,
+  onChange,
+  editable,
+}: {
+  value: { penaltyText?: string };
+  onChange: (c: { penaltyText?: string }) => void;
+  editable: boolean;
+}) {
+  const current = value.penaltyText?.trim() || 'bom nổ, dính phạt!';
+  const presets = ['bom nổ, dính phạt!', 'chống đẩy 10 cái', 'uống 1 ngụm đồ uống', 'hát 1 bài', 'kể 1 tật xấu'];
+  return (
+    <SettingsCard editable={editable}>
+      <Field
+        label="Hình phạt khi bom nổ"
+        htmlFor="bomb-penalty"
+        hint="Nội dung đọc to khi bom phát nổ trên tay (tự lưu trên máy)."
+      >
+        <TextInput
+          id="bomb-penalty"
+          value={value.penaltyText ?? ''}
+          placeholder="bom nổ, dính phạt! (hoặc tự gõ)"
+          maxLength={50}
+          disabled={!editable}
+          onChange={(e) => onChange({ penaltyText: e.target.value })}
+        />
+      </Field>
+      {editable && (
+        <div className={s.presetSection}>
+          <span className={s.presetLabel}>Gợi ý nhanh:</span>
+          <div className={s.presetChips}>
+            {presets.map((preset) => {
+              const active = current === preset;
+              return (
+                <button
+                  key={preset}
+                  type="button"
+                  className={cx(s.presetChip, active && s.presetChipActive)}
+                  onClick={() => onChange({ penaltyText: preset })}
+                >
+                  {preset}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </SettingsCard>
   );
 }
 
 export default function ChuyenBom({ ctx }: MiniAppProps<PartyData>) {
   const party = useParty(bombGame, ctx);
   return (
-    <PartyShell party={party} info={{ title: strings.title, rule: strings.rule, art: <BombArt /> }}>
+    <PartyShell
+      party={party}
+      info={{
+        title: strings.title,
+        rule: strings.rule,
+        art: <span dangerouslySetInnerHTML={{ __html: iconSvg }} />,
+        settings: (p) => <BombSettings {...p} />,
+      }}
+    >
       {party.state && <BombGame party={party} />}
     </PartyShell>
   );

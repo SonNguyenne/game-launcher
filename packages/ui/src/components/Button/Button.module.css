@@ -15,3 +15,32 @@
 .ghost { background: transparent; }
 .danger { color: var(--danger); border-color: var(--danger); }
 .block { width: 100%; }
+
+/* Kiểu quán: nút phẳng bo vừa, nút chính là biển sơn đỏ chữ bảng hiệu, có gờ nhựa. */
+:global(:root[data-look="quan"]) .button {
+  min-height: 44px;
+  padding: 0 var(--space-6);
+  border: 1.5px solid var(--rule-soft);
+  border-radius: var(--control-radius);
+  background: var(--cell-raised);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  transition: transform 90ms var(--ease-out), box-shadow 90ms var(--ease-out);
+}
+:global(:root[data-look="quan"]) .button:active { filter: none; transform: translateY(1px); }
+:global(:root[data-look="quan"]) .button:disabled { opacity: 0.45; transform: none; cursor: default; }
+:global(:root[data-look="quan"]) .primary {
+  border: 0;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 0 color-mix(in oklab, var(--accent) 58%, var(--paint-ink));
+}
+:global(:root[data-look="quan"]) .primary:active { transform: translateY(2px); box-shadow: 0 1px 0 color-mix(in oklab, var(--accent) 58%, var(--paint-ink)); }
+:global(:root[data-look="quan"]) .ghost { background: var(--cell-raised); }
+:global(:root[data-look="quan"]) .danger { background: color-mix(in oklab, var(--danger) 12%, var(--bg)); }

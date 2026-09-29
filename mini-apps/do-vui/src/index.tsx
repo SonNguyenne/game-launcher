@@ -6,15 +6,8 @@ import { FAST_SECONDS, SECONDS, correctChoice, questionOf, triviaGame, type Triv
 import { strings, type TopicChoice } from './strings';
 
 const topicOptions = (Object.keys(strings.topics) as TopicChoice[]).map((v) => ({ value: v, label: strings.topics[v] }));
+import iconSvg from '../icon.svg?raw';
 import s from './Trivia.module.css';
-
-export function TriviaArt() {
-  return (
-    <div className={s.art}>
-      <span>?</span>
-    </div>
-  );
-}
 
 /** Đếm ngược tính từ lúc máy này thấy câu hỏi, nên không phụ thuộc đồng hồ của máy khác. */
 function useCountdown(roundId: number | undefined, running: boolean) {
@@ -89,40 +82,42 @@ function TriviaGame({ party }: { party: Party<TriviaState, TriviaAction> }) {
 
   return (
     <div className={s.game}>
-      <div className={s.timer} role="timer" aria-label={strings.seconds(left)}>
+      <div className={cx(s.timer, left <= 3 && !answered && s.hurry)} role="timer" aria-label={strings.seconds(left)}>
         <div className={s.track}>
           <i key={round.id} className={cx(s.fill, answered && s.paused)} style={{ '--secs': `${SECONDS}s` } as CSSProperties} />
         </div>
-        <span className={cx(s.left, left <= 3 && s.urgent)}>{left}</span>
+        <span key={left} className={cx(s.left, left <= 3 && s.urgent)}>{left}</span>
       </div>
 
-      <div className={s.qHead}>
-        <span className={s.topicTag}>{strings.topics[q.topic]}</span>
-        {party.myTurn && !answered && (
-          <button className={s.fifty} disabled={fiftyUsed || round.hidden.length > 0} onClick={() => dispatch({ type: 'fifty', round: round.id })}>
-            {fiftyUsed || round.hidden.length ? strings.fiftyUsed : strings.fifty}
-          </button>
-        )}
-      </div>
-      <h2 className={s.question}>{q.q}</h2>
+      <section className={s.qCard}>
+        <div className={s.qHead}>
+          <span className={s.topicTag}>{strings.topics[q.topic]}</span>
+          {party.myTurn && !answered && (
+            <button className={s.fifty} disabled={fiftyUsed || round.hidden.length > 0} onClick={() => dispatch({ type: 'fifty', round: round.id })}>
+              {fiftyUsed || round.hidden.length ? strings.fiftyUsed : strings.fifty}
+            </button>
+          )}
+        </div>
+        <h2 className={s.question}>{q.q}</h2>
+      </section>
 
-      <div className={s.options}>
-        {round.order.map((original, i) => (
-          <button
-            key={original}
-            className={cx(
-              s.option,
-              answered && i === right && s.right,
-              answered && i === state.picked && i !== right && s.wrong,
-              round.hidden.includes(i) && s.hidden,
-            )}
-            disabled={!party.myTurn || answered || round.hidden.includes(i)}
-            onClick={() => dispatch({ type: 'answer', round: round.id, choice: i, fast: elapsedMs() < FAST_SECONDS * 1000 })}
-          >
-            <span className={s.letter}>{strings.letters[i]}</span>
-            <span>{q.a[original]}</span>
-          </button>
-        ))}
+      <div className={cx(s.options, answered && s.settled)}>
+        {round.order.map((original, i) => {
+          const isRight = answered && i === right;
+          const isWrong = answered && i === state.picked && i !== right;
+          return (
+            <button
+              key={original}
+              className={cx(s.option, isRight && s.right, isWrong && s.wrong, round.hidden.includes(i) && s.hidden)}
+              disabled={!party.myTurn || answered || round.hidden.includes(i)}
+              onClick={() => dispatch({ type: 'answer', round: round.id, choice: i, fast: elapsedMs() < FAST_SECONDS * 1000 })}
+            >
+              <span className={s.letter}>{strings.letters[i]}</span>
+              <span className={s.answer}>{q.a[original]}</span>
+              {(isRight || isWrong) && <span className={s.mark}>{isRight ? strings.markRight : strings.markWrong}</span>}
+            </button>
+          );
+        })}
       </div>
 
       <ResultCard party={party} show={shownSeq === resultSeq} />
@@ -160,7 +155,7 @@ export default function DoVui({ ctx }: MiniAppProps<PartyData>) {
     <PartyShell party={party} info={{
         title: strings.title,
         rule: strings.rule,
-        art: <TriviaArt />,
+        art: <span dangerouslySetInnerHTML={{ __html: iconSvg }} />,
         settings: ({ value, onChange, editable }) => (
           <SettingsCard editable={editable}>
             <Chips label={strings.topicLabel} options={topicOptions} value={value.topic ?? 'mix'} disabled={!editable} onChange={(topic) => onChange({ topic })} />

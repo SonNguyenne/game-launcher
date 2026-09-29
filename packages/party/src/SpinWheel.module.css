@@ -1,0 +1,33 @@
+.box {
+  --wheel-a: var(--accent);
+  --wheel-a-ink: var(--on-accent);
+  --wheel-safe: var(--ink);
+  --wheel-safe-ink: var(--bg);
+  position: relative; width: min(64vw, 260px, 34dvh); aspect-ratio: 1;
+}
+.pointer {
+  position: absolute; left: 50%; top: -6px; z-index: 1; width: 22px; height: 28px;
+  transform: translateX(-50%); background: var(--ink); clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.wheel { width: 100%; height: 100%; transform: rotate(var(--rot)); transition: transform var(--spin-ms) cubic-bezier(0.33, 1, 0.68, 1); }
+.wheel path { stroke: var(--bg); stroke-width: 2; }
+.label { font-size: 16px; font-weight: 600; dominant-baseline: central; text-anchor: middle; font-family: var(--font-ui); }
+.rim { fill: none; stroke: var(--bg); stroke-width: 6; }
+.hub { fill: var(--bg); stroke: var(--ink); stroke-width: 3; }
+
+/* Kiểu quán: vòng sơn tay như hình vẽ của app: ô sơn phẳng, viền mực dày, chữ bảng hiệu; ô thoát là ô mực đen. */
+:global(:root[data-look="quan"]) .box {
+  --wheel-a: var(--paint-red);
+  --wheel-a-ink: var(--paint-paper);
+  --wheel-safe: var(--paint-ink);
+  --wheel-safe-ink: var(--paint-paper);
+}
+:global(:root[data-look="quan"]) .pointer {
+  top: -10px; width: 26px; height: 34px;
+  background: var(--accent);
+  clip-path: polygon(0 0, 100% 0, 100% 34%, 50% 100%, 0 34%);
+}
+:global(:root[data-look="quan"]) .wheel path { stroke: var(--paint-ink); stroke-width: 3; stroke-linejoin: round; }
+:global(:root[data-look="quan"]) .label { font-family: var(--font-display); font-size: 22px; font-weight: 400; letter-spacing: 0.02em; }
+:global(:root[data-look="quan"]) .rim { stroke: var(--paint-ink); stroke-width: 7; }
+:global(:root[data-look="quan"]) .hub { fill: var(--paint-paper); stroke: var(--paint-ink); stroke-width: 5; }

@@ -14,8 +14,6 @@ export const appConfig = {
   longPressMoveTolerancePx: 10,
   toastMs: 2_200,
   clockTickMs: 15_000,
-  pinLength: 4,
-  pinSalt: 'bang-app:',
   linkIdPrefix: 'link-',
   iframeAllow: 'clipboard-read; clipboard-write; fullscreen; geolocation; camera; microphone',
 } as const;

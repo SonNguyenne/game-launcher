@@ -69,7 +69,7 @@ export const questions: readonly Question[] = [
 
 export const strings = {
   title: 'đố nhanh',
-  rule: 'Mỗi người một câu, 10 giây để chọn. Đúng +1 điểm, trả lời trong 4 giây đầu +2. Sai hoặc hết giờ thì uống. Đúng 3 câu liền được chỉ định người uống. Mỗi người có một quyền 50/50. Chủ phòng chọn chủ đề ở phòng chờ.',
+  rule: 'Mỗi người một câu, 10 giây để chọn. Đúng +1 điểm, trả lời trong 4 giây đầu +2. Sai hoặc hết giờ thì chịu phạt. Đúng 3 câu liền được chỉ định người chịu phạt. Mỗi người có một quyền 50/50. Chủ phòng chọn chủ đề ở phòng chờ.',
   topicLabel: 'chủ đề',
   topics: { mix: 'trộn', vn: 'Việt Nam', world: 'thế giới', science: 'khoa học', fun: 'giải trí' } satisfies Record<TopicChoice, string>,
   ask: 'rút câu hỏi',
@@ -77,9 +77,9 @@ export const strings = {
   ready: 'sẵn sàng chưa?',
   seconds: (n: number) => `${n} giây`,
   correct: 'đúng rồi, an toàn',
-  streak: '3 câu liền! chỉ định 1 người uống',
-  wrong: 'sai rồi, uống 1 ly',
-  timeout: 'hết giờ, uống 1 ly',
+  streak: '3 câu liền! chỉ định 1 người chịu phạt',
+  wrong: 'sai rồi, dính phạt',
+  timeout: 'hết giờ, dính phạt',
   answerWas: (a: string) => `đáp án: ${a}`,
   gained: (n: number, fast: boolean) => `+${n} điểm${fast ? ' (trả lời nhanh)' : ''}`,
   fifty: '50/50',
@@ -88,4 +88,6 @@ export const strings = {
   points: (n: number) => `${n} điểm`,
   streakBadge: (n: number) => `${n} liền`,
   letters: ['A', 'B', 'C', 'D'],
+  markRight: '✓ đúng',
+  markWrong: '✕ sai',
 } as const;

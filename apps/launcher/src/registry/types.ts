@@ -13,6 +13,7 @@ interface BaseApp extends AppMeta {
 export interface CodeApp extends BaseApp {
   kind: 'code';
   description?: string;
+  art?: string;
   load: () => Promise<{ default: MiniAppComponent }>;
 }
 

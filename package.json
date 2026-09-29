@@ -11,7 +11,21 @@
     "typecheck": "pnpm --filter @bang/launcher typecheck",
     "party-server": "pnpm --filter @bang/party-server start",
     "serve": "pnpm build && pnpm party-server",
-    "new-app": "node scripts/create-mini-app.mjs"
+    "new-app": "node scripts/create-mini-app.mjs",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "check": "pnpm typecheck && pnpm lint && pnpm test"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.11.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.12.0",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^5.0.2",
+    "ws": "^8.18.0"
+  }
 }

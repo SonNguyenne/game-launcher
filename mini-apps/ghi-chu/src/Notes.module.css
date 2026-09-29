@@ -1,4 +1,5 @@
 .notes { display: flex; flex-direction: column; height: 100%; }
+.pad { position: relative; flex: 1; display: flex; min-height: 0; }
 .area {
   flex: 1; width: 100%; border: 0; resize: none; outline: none;
   padding: var(--space-8) var(--space-7);
@@ -8,4 +9,71 @@
   background-size: 100% 26px;
   background-position: 0 41px;
 }
+.art { display: none; }
 .meta { display: flex; justify-content: space-between; color: var(--ink-muted); font-size: var(--fs-sm); padding: var(--space-5) var(--space-7); border-top: var(--size-rule) solid var(--rule); }
+
+/*
+ * Kiểu quán: tờ phiếu ghi món xé từ cuốn sổ, gáy keo đỏ ở trên.
+ * Dòng kẻ là nền của textarea, cao đúng bằng line-height và cuộn theo chữ (attachment: local).
+ */
+:global(:root[data-look="quan"]) .notes { padding: var(--space-4) var(--space-8) 0; }
+:global(:root[data-look="quan"]) .pad {
+  --line: 32px;
+  --pad-top: var(--space-12);
+  --margin: 36px;
+  flex-direction: column;
+  border-radius: 4px 4px 0 0;
+  background: var(--cell);
+  overflow: hidden;
+}
+:global(:root[data-look="quan"]) .pad::before {
+  content: "";
+  flex: none;
+  height: 12px;
+  background: var(--paint-red);
+}
+:global(:root[data-look="quan"]) .area {
+  padding: var(--pad-top) var(--space-8) var(--space-12) calc(var(--margin) + var(--space-6));
+  font-family: var(--font-ui);
+  font-size: var(--fs-lg);
+  line-height: var(--line);
+  color: var(--ink);
+  caret-color: var(--paint-red);
+  background-color: transparent;
+  background-image:
+    linear-gradient(90deg, transparent calc(var(--margin) - 1px), color-mix(in oklab, var(--paint-red) 55%, transparent) 0 var(--margin), transparent 0),
+    linear-gradient(transparent calc(var(--line) - 1px), var(--rule) 0);
+  background-size: 100% 100%, 100% var(--line);
+  background-repeat: repeat-y;
+  /* Dòng kẻ nằm ngay dưới chân chữ của mỗi dòng. */
+  background-attachment: local;
+  background-position: 0 0, 0 calc(var(--pad-top) - 6px);
+}
+:global(:root[data-look="quan"]) .area::placeholder {
+  font-family: var(--font-hand);
+  font-size: var(--fs-xl);
+  color: var(--ink-muted);
+}
+:global(:root[data-look="quan"]) .art {
+  --art-ink: var(--ink);
+  --art-paper: var(--cell-raised);
+  --art-pop: var(--paint-yellow);
+  display: block;
+  position: absolute;
+  right: var(--space-10);
+  bottom: var(--space-12);
+  width: 88px;
+  transform: rotate(6deg);
+  pointer-events: none;
+}
+:global(:root[data-look="quan"]) .art svg { display: block; width: 100%; height: auto; }
+
+:global(:root[data-look="quan"]) .meta {
+  align-items: center;
+  margin: 0 calc(-1 * var(--space-8));
+  padding: var(--space-5) var(--space-8) calc(var(--space-5) + env(safe-area-inset-bottom, 0px));
+  border-top: 2px dotted var(--rule);
+  color: var(--ink-secondary);
+}
+:global(:root[data-look="quan"]) .status { font-family: var(--font-hand); font-size: var(--fs-md); }
+:global(:root[data-look="quan"]) .status[data-status="saved"] { color: color-mix(in oklab, var(--paint-green) 80%, var(--ink)); }

@@ -88,7 +88,7 @@ export function RunnerPage() {
 
       <div className={s.body}>
         {!app && (
-          <StatusPanel code={t.runner.errorCode} text={t.runner.notFound} actions={<Button onClick={close}>{t.runner.home}</Button>} />
+          <StatusPanel art="no-match" code={t.runner.errorCode} text={t.runner.notFound} actions={<Button onClick={close}>{t.runner.home}</Button>} />
         )}
         {app?.kind === 'code' && <CodeAppHost key={reloadKey} app={app} onClose={close} />}
         {/* Gỡ iframe trước khi thu nhỏ: Chrome để sót hình của iframe khác domain khi nó nằm trong clip-path đang chạy hiệu ứng. */}

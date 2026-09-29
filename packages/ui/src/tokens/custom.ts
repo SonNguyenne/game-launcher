@@ -1,4 +1,5 @@
 import { fontFamily, fontSize, fontWeight, letterSpacing } from './typography';
+import { signPaint } from './colors';
 import { lookTokens, type UiLook } from './looks';
 
 /**
@@ -6,6 +7,7 @@ import { lookTokens, type UiLook } from './looks';
  * Không trùng với keyColors để phím vừa dùng luôn phân biệt được.
  */
 export const accentColors = {
+  red: { label: 'đỏ ghế', fill: signPaint.red, text: signPaint.paper },
   peach: { label: 'đào', fill: '#F59762', text: '#232220' },
   orange: { label: 'cam', fill: '#F05A24', text: '#141414' },
   green: { label: 'lá', fill: '#1FA971', text: '#0F1A2A' },
@@ -48,7 +50,7 @@ export interface StyleCustom {
 export const lookDefaults: Record<UiLook, StyleCustom> = {
   board: { accent: 'orange', scale: 'md', font: 'mono', corners: 'square', spacing: 'tight' },
   readable: { accent: 'orange', scale: 'md', font: 'sans', corners: 'round', spacing: 'airy' },
-  soft: { accent: 'peach', scale: 'md', font: 'sans', corners: 'round', spacing: 'airy' },
+  quan: { accent: 'red', scale: 'md', font: 'sans', corners: 'round', spacing: 'airy' },
 };
 
 const oneOf = <T extends string>(ids: readonly T[]) => (v: unknown): v is T => typeof v === 'string' && (ids as readonly string[]).includes(v);

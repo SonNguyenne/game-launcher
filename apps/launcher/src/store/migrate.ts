@@ -1,5 +1,6 @@
 import { customValidators, isKeyColorId, isUiLook, type StyleCustom } from '@bang/ui';
 import { appConfig, type ColumnCount } from '@/config/app';
+import { isHttpUrl } from '@/lib/url';
 import { createInitialState } from './defaults';
 import type { AppOverride, LinkAppRecord, PersistedState, Settings } from './types';
 
@@ -9,7 +10,8 @@ const str = (v: unknown, fallback = '') => (typeof v === 'string' ? v : fallback
 const strArr = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
 
 function toLink(raw: unknown): LinkAppRecord | null {
-  if (!isObj(raw) || typeof raw.id !== 'string' || typeof raw.url !== 'string') return null;
+  // Chỉ nhận http(s): link "javascript:" trong file nhập sẽ chạy script ngay trong launcher.
+  if (!isObj(raw) || typeof raw.id !== 'string' || typeof raw.url !== 'string' || !isHttpUrl(raw.url)) return null;
   return {
     id: raw.id,
     url: raw.url,
@@ -44,8 +46,9 @@ function toSettings(raw: unknown): Settings {
   // Bản HTML cũ dùng "cols", bản mới dùng "columns".
   const cols = Number(raw.columns ?? raw.cols);
   const columns = (appConfig.columnOptions as readonly number[]).includes(cols) ? (cols as ColumnCount) : base.columns;
+  // Kiểu lạ (kể cả "soft" đã bỏ) rơi về kiểu mặc định.
   const look = isUiLook(raw.look) ? raw.look : base.look;
-  return { theme, look, custom: toCustom(raw.custom), columns, pinHash: typeof raw.pinHash === 'string' ? raw.pinHash : null };
+  return { theme, look, custom: toCustom(raw.custom), columns };
 }
 
 /**

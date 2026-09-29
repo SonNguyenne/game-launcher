@@ -9,36 +9,46 @@ export interface Spin {
   offset: number;
 }
 
+export type CustomWheels = Partial<Record<Level, Slice[]>>;
+
 export interface WheelState extends BaseState {
   level: Level;
   spin: Spin | null;
   /** Vài kết quả gần nhất, mới nhất đứng đầu. */
   history: { playerId: string; short: string }[];
+  /** Tùy chỉnh các ô quay theo từng mức. */
+  customWheels?: CustomWheels;
 }
 
-export type WheelAction = { type: 'spin' } | { type: 'config'; config: Partial<Pick<WheelState, 'level'>> };
+export type WheelConfig = {
+  level?: Level;
+  customWheels?: CustomWheels;
+};
 
-export const wheelOf = (level: Level): readonly Slice[] => strings.wheels[level];
+export type WheelAction = { type: 'spin' } | { type: 'config'; config: WheelConfig };
+
+export const wheelOf = (level: Level, customWheels?: CustomWheels): readonly Slice[] =>
+  customWheels?.[level] ?? strings.wheels[level];
 
 export const wheelGame: GameDef<WheelState, WheelAction> = {
   id: 'vong-quay',
   init: () => ({ ...baseState(), level: 'vua', spin: null, history: [] }),
-  configOf: (s) => ({ level: s.level }),
+  configOf: (s) => ({ level: s.level, customWheels: s.customWheels }),
   advance(s) {
-    // "Quay thêm lần nữa": xóa kết quả nhưng giữ nguyên người đang tới lượt.
-    const again = s.spin && wheelOf(s.level)[s.spin.slice]?.kind === 'again';
+    const again = s.spin && wheelOf(s.level, s.customWheels)[s.spin.slice]?.kind === 'again';
     const next = nextTurn(s);
     return again ? { ...next, turn: s.turn } : next;
   },
   reduce(s, a, c) {
     if (a.type === 'config') {
-      // Mức độ chọn ở phòng chờ, áp vào lúc bắt đầu ván.
-      const { level } = a.config;
-      if (!c.host || s.result || !level || !(level in strings.wheels)) return s;
-      return { ...s, level, spin: null, seq: s.seq + 1 };
+      const { level, customWheels } = a.config;
+      if (!c.host || s.result) return s;
+      const nextLevel = level && level in strings.wheels ? level : s.level;
+      const nextWheels = customWheels !== undefined ? customWheels : s.customWheels;
+      return { ...s, level: nextLevel, customWheels: nextWheels, spin: null, seq: s.seq + 1 };
     }
     if (a.type !== 'spin' || s.result || !isTurnOf(s, c)) return s;
-    const wheel = wheelOf(s.level);
+    const wheel = wheelOf(s.level, s.customWheels);
     const slice = randomInt(0, wheel.length - 1);
     const item = wheel[slice];
     const who = playerAt(c.players, s.turn)!.id;

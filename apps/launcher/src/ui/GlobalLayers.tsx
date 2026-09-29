@@ -2,8 +2,8 @@ import { Banner, Dialog, Toast } from '@bang/ui';
 import { t } from '@/i18n/vi';
 import { useOnline } from '@/hooks/useOnline';
 import { useUiStore } from '@/store/uiStore';
-import { PinHost } from '@/features/pin/PinHost';
 import { SheetHost } from './SheetHost';
+import { UpdateWatcher } from './UpdateWatcher';
 
 /** Các lớp phủ dùng chung toàn app. Đặt một lần ở gốc cây component. */
 export function GlobalLayers() {
@@ -15,6 +15,7 @@ export function GlobalLayers() {
   return (
     <>
       <SheetHost />
+      <UpdateWatcher />
       {confirm && (
         <Dialog
           title={confirm.title}
@@ -29,7 +30,6 @@ export function GlobalLayers() {
           }}
         />
       )}
-      <PinHost />
       <Toast message={toast.message} visible={toast.visible} />
       <Banner message={t.common.offline} visible={!online} />
     </>

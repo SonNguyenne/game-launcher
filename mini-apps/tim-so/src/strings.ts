@@ -72,9 +72,6 @@ export const strings = {
   turnsTie: (names: string, n: number) => `Hết số trên bàn. ${names} hòa, mỗi người ${n} điểm.`,
   missTitle: 'hết giờ',
   missHint: 'Quay xem phải uống bao nhiêu.',
-  spin: 'quay',
-  spinning: 'đang quay…',
-  waitSpin: (name: string) => `chờ ${name} quay`,
   /** Vòng phạt khi hết giờ mà chưa tìm ra. */
   penalties: [
     { short: '1 ngụm', text: 'nhấp 1 ngụm' },

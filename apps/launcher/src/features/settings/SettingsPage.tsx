@@ -1,4 +1,4 @@
-import { ListRow, Segmented, SectionHeader, Switch, TopBar, pad2, type ThemeMode, type UiLook } from '@bang/ui';
+import { ListRow, Segmented, SectionHeader, TopBar, pad2, type ThemeMode, type UiLook } from '@bang/ui';
 import { appConfig, type ColumnCount } from '@/config/app';
 import { t } from '@/i18n/vi';
 import { Screen } from '@/layout/Screen';
@@ -6,7 +6,6 @@ import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { useApps } from '@/registry/useApps';
 import { useLauncherStore } from '@/store/launcherStore';
 import { useUiStore } from '@/store/uiStore';
-import { usePinFlows } from '@/features/pin/usePinFlows';
 import { exportData, importData, wipeData } from './dataTransfer';
 import s from './Settings.module.css';
 
@@ -21,7 +20,6 @@ export function SettingsPage() {
   const openSheet = useUiStore((st) => st.openSheet);
   const { all } = useApps();
   const { goBack, openManage } = useAppNavigation();
-  const pin = usePinFlows();
   const version = import.meta.env.PACKAGE_VERSION ?? '';
 
   return (
@@ -60,21 +58,13 @@ export function SettingsPage() {
         onClick={() => openSheet({ kind: 'style' })}
       />
 
-      <SectionHeader label={t.settings.security} index="02" />
-      <ListRow
-        title={t.settings.pin}
-        subtitle={t.settings.pinSub}
-        trailing={<Switch label={t.settings.pin} checked={!!settings.pinHash} onChange={(on) => (on ? pin.enable() : pin.disable())} />}
-      />
-      {settings.pinHash && <ListRow title={t.settings.pinChange} chevron onClick={pin.change} />}
-
-      <SectionHeader label={t.settings.data} index="03" />
+      <SectionHeader label={t.settings.data} index="02" />
       <ListRow title={t.settings.manage} value={t.common.appCount(all.length)} chevron onClick={openManage} />
       <ListRow title={t.settings.export} subtitle={t.settings.exportSub} onClick={exportData} />
       <ListRow title={t.settings.import} subtitle={t.settings.importSub} onClick={importData} />
       <ListRow title={t.settings.wipe} danger onClick={wipeData} />
 
-      <SectionHeader label={t.settings.other} index="04" />
+      <SectionHeader label={t.settings.other} index="03" />
       <ListRow title={t.settings.install} chevron onClick={() => openSheet({ kind: 'install' })} />
       <ListRow title={t.settings.version} value={version || pad2(0)} />
     </Screen>

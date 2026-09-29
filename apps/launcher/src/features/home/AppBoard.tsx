@@ -16,15 +16,15 @@ interface AppBoardProps {
 
 export function AppBoard({ apps, query, columns, hotId, onOpen, onLongPress, onAdd }: AppBoardProps) {
   const compact = columns > 2;
-  const renderKey = (app: LauncherApp) => (
-    <AppKey key={app.id} app={app} hot={app.id === hotId} compact={compact} onOpen={onOpen} onLongPress={onLongPress} />
+  const renderKey = (app: LauncherApp, position: number) => (
+    <AppKey key={app.id} app={app} hot={app.id === hotId} compact={compact} position={position} onOpen={onOpen} onLongPress={onLongPress} />
   );
 
   if (!apps.length) {
     const empty = query ? (
-      <EmptyState title={t.home.noMatchTitle(query)} body={t.home.noMatchBody} action={<Button onClick={onAdd}>{t.home.add}</Button>} />
+      <EmptyState art="no-match" title={t.home.noMatchTitle(query)} body={t.home.noMatchBody} action={<Button onClick={onAdd}>{t.home.add}</Button>} />
     ) : (
-      <EmptyState title={t.home.emptyTitle} body={t.home.emptyBody} action={<Button variant="primary" onClick={onAdd}>{t.home.emptyAction}</Button>} />
+      <EmptyState art="empty" title={t.home.emptyTitle} body={t.home.emptyBody} action={<Button variant="primary" onClick={onAdd}>{t.home.emptyAction}</Button>} />
     );
     return (
       <KeyGrid columns={columns}>
@@ -37,18 +37,20 @@ export function AppBoard({ apps, query, columns, hotId, onOpen, onLongPress, onA
     return (
       <KeyGrid columns={columns}>
         <KeyGroupHeader label={t.home.results} count={pad2(apps.length)} />
-        {apps.map(renderKey)}
+        {apps.map((app, i) => renderKey(app, i))}
         <KeyFiller itemCount={apps.length} columns={columns} />
       </KeyGrid>
     );
   }
 
   const groups = groupApps(apps);
+  // Vị trí liền mạch qua các nhóm để màu sơn không lặp giữa hai phím kề nhau.
+  const starts = groups.map((_, gi) => groups.slice(0, gi).reduce((n, g) => n + g.items.length, 0));
   return (
     <KeyGrid columns={columns}>
-      {groups.map(({ group, items }) => [
+      {groups.map(({ group, items }, gi) => [
         <KeyGroupHeader key={`h-${group}`} label={group} count={pad2(items.length)} />,
-        ...items.map(renderKey),
+        ...items.map((app, i) => renderKey(app, starts[gi] + i)),
         <KeyFiller key={`f-${group}`} itemCount={items.length} columns={columns} />,
       ])}
     </KeyGrid>

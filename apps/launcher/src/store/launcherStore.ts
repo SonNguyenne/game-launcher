@@ -1,9 +1,11 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { appConfig } from '@/config/app';
+import { t } from '@/i18n/vi';
 import { randomId } from '@/lib/id';
 import { createInitialState } from './defaults';
 import { normalizeState } from './migrate';
+import { notify } from './uiStore';
 import type { AppMeta, LinkAppRecord, PersistedState, Settings } from './types';
 
 interface Actions {
@@ -17,15 +19,37 @@ interface Actions {
   markOpened(id: string): void;
   setAppData(id: string, value: unknown): void;
   updateSettings(patch: Partial<Settings>): void;
-  replaceAll(raw: unknown, keepPin?: boolean): void;
+  replaceAll(raw: unknown): void;
   wipe(): void;
 }
 
 export type LauncherStore = PersistedState & Actions;
 
+let lastWarnAt = 0;
+
+/**
+ * localStorage có giới hạn (thường ~5MB) và toàn bộ dữ liệu nằm trong một khóa.
+ * Ghi lỗi (đầy bộ nhớ, chế độ riêng tư) thì báo cho người dùng thay vì im lặng mất dữ liệu.
+ */
+const safeLocalStorage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> = {
+  getItem: (key) => localStorage.getItem(key),
+  removeItem: (key) => localStorage.removeItem(key),
+  setItem: (key, value) => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (err) {
+      console.error('[store] không lưu được', err);
+      if (Date.now() - lastWarnAt > 10_000) {
+        lastWarnAt = Date.now();
+        notify(t.common.storageFull);
+      }
+    }
+  },
+};
+
 export const useLauncherStore = create<LauncherStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       ...createInitialState(),
 
       addLink(input) {
@@ -87,11 +111,8 @@ export const useLauncherStore = create<LauncherStore>()(
         set((s) => ({ settings: { ...s.settings, ...patch } }));
       },
 
-      replaceAll(raw, keepPin = true) {
-        const pin = get().settings.pinHash;
-        const next = normalizeState(raw);
-        if (keepPin) next.settings.pinHash = pin;
-        set(next);
+      replaceAll(raw) {
+        set(normalizeState(raw));
       },
 
       wipe() {
@@ -101,7 +122,7 @@ export const useLauncherStore = create<LauncherStore>()(
     {
       name: appConfig.storageKey,
       version: appConfig.storageVersion,
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => safeLocalStorage),
       partialize: (s): PersistedState => ({
         links: s.links,
         overrides: s.overrides,
@@ -116,8 +137,3 @@ export const useLauncherStore = create<LauncherStore>()(
     },
   ),
 );
-
-/** Xuất đúng phần dữ liệu cần sao lưu, bỏ mã PIN. */
-export function selectExportPayload(s: PersistedState) {
-  return { ...s, settings: { ...s.settings, pinHash: null } };
-}

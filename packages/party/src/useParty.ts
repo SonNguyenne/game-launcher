@@ -3,12 +3,15 @@ import { usePersistentState, type MiniAppContext } from '@bang/sdk';
 import { playerAt, runReduce, type BaseState, type CommonAction, type GameAction, type GameDef, type Player } from './engine';
 import { RoomClient, partyServerUrl, type ConnectionStatus, type RoomError, type ServerMessage } from './net';
 import { playTone, type Tone } from './sound';
+import { useWakeLock } from './useWakeLock';
 
 /** Dữ liệu mỗi game tự lưu. */
 export interface PartyData {
   name?: string;
   players?: string[];
   muted?: boolean;
+  /** Cài đặt lưu riêng của từng game dưới máy người chơi. */
+  savedConfig?: Record<string, unknown>;
 }
 
 export type PartyMode = 'start' | 'setup' | 'local' | 'online';
@@ -25,7 +28,8 @@ type LobbyPacket<S> = { [LOBBY_KEY]: Partial<S> };
 const isLobby = <S,>(v: unknown): v is LobbyPacket<S> => !!v && typeof v === 'object' && LOBBY_KEY in v;
 
 const PROFILE_KEY = 'bang-party-profile';
-const ID_KEY = 'bang-party-id';
+// Key mới dài hơn thay cho 'bang-party-id' (10 ký tự Math.random) của bản cũ.
+const ID_KEY = 'bang-party-key';
 
 /** Tên và danh sách người chơi dùng chung giữa các game trên cùng máy, để khỏi nhập lại. */
 function readProfile(): PartyData {
@@ -44,8 +48,13 @@ function writeProfile(p: PartyData) {
   }
 }
 
-function deviceId() {
-  const make = () => Math.random().toString(36).slice(2, 12);
+/** Id bí mật của máy, dùng để vào lại đúng chỗ trong phòng. Không bao giờ hiện cho máy khác. */
+function deviceKey() {
+  const make = () => {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('');
+  };
   try {
     const saved = localStorage.getItem(ID_KEY);
     if (saved) return saved;
@@ -71,13 +80,16 @@ export function useParty<S extends BaseState, A extends GameAction>(game: GameDe
   const data = useMemo(() => ({ ...readProfile(), ...stored }), [stored]);
   const [mode, setMode] = useState<PartyMode>('start');
   const [state, setState] = useState<S | null>(null);
-  /** Cài đặt nháp ở phòng chờ, áp vào lúc bắt đầu ván. */
-  const [lobby, setLobby] = useState<Partial<S>>({});
+  /** Cài đặt nháp ở phòng chờ, áp vào lúc bắt đầu ván (khởi tạo từ cài đặt đã lưu dưới máy). */
+  const [lobby, setLobby] = useState<Partial<S>>(() => (stored.savedConfig as Partial<S>) ?? {});
   const defaults = useMemo(() => game.configOf?.(game.init([])) ?? null, [game]);
   const [room, setRoom] = useState<Room | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>('closed');
   const [error, setError] = useState<RoomError | null>(null);
-  const me = useMemo(deviceId, []);
+  const key = useMemo(deviceKey, []);
+  /** Id của máy này trong phòng (server cấp). Chơi 1 máy thì không dùng tới. */
+  const [me, setMe] = useState('');
+  const meRef = useRef(me);
   const initialCode = useMemo(codeFromUrl, []);
 
   const localPlayers = useMemo<Player[]>(() => (data.players ?? []).map((name, i) => ({ id: `p${i}`, name })), [data.players]);
@@ -86,8 +98,8 @@ export function useParty<S extends BaseState, A extends GameAction>(game: GameDe
   const current = state ? playerAt(players, state.turn) : undefined;
 
   // Callback của WebSocket sống lâu hơn một lần render, nên đọc giá trị mới nhất qua ref.
-  const live = useRef({ state, players, isHost, mode, lobby });
-  live.current = { ...live.current, players, isHost, mode };
+  const live = useRef({ state, players, isHost, mode, lobby: (stored.savedConfig as Partial<S>) ?? {} });
+  live.current = { ...live.current, players, isHost, mode, lobby };
   const clientRef = useRef<RoomClient | null>(null);
   const codeRef = useRef<string | null>(null);
 
@@ -102,11 +114,15 @@ export function useParty<S extends BaseState, A extends GameAction>(game: GameDe
     [setData],
   );
 
-  const sendLobby = useCallback((next: Partial<S>) => {
-    live.current.lobby = next;
-    setLobby(next);
-    if (live.current.mode === 'online') clientRef.current?.send({ t: 'state', state: { [LOBBY_KEY]: next } });
-  }, []);
+  const sendLobby = useCallback(
+    (next: Partial<S>) => {
+      live.current.lobby = next;
+      setLobby(next);
+      save({ savedConfig: next as Record<string, unknown> });
+      if (live.current.mode === 'online') clientRef.current?.send({ t: 'state', state: { [LOBBY_KEY]: next } });
+    },
+    [save],
+  );
 
   /** Trạng thái nhận từ server: gói phòng chờ thì chỉ cập nhật cài đặt nháp. */
   const receive = useCallback((raw: unknown) => {
@@ -143,22 +159,24 @@ export function useParty<S extends BaseState, A extends GameAction>(game: GameDe
         const who = s ? playerAt(list, s.turn)?.id : undefined;
         if (who) apply(action, who, true);
       } else if (m === 'online') {
-        if (host) apply(action, me, true);
+        if (host) apply(action, meRef.current, true);
         else clientRef.current?.send({ t: 'action', action });
       }
     },
-    [apply, me],
+    [apply],
   );
 
   const onMessage = useCallback(
     (m: ServerMessage) => {
       if (m.t === 'joined') {
         codeRef.current = m.code;
+        meRef.current = m.you;
+        setMe(m.you);
         setRoom({ code: m.code, hostId: m.hostId, members: m.members });
         receive(m.state);
         setError(null);
         // Chủ phòng vừa tạo phòng: đưa cài đặt đang có cho cả phòng thấy.
-        if (m.hostId === me && m.state == null) sendLobby(live.current.lobby);
+        if (m.hostId === m.you && m.state == null) sendLobby(live.current.lobby);
       } else if (m.t === 'members') {
         setRoom((r) => (r ? { ...r, hostId: m.hostId, members: m.members } : r));
       } else if (m.t === 'state') {
@@ -173,7 +191,7 @@ export function useParty<S extends BaseState, A extends GameAction>(game: GameDe
         setMode('start');
       }
     },
-    [apply, receive, sendLobby, me],
+    [apply, receive, sendLobby],
   );
 
   const connect = useCallback(
@@ -195,26 +213,34 @@ export function useParty<S extends BaseState, A extends GameAction>(game: GameDe
         url: partyServerUrl(),
         hello: () =>
           codeRef.current
-            ? { t: 'join', code: codeRef.current, game: game.id, id: me, name }
-            : { t: 'create', game: game.id, id: me, name },
+            ? { t: 'join', code: codeRef.current, game: game.id, id: key, name }
+            : { t: 'create', game: game.id, id: key, name },
         onMessage,
         onStatus: setStatus,
       });
     },
-    [game.id, me, onMessage],
+    [game.id, key, onMessage],
   );
 
   useEffect(() => () => clientRef.current?.close(), []);
+
+  // Đang có ván hoặc đang ở trong phòng: giữ màn hình sáng.
+  useWakeLock(state !== null || mode === 'online');
 
   const leave = useCallback(() => {
     clientRef.current?.close();
     clientRef.current = null;
     codeRef.current = null;
+    meRef.current = '';
+    setMe('');
     setRoom(null);
     live.current.state = null;
     setState(null);
+    const restored = (stored.savedConfig as Partial<S>) ?? {};
+    live.current.lobby = restored;
+    setLobby(restored);
     setMode('start');
-  }, []);
+  }, [stored.savedConfig]);
 
   const muted = !!data.muted;
   const sfx = useCallback((tone: Tone) => !muted && playTone(tone), [muted]);
@@ -267,7 +293,7 @@ export function useParty<S extends BaseState, A extends GameAction>(game: GameDe
         setMode('local');
       }
       let first = game.init(list);
-      if (game.configOf) first = game.reduce(first, { type: 'config', config: live.current.lobby } as unknown as A, { from: me, players: list, host: true });
+      if (game.configOf) first = game.reduce(first, { type: 'config', config: live.current.lobby } as unknown as A, { from: meRef.current, players: list, host: true });
       commit(first);
     },
     endGame: () => {

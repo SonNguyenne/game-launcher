@@ -2,17 +2,18 @@ import { appConfig } from '@/config/app';
 import { t } from '@/i18n/vi';
 import { fileDateStamp } from '@/lib/date';
 import { downloadText, pickTextFile } from '@/lib/files';
-import { selectExportPayload, useLauncherStore } from '@/store/launcherStore';
+import { useLauncherStore } from '@/store/launcherStore';
 import { looksLikeExport } from '@/store/migrate';
 import { notify, useUiStore } from '@/store/uiStore';
 
-/** Xuất dữ liệu ra file JSON (không kèm mã PIN). */
+/** Xuất dữ liệu ra file JSON. */
 export function exportData() {
   const payload = {
     format: appConfig.exportFormat,
     version: appConfig.storageVersion,
     exportedAt: new Date().toISOString(),
-    ...selectExportPayload(useLauncherStore.getState()),
+    // Chỉ phần dữ liệu; các action (hàm) bị JSON.stringify bỏ qua.
+    ...useLauncherStore.getState(),
   };
   downloadText(`${appConfig.exportFormat}-${fileDateStamp()}.json`, JSON.stringify(payload, null, 2));
   notify(t.settings.exported);
@@ -38,7 +39,7 @@ export async function importData() {
     text: t.settings.importConfirm.text(count),
     confirmLabel: t.settings.importConfirm.ok,
     onConfirm: () => {
-      useLauncherStore.getState().replaceAll(raw, true);
+      useLauncherStore.getState().replaceAll(raw);
       notify(t.settings.importConfirm.done);
     },
   });

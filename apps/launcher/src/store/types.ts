@@ -24,7 +24,6 @@ export interface Settings {
   /** Chỉ lưu phần người dùng đã đổi so với mặc định của kiểu hiển thị. */
   custom: Partial<StyleCustom>;
   columns: ColumnCount;
-  pinHash: string | null;
 }
 
 export interface PersistedState {

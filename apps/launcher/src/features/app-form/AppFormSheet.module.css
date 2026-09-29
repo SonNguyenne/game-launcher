@@ -3,3 +3,4 @@
 .note { margin: calc(-1 * var(--space-3)) 0 var(--space-9); color: var(--ink-muted); font-size: var(--fs-sm); }
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
 .extra { margin-top: var(--space-4); }
+:global(:root[data-look="quan"]) .preview { border: 0; }

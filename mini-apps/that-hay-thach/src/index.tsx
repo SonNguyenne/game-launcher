@@ -1,22 +1,14 @@
 import { useEffect, useRef } from 'react';
 import type { MiniAppProps } from '@bang/sdk';
 import { Chips, PartyShell, ResultCard, SettingsCard, playerAt, useParty, vibrate, type Party, type PartyData } from '@bang/party';
-import { Button, cx } from '@bang/ui';
+import { Button, Field, TextInput, cx } from '@bang/ui';
 import { tdGame, type TdAction, type TdState } from './game';
 import { strings, type Kind, type Level } from './strings';
+import iconSvg from '../icon.svg?raw';
 import s from './TruthDare.module.css';
 
 const kinds = Object.keys(strings.kinds) as Kind[];
 const levelOptions = (Object.keys(strings.levels) as Level[]).map((v) => ({ value: v, label: strings.levels[v] }));
-
-export function TruthDareArt() {
-  return (
-    <div className={s.art}>
-      <span className={cx(s.artCard, s.truth)}>{strings.kinds.truth.name}</span>
-      <span className={cx(s.artCard, s.dare)}>{strings.kinds.dare.name}</span>
-    </div>
-  );
-}
 
 function TruthDareGame({ party }: { party: Party<TdState, TdAction> }) {
   const state = party.state!;
@@ -105,12 +97,80 @@ export default function ThatHayThach({ ctx }: MiniAppProps<PartyData>) {
     <PartyShell party={party} info={{
         title: strings.title,
         rule: strings.rule,
-        art: <TruthDareArt />,
-        settings: ({ value, onChange, editable }) => (
-          <SettingsCard editable={editable}>
-            <Chips label={strings.levelLabel} options={levelOptions} value={value.level ?? 'vui'} disabled={!editable} onChange={(level) => onChange({ level })} />
-          </SettingsCard>
-        ),
+        art: <span dangerouslySetInnerHTML={{ __html: iconSvg }} />,
+        settings: ({ value, onChange, editable }) => {
+          const lvl: Level = value.level ?? 'vui';
+          const customPen = value.customPenalties?.[lvl] ?? '';
+          const current = customPen.trim() || strings.penalty[lvl];
+          const presets = [
+            strings.penalty[lvl],
+            'chống đẩy 5 cái',
+            'uống 1 ngụm đồ uống',
+            'hát 1 câu bất kỳ',
+            'kể 1 bí mật vui',
+          ];
+          return (
+            <SettingsCard editable={editable}>
+              <Chips
+                label={strings.levelLabel}
+                options={levelOptions}
+                value={lvl}
+                disabled={!editable}
+                onChange={(level) => onChange({ ...value, level })}
+              />
+              <Field
+                label={`Hình phạt khi không dám (${strings.levels[lvl]})`}
+                htmlFor="td-pen"
+                hint="Tự lưu trên máy này."
+              >
+                <TextInput
+                  id="td-pen"
+                  value={customPen}
+                  placeholder={strings.penalty[lvl]}
+                  maxLength={50}
+                  disabled={!editable}
+                  onChange={(e) =>
+                    onChange({
+                      ...value,
+                      customPenalties: {
+                        ...value.customPenalties,
+                        [lvl]: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </Field>
+              {editable && (
+                <div className={s.presetSection}>
+                  <span className={s.presetLabel}>Gợi ý nhanh:</span>
+                  <div className={s.presetChips}>
+                    {presets.map((preset) => {
+                      const active = current === preset;
+                      return (
+                        <button
+                          key={preset}
+                          type="button"
+                          className={cx(s.presetChip, active && s.presetChipActive)}
+                          onClick={() =>
+                            onChange({
+                              ...value,
+                              customPenalties: {
+                                ...value.customPenalties,
+                                [lvl]: preset,
+                              },
+                            })
+                          }
+                        >
+                          {preset}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </SettingsCard>
+          );
+        },
       }}>
       {party.state && <TruthDareGame party={party} />}
     </PartyShell>
