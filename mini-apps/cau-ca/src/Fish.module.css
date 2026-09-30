@@ -11,33 +11,55 @@
 .shuffleButton:active:not(:disabled) { transform: scale(0.96); }
 .shuffleButton:disabled { background: var(--cell-raised); color: var(--ink-muted); cursor: default; }
 
-/* Bàn bài: 8 cột trên điện thoại, 13 cột (đủ một chất) khi màn rộng. */
-.board { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }
+/* Bàn bài: 8 cột trên điện thoại nhỏ, 13 cột khi màn rộng */
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 5px;
+  user-select: none;
+  -webkit-user-select: none;
+}
 @media (min-width: 600px) { .board { grid-template-columns: repeat(13, 1fr); gap: 6px; } }
 
-.card, .empty { aspect-ratio: 5 / 7; border-radius: max(4px, calc(var(--key-radius) * 0.3)); }
-.card { position: relative; padding: 0; perspective: 600px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.card, .empty {
+  aspect-ratio: 5 / 7;
+  border-radius: max(5px, calc(var(--key-radius) * 0.35));
+  contain: strict;
+}
+.card {
+  position: relative;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  perspective: 600px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
 .card:disabled { cursor: default; }
-.card:not(:disabled):active .inner { transform: scale(0.92); }
+.card:not(:disabled):active .inner { transform: scale(0.94); }
 .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.empty { border: 1.5px dashed var(--rule-soft); opacity: 0.6; }
-
+.empty { border: 1.5px dashed var(--rule-soft); opacity: 0.45; }
 /* Đang xáo: lá bay có bóng đổ, không bấm được. */
 .shuffling .card { pointer-events: none; }
 .shuffling .back { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--on-accent) 18%, transparent), 0 6px 14px -6px var(--shadow); }
 
-/* Lá bài lật: mặt sau và mặt trước dán lưng vào nhau. */
+/* Lá bài lật: hardware acceleration mượt 60fps */
 .inner {
   position: absolute; inset: 0; display: grid;
   transform-style: preserve-3d;
-  transition: transform 420ms var(--ease-out);
+  transition: transform 280ms cubic-bezier(0.2, 0, 0, 1);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .up .inner { transform: rotateY(180deg); }
 .back, .faceUp {
   grid-area: 1 / 1; border-radius: inherit;
   backface-visibility: hidden; -webkit-backface-visibility: hidden;
 }
-.inner, .back, .faceUp { border-radius: max(4px, calc(var(--key-radius) * 0.3)); }
+.inner, .back, .faceUp { border-radius: max(5px, calc(var(--key-radius) * 0.35)); }
 .back {
   background:
     radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--on-accent) 22%, transparent) 0 22%, transparent 23%),

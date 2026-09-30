@@ -29,8 +29,19 @@ function FishGame({ party }: { party: FishParty }) {
   const boardRef = useRef<HTMLDivElement>(null);
   const shuffling = useShuffleAnimation(boardRef, st.shuffles, !st.started, (tone) => sfxRef.current(tone));
   const inGame = party.mode === 'local' || party.players.some((p) => p.id === party.me);
+  const [pendingFlip, setPendingFlip] = useState<number | null>(null);
+  // Khi state từ server/host về đã bao gồm lá bài hoặc chuyển phase/hết lượt -> xóa pendingFlip
+  useEffect(() => {
+    if (pendingFlip !== null && (st.flipped.includes(pendingFlip) || !party.myTurn || st.phase !== 'pick')) {
+      setPendingFlip(null);
+    }
+  }, [st.flipped, party.myTurn, st.phase, pendingFlip]);
 
-  const flippedKey = st.flipped.join(',');
+  const displayedFlipped = pendingFlip !== null && !st.flipped.includes(pendingFlip)
+    ? [...st.flipped, pendingFlip]
+    : st.flipped;
+
+  const flippedKey = displayedFlipped.join(',');
   useEffect(() => {
     if (!flippedKey) return;
     sfxRef.current('tap');
@@ -121,14 +132,14 @@ function FishGame({ party }: { party: FishParty }) {
     );
   }
 
-  const canFlip = party.myTurn && st.phase === 'pick' && st.flipped.length < 2 && !st.result && !shuffling;
+  const canFlip = party.myTurn && st.phase === 'pick' && displayedFlipped.length < 2 && !st.result && !shuffling;
   // Xáo bài chỉ trước khi trận bắt đầu (chưa ai lật lá nào); ai trong phòng cũng bấm được.
   const canShuffle = inGame && !st.started && !shuffling;
   const status =
     shuffling ? strings.shuffling
-    : st.flipped.length === 2 ? strings.flipping
+    : displayedFlipped.length === 2 ? strings.flipping
     : !party.myTurn ? strings.waitPick(party.current?.name ?? '')
-    : st.flipped.length === 0 ? strings.pickFirst
+    : displayedFlipped.length === 0 ? strings.pickFirst
     : strings.pickSecond;
   const showPenalty = st.phase === 'penalty' && panelSeq === st.seq - (st.result ? 1 : 0) && !showResult;
 
@@ -152,7 +163,7 @@ function FishGame({ party }: { party: FishParty }) {
         )}
         {st.cards.map((card, i) => {
           const owner = st.taken[i];
-          const up = st.flipped.includes(i);
+          const up = displayedFlipped.includes(i);
           if (owner && !up) return <span key={i} className={s.empty} title={strings.taken(party.nameOf(owner))} aria-hidden="true" />;
           return (
             <button
@@ -160,7 +171,12 @@ function FishGame({ party }: { party: FishParty }) {
               data-card
               className={cx(s.card, up && s.up, up && owner && s.caughtCard)}
               disabled={!canFlip || up}
-              onClick={() => party.dispatch({ type: 'flip', index: i })}
+              onClick={() => {
+                if (!up && canFlip) {
+                  setPendingFlip(i);
+                  party.dispatch({ type: 'flip', index: i });
+                }
+              }}
               aria-label={up ? strings.card(strings.ranks[card.r], strings.suitNames[card.s]) : strings.faceDown(i + 1)}
             >
               <span className={s.inner}>
