@@ -12,6 +12,8 @@ import iconSvg from '../icon.svg?raw';
 
 /** Chờ một nhịp cho cả bàn nhìn bài trước khi hiện vòng phạt / thẻ kết quả. */
 const LOOK_MS = 900;
+/** Lá vừa lật hiện ngửa ngay trên máy mình; quá lâu chủ phòng không xác nhận (mất mạng) thì úp lại. */
+const PENDING_MS = 2500;
 
 function CardFace({ card }: { card: Card }) {
   return (
@@ -29,17 +31,22 @@ function FishGame({ party }: { party: FishParty }) {
   const boardRef = useRef<HTMLDivElement>(null);
   const shuffling = useShuffleAnimation(boardRef, st.shuffles, !st.started, (tone) => sfxRef.current(tone));
   const inGame = party.mode === 'local' || party.players.some((p) => p.id === party.me);
-  const [pendingFlip, setPendingFlip] = useState<number | null>(null);
-  // Khi state từ server/host về đã bao gồm lá bài hoặc chuyển phase/hết lượt -> xóa pendingFlip
+  // Lá mình đã lật nhưng chưa thấy trong trạng thái từ chủ phòng (lật nhanh 2 lá thì có 2 lá chờ).
+  const [pending, setPending] = useState<number[]>([]);
+  const { myTurn, dispatch, isHost } = party;
   useEffect(() => {
-    if (pendingFlip !== null && (st.flipped.includes(pendingFlip) || !party.myTurn || st.phase !== 'pick')) {
-      setPendingFlip(null);
-    }
-  }, [st.flipped, party.myTurn, st.phase, pendingFlip]);
+    setPending((list) => {
+      const keep = myTurn && st.phase === 'pick' && !st.result ? list.filter((i) => !st.flipped.includes(i) && st.taken[i] === null) : [];
+      return keep.length === list.length ? list : keep;
+    });
+  }, [st.flipped, st.taken, st.phase, st.result, myTurn]);
+  useEffect(() => {
+    if (!pending.length) return;
+    const id = setTimeout(() => setPending([]), PENDING_MS);
+    return () => clearTimeout(id);
+  }, [pending]);
 
-  const displayedFlipped = pendingFlip !== null && !st.flipped.includes(pendingFlip)
-    ? [...st.flipped, pendingFlip]
-    : st.flipped;
+  const displayedFlipped = [...st.flipped, ...pending.filter((i) => !st.flipped.includes(i))].slice(0, 2);
 
   const flippedKey = displayedFlipped.join(',');
   useEffect(() => {
@@ -64,14 +71,14 @@ function FishGame({ party }: { party: FishParty }) {
     if (!isMatch) return;
     sfxRef.current('win');
     vibrate([40, 60]);
-    // Tự động sang lượt hoặc cho lật tiếp sau 850ms mà không hiện bảng thông báo che màn hình
-    if (party.isHost && st.result) {
-      const id = setTimeout(() => {
-        party.dispatch({ type: 'next', seq: st.result!.seq });
-      }, 850);
-      return () => clearTimeout(id);
-    }
-  }, [isMatch, st.result, party]);
+  }, [isMatch]);
+  // Câu trúng không hiện thẻ kết quả: máy giữ luật tự sang lượt (hoặc cho lật tiếp) sau một nhịp.
+  const matchSeq = isMatch ? st.result?.seq : undefined;
+  useEffect(() => {
+    if (!isHost || matchSeq === undefined) return;
+    const id = setTimeout(() => dispatch({ type: 'next', seq: matchSeq }), 850);
+    return () => clearTimeout(id);
+  }, [isHost, matchSeq, dispatch]);
 
   // Kết quả qua vòng quay: hiện khi vòng dừng. Kết quả khác (phạt, bốc thăm): hiện sau một nhịp.
   const viaWheel = st.phase === 'penalty' || (st.phase === 'punish' && st.punish?.mode === 'wheel');
@@ -132,7 +139,7 @@ function FishGame({ party }: { party: FishParty }) {
     );
   }
 
-  const canFlip = party.myTurn && st.phase === 'pick' && displayedFlipped.length < 2 && !st.result && !shuffling;
+  const canFlip = myTurn && st.phase === 'pick' && displayedFlipped.length < 2 && !st.result && !shuffling;
   // Xáo bài chỉ trước khi trận bắt đầu (chưa ai lật lá nào); ai trong phòng cũng bấm được.
   const canShuffle = inGame && !st.started && !shuffling;
   const status =
@@ -173,8 +180,8 @@ function FishGame({ party }: { party: FishParty }) {
               disabled={!canFlip || up}
               onClick={() => {
                 if (!up && canFlip) {
-                  setPendingFlip(i);
-                  party.dispatch({ type: 'flip', index: i });
+                  setPending((list) => [...list, i]);
+                  dispatch({ type: 'flip', index: i });
                 }
               }}
               aria-label={up ? strings.card(strings.ranks[card.r], strings.suitNames[card.s]) : strings.faceDown(i + 1)}

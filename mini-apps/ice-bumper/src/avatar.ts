@@ -1,28 +1,44 @@
+export type Hat = 'none' | 'beanie' | 'crown' | 'viking' | 'party';
+
 export interface PenguinSkin {
-  color: string; // Màu xe ủi (Đỏ, Xanh dương, Cam, Vàng, Tím, v.v.)
-  hat: 'none' | 'beanie' | 'crown' | 'viking' | 'party';
-  name: string;
+  /** Màu khăn quàng và xe trượt. */
+  color: string;
+  hat: Hat;
 }
 
-export const VEHICLE_COLORS = [
-  '#ef4444', // Đỏ Snow
-  '#3b82f6', // Xanh Ice
-  '#f59e0b', // Vàng Bão tuyết
-  '#10b981', // Xanh Rừng tuyết
-  '#8b5cf6', // Tím Cực quang
-  '#ec4899', // Hồng Băng
-] as const;
+/** Màu áo, lấy từ bảng màu arcade của app để nổi trên nền băng trắng và biển xanh. */
+export const SKIN_COLORS = ['#FF4757', '#FFB000', '#05C46B', '#3867D6', '#8E5CF7', '#FF6FB5'] as const;
 
-export const HATS = [
-  { id: 'none', label: 'Mộc' },
-  { id: 'beanie', label: 'Mũ len đỏ' },
+export const HATS: { id: Hat; label: string }[] = [
+  { id: 'beanie', label: 'Mũ len' },
   { id: 'crown', label: 'Vương miện' },
-  { id: 'viking', label: 'Mũ chiến binh' },
-  { id: 'party', label: 'Nón sinh nhật' },
-] as const;
+  { id: 'viking', label: 'Mũ sừng' },
+  { id: 'party', label: 'Nón tiệc' },
+  { id: 'none', label: 'Đầu trần' },
+];
 
-export const DEFAULT_SKIN: PenguinSkin = {
-  color: '#ef4444',
-  hat: 'beanie',
-  name: 'Cánh Cụt',
-};
+/** Áo mặc định theo thứ tự trong phòng, để hai người chưa chọn không trùng màu. */
+export const skinFor = (index: number): PenguinSkin => ({
+  color: SKIN_COLORS[index % SKIN_COLORS.length],
+  hat: HATS[index % (HATS.length - 1)].id,
+});
+
+const KEY = 'ice-bumper-skin';
+
+/** Áo đã chọn lần trước trên máy này. */
+export function savedSkin(): PenguinSkin | null {
+  try {
+    const v = JSON.parse(localStorage.getItem(KEY) ?? 'null') as PenguinSkin | null;
+    return v && typeof v.color === 'string' && typeof v.hat === 'string' ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveSkin(skin: PenguinSkin) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(skin));
+  } catch {
+    // Không lưu được thì thôi.
+  }
+}

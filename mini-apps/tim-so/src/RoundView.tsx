@@ -1,40 +1,89 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { memo, useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ResultCard, SpinWheel, vibrate } from '@bang/party';
 import { cx } from '@bang/ui';
-import { COUNTDOWN_MS, countsOf, isBoardDone, targetOf, type Dot, type FindParty, type Round } from './game';
+import { COUNTDOWN_MS, countsOf, isBoardDone, type Dot, type FindParty, type Round } from './game';
 import { strings } from './strings';
 import { RINGS, boardStyle, dotStyle, useLookContext } from './board';
+import type { Look } from './look';
 import s from './Find.module.css';
 
 const clock = (secs: number) => `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
 
-/** Đồng hồ của vòng, tính từ lúc máy này thấy vòng mới nên không phụ thuộc giờ của máy khác. */
-function useRoundClock(round: Round, seconds: number, running: boolean) {
-  const started = useRef<{ id: number; at: number }>({ id: -1, at: 0 });
-  if (started.current.id !== round.attempt) started.current = { id: round.attempt, at: performance.now() };
+/**
+ * Đồng hồ của vòng, tính theo giờ chung của phòng từ mốc chủ phòng ghi vào vòng,
+ * nên các máy hết giờ cùng lúc và tải lại trang giữa vòng vẫn đúng giờ.
+ */
+function useRoundClock(round: Round, seconds: number, running: boolean, now: () => number) {
+  // Vòng từ bản cũ chưa có mốc giờ: tính từ lúc máy này thấy vòng.
+  const seen = useRef<{ id: number; at: number }>({ id: -1, at: 0 });
+  if (seen.current.id !== round.attempt) seen.current = { id: round.attempt, at: now() };
+  const startRef = useRef(0);
+  startRef.current = round.startedAt ?? seen.current.at;
   const secondsRef = useRef(seconds);
   secondsRef.current = seconds;
+  const nowRef = useRef(now);
+  nowRef.current = now;
 
   const read = useCallback(() => {
-    const ms = performance.now() - started.current.at;
+    const ms = nowRef.current() - startRef.current;
     return {
       counting: ms < COUNTDOWN_MS,
       count: Math.ceil((COUNTDOWN_MS - ms) / 1000),
       left: Math.max(0, Math.ceil(secondsRef.current - (ms - COUNTDOWN_MS) / 1000)),
     };
   }, []);
-  const [now, setNow] = useState(read);
+  const [clock, setClock] = useState(read);
 
   useEffect(() => {
-    setNow(read());
+    // Chỉ vẽ lại khi số trên đồng hồ đổi (mỗi giây), không phải mỗi nhịp đo.
+    const tick = () => setClock((p) => {
+      const n = read();
+      return p.counting === n.counting && p.count === n.count && p.left === n.left ? p : n;
+    });
+    tick();
     if (!running) return;
-    const id = setInterval(() => setNow(read()), 100);
+    const id = setInterval(tick, 100);
     return () => clearInterval(id);
-  }, [round.attempt, running, read]);
+  }, [round.attempt, round.startedAt, running, read]);
 
-  const remainingMs = useCallback(() => COUNTDOWN_MS + secondsRef.current * 1000 - (performance.now() - started.current.at), []);
-  return { ...now, remainingMs };
+  const remainingMs = useCallback(() => COUNTDOWN_MS + secondsRef.current * 1000 - (nowRef.current() - startRef.current), []);
+  return { ...clock, remainingMs };
 }
+
+/** Số mình vừa chạm, hiện ngay trước khi chủ phòng xác nhận; quá lâu không thấy xác nhận thì bỏ. */
+const PENDING_MS = 2500;
+interface Pending {
+  round: number;
+  n: number;
+  at: number;
+}
+
+interface DotProps {
+  d: Dot;
+  look: Look;
+  ring: string | undefined;
+  found: boolean;
+  wrong: boolean;
+  hidden: boolean;
+  label: string;
+  onTap: (d: Dot) => void;
+}
+
+/** Một con số trên bàn; chỉ vẽ lại khi chính nó đổi, để bàn 200 số không khựng mỗi lần có người tìm được. */
+const DotButton = memo(function DotButton({ d, look, ring, found, wrong, hidden, label, onTap }: DotProps) {
+  return (
+    <button
+      type="button"
+      className={cx(s.dot, found && s.found, wrong && s.wrong)}
+      style={dotStyle(d, look, { '--ring': ring })}
+      tabIndex={hidden ? -1 : undefined}
+      aria-label={label}
+      onClick={() => onTap(d)}
+    >
+      {d.n}
+    </button>
+  );
+});
 
 export function RoundView({ party, round }: { party: FindParty; round: Round }) {
   const state = party.state!;
@@ -44,8 +93,28 @@ export function RoundView({ party, round }: { party: FindParty; round: Round }) 
   const secs = race ? state.seconds : state.turnSeconds;
   // Đồng hồ dừng khi có kết quả, hoặc khi hết giờ và đang chờ quay phạt.
   const done = !!state.result || round.phase !== 'find';
-  const { counting, count, left, remainingMs } = useRoundClock(round, secs, !done);
-  const target = targetOf(round);
+  const { counting, count, left, remainingMs } = useRoundClock(round, secs, !done, party.now);
+
+  // Số mình đã chạm nhưng chưa thấy trong trạng thái từ chủ phòng: coi như đã tìm, để chạm tiếp số sau ngay.
+  const [pending, setPending] = useState<Pending[]>([]);
+  const mine = pending.filter((p) => p.round === round.id && !round.found[p.n]);
+  const mineSet = new Set(mine.map((p) => p.n));
+  let at = round.at;
+  while (at < round.targets.length && mineSet.has(round.targets[at])) at++;
+  const target = round.targets[at];
+  useEffect(() => {
+    setPending((list) => {
+      const keep = list.filter((p) => p.round === round.id && !round.found[p.n] && performance.now() - p.at < PENDING_MS);
+      return keep.length === list.length ? list : keep;
+    });
+  }, [round.id, round.found]);
+  useEffect(() => {
+    if (!pending.length) return;
+    const id = setTimeout(() => setPending((list) => list.filter((p) => performance.now() - p.at < PENDING_MS)), PENDING_MS);
+    return () => clearTimeout(id);
+  }, [pending]);
+  const foundBy = (n: number) => round.found[n] ?? (mineSet.has(n) ? party.me : undefined);
+
   const inGame = party.players.some((p) => p.id === party.me) || party.mode === 'local';
   const canTap = !done && !counting && inGame && (race || party.myTurn);
   const ringOf = (id: string) => RINGS[Math.max(0, party.players.findIndex((p) => p.id === id)) % RINGS.length];
@@ -76,9 +145,10 @@ export function RoundView({ party, round }: { party: FindParty; round: Round }) 
   }, [wrong]);
 
   const tap = (d: Dot) => {
-    if (!canTap || locked || round.found[d.n]) return;
+    if (!canTap || locked || foundBy(d.n)) return;
     if (d.n === target) {
       sfxRef.current('tap');
+      setPending((list) => [...list, { round: round.id, n: d.n, at: performance.now() }]);
       dispatch({ type: 'find', round: round.id, n: d.n });
     } else {
       sfxRef.current('buzz');
@@ -111,8 +181,13 @@ export function RoundView({ party, round }: { party: FindParty; round: Round }) 
   }, [wheelDone, resultSafe]);
   const showResult = !!resultSeq && (viaWheel ? revealedSpin === spinId : shownSeq === resultSeq);
 
+  const tapRef = useRef(tap);
+  tapRef.current = tap;
+  const onTap = useCallback((d: Dot) => tapRef.current(d), []);
+
   const counts = countsOf(round);
-  const foundCount = round.at;
+  if (mine.length && party.me) counts[party.me] = (counts[party.me] ?? 0) + mine.length;
+  const foundCount = at;
   const total = round.targets.length;
   const urgent = !counting && !done && left <= Math.min(10, Math.ceil(secs / 3));
 
@@ -136,19 +211,19 @@ export function RoundView({ party, round }: { party: FindParty; round: Round }) 
         style={boardStyle(state.dots.length, look)}
       >
         {state.dots.map((d) => {
-          const by = round.found[d.n];
+          const by = foundBy(d.n);
           return (
-            <button
+            <DotButton
               key={d.n}
-              type="button"
-              className={cx(s.dot, by && s.found, wrong?.n === d.n && s.wrong)}
-              style={dotStyle(d, look, { '--ring': by ? ringOf(by) : undefined })}
-              tabIndex={counting ? -1 : undefined}
-              aria-label={by ? strings.dotFound(d.n, party.nameOf(by)) : strings.dot(d.n)}
-              onClick={() => tap(d)}
-            >
-              {d.n}
-            </button>
+              d={d}
+              look={look}
+              ring={by ? ringOf(by) : undefined}
+              found={!!by}
+              wrong={wrong?.n === d.n}
+              hidden={counting}
+              label={by ? strings.dotFound(d.n, party.nameOf(by)) : strings.dot(d.n)}
+              onTap={onTap}
+            />
           );
         })}
         {counting && (

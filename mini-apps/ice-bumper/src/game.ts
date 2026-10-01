@@ -1,281 +1,160 @@
-import {
-  baseState,
-  withResult,
-  type BaseState,
-  type GameDef,
-  type Party,
-} from '@bang/party';
-import type { PenguinSkin } from './avatar';
+import { baseState, withResult, type BaseState, type GameDef, type Party, type Player } from '@bang/party';
+import { skinFor, type PenguinSkin } from './avatar';
+import { COUNTDOWN_MS, ROUND_SECONDS, SCALE, SLIP, arenaOf } from './sim';
+import { MAPS, MAP_IDS, type MapChoice, type MapId } from './maps';
+import { strings } from './strings';
 
-export interface Snowball {
-  id: number;
-  ownerId: string;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  radius: number;
-}
+export const ROUND_OPTIONS = [3, 5, 7] as const;
+/** Thời gian mỗi hiệp (giây); 0 là vô hạn: chỉ hết hiệp khi còn một người trên băng. */
+export const ROUND_TIME_OPTIONS = [30, 60, 90, 120, 0] as const;
 
-export interface PlayerVehicle {
-  id: string;
-  name: string;
-  skin: PenguinSkin;
-  x: number; // Tọa độ tương đối so với tâm đảo (0, 0 là tâm)
-  y: number;
-  vx: number;
-  vy: number;
-  angle: number; // Hướng xe đang chỉ (radian)
-  snowballRadius: number; // Kích thước bóng tuyết đang ủi đằng trước
-  alive: boolean;
-  score: number;
-}
-
+/**
+ * Trạng thái ván lưu qua party (đổi ít: vào hiệp, hết hiệp, đổi áo).
+ * Vị trí từng con cánh cụt không nằm ở đây mà đi qua kênh thời gian thực (xem Arena.tsx).
+ */
 export interface SnowarState extends BaseState {
-  stage: 'lobby' | 'playing' | 'round_over' | 'game_over';
-  iceRadius: number; // Bán kính chuẩn của đảo băng (tính theo đơn vị ảo 1.0 -> scale theo canvas)
-  roundStartedAt: number;
-  roundEndsAt: number;
-  round: number;
+  /** garage: chọn áo trước trận; playing: đang đấu; round_over: hết hiệp; game_over: hết trận. */
+  stage: 'garage' | 'playing' | 'round_over' | 'game_over';
   maxRounds: number;
-  vehicles: Record<string, PlayerVehicle>;
-  snowballs: Snowball[];
+  /** Thời gian mỗi hiệp (giây), 0 là vô hạn. */
+  roundSeconds: number;
+  /** Cài đặt của chủ phòng: bản đồ (hoặc ngẫu nhiên mỗi hiệp), cỡ sân, độ trơn. */
+  map: MapChoice;
+  /** Cỡ sân (nhân với bán kính chuẩn), SCALE.min..max. */
+  scale: number;
+  /** Độ trơn 0 (bám) .. 1 (rất trơn). */
+  slip: number;
+  /** Bản đồ của hiệp đang chơi (đã bốc nếu chọn ngẫu nhiên). */
+  roundMap: MapId;
+  round: number;
+  /** Những người được vào hiệp này (vào phòng giữa hiệp thì đứng xem tới hiệp sau). */
+  roster: string[];
+  /** Giờ chung của phòng lúc đếm ngược 3-2-1 bắt đầu. */
+  startedAt: number;
+  /** Số hiệp thắng. */
+  wins: Record<string, number>;
+  /** Số lần đẩy được người khác xuống nước. */
+  kos: Record<string, number>;
   winnerId: string | null;
-  lobbySkins: Record<string, PenguinSkin>;
+  skins: Record<string, PenguinSkin>;
 }
 
 export type SnowarParty = Party<SnowarState, SnowarAction>;
+export type Config = Partial<Pick<SnowarState, 'maxRounds' | 'roundSeconds' | 'map' | 'scale' | 'slip'>>;
 
 export type SnowarAction =
+  | { type: 'config'; config: Config }
   | { type: 'set_skin'; skin: PenguinSkin }
-  | { type: 'start_game' }
-  | { type: 'steer'; angle: number; rolling: boolean }
-  | { type: 'shoot_ball'; ball: Snowball }
-  | {
-      type: 'sync_world';
-      vehicles: Record<string, PlayerVehicle>;
-      snowballs: Snowball[];
-    }
-  | { type: 'round_win'; winnerId: string | null }
-  | { type: 'next_round' }
-  | { type: 'restart' };
+  | { type: 'start' }
+  /** Chủ phòng báo hết hiệp: người trụ lại (null nếu cùng rơi) và ai đẩy được ai trong hiệp. */
+  | { type: 'round_end'; round: number; winnerId: string | null; kos: Record<string, number>; timeUp?: boolean };
 
-export const ARENA_STANDARD_RADIUS = 280; // Bán kính chuẩn trên tọa độ tương đối
-export const ROUND_DURATION_SEC = 45;
+const fresh = (): SnowarState => ({
+  ...baseState(),
+  stage: 'garage',
+  maxRounds: 3,
+  roundSeconds: ROUND_SECONDS,
+  map: 'floe',
+  scale: SCALE.default,
+  slip: SLIP.default,
+  roundMap: 'floe',
+  round: 0,
+  roster: [],
+  startedAt: 0,
+  wins: {},
+  kos: {},
+  winnerId: null,
+  skins: {},
+});
 
-function fresh(): SnowarState {
+/** Ngẫu nhiên: không lặp lại bản đồ của hiệp vừa chơi. */
+function pickMap(s: SnowarState): MapId {
+  if (s.map !== 'random') return s.map;
+  const pool = MAP_IDS.filter((id) => id !== s.roundMap);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function newRound(s: SnowarState, players: Player[], now: number): SnowarState {
   return {
-    ...baseState(),
-    stage: 'lobby',
-    iceRadius: ARENA_STANDARD_RADIUS,
-    roundStartedAt: 0,
-    roundEndsAt: 0,
-    round: 1,
-    maxRounds: 3,
-    vehicles: {},
-    snowballs: [],
+    ...s,
+    roundMap: pickMap(s),
+    stage: 'playing',
+    round: s.round + 1,
+    roster: players.map((p) => p.id),
+    startedAt: now + 400,
     winnerId: null,
-    lobbySkins: {},
+    result: null,
+    seq: s.seq + 1,
   };
 }
 
-export function spawnPositions(count: number, r = 110): { x: number; y: number; angle: number }[] {
-  const result = [];
-  for (let i = 0; i < count; i++) {
-    const angle = (i * 2 * Math.PI) / Math.max(1, count);
-    result.push({
-      x: Math.cos(angle) * r,
-      y: Math.sin(angle) * (r * 0.58),
-      angle: angle + Math.PI, // Hướng đầu xe quay vào tâm đảo
-    });
-  }
-  return result;
+/** Người thắng chung cuộc: nhiều hiệp nhất, hòa thì ai đẩy được nhiều hơn. */
+export function standings(s: SnowarState, players: Player[]) {
+  return players
+    .map((p) => ({ p, wins: s.wins[p.id] ?? 0, kos: s.kos[p.id] ?? 0 }))
+    .sort((a, b) => b.wins - a.wins || b.kos - a.kos);
 }
 
-function initVehicles(
-  players: { id: string; name: string }[],
-  savedSkins: Record<string, PenguinSkin>,
-  previousVehicles: Record<string, PlayerVehicle> = {},
-): Record<string, PlayerVehicle> {
-  const spawns = spawnPositions(players.length);
-  const vehicles: Record<string, PlayerVehicle> = {};
+export const skinOf = (s: SnowarState, players: Player[], id: string) => s.skins[id] ?? skinFor(Math.max(0, players.findIndex((p) => p.id === id)));
 
-  players.forEach((p, idx) => {
-    const sp = spawns[idx] ?? { x: 0, y: 0, angle: 0 };
-    vehicles[p.id] = {
-      id: p.id,
-      name: p.name,
-      skin: savedSkins[p.id] ?? {
-        color: idx % 2 === 0 ? '#ef4444' : '#3b82f6',
-        hat: 'beanie',
-        name: p.name,
-      },
-      x: sp.x,
-      y: sp.y,
-      vx: 0,
-      vy: 0,
-      angle: sp.angle,
-      snowballRadius: 10,
-      alive: true,
-      score: previousVehicles[p.id]?.score ?? 0,
-    };
-  });
+/** Sân của hiệp đang chơi. */
+export const arenaOfState = (s: SnowarState) => arenaOf(s.roundMap, s.scale, s.slip);
 
-  return vehicles;
-}
+/** Hiệp bắt đầu được lái khi hết đếm ngược. */
+export const controlStartsAt = (s: SnowarState) => s.startedAt + COUNTDOWN_MS;
 
 export const iceBumperGame: GameDef<SnowarState, SnowarAction> = {
   id: 'ice-bumper',
   init: fresh,
-  configOf: (s) => ({
-    maxRounds: s.maxRounds,
-  }),
-  advance(s) {
-    if (s.stage === 'game_over') {
-      return {
-        ...fresh(),
-        lobbySkins: s.lobbySkins,
-        seq: s.seq + 1,
-      };
-    }
-
-    const nextVehicles: Record<string, PlayerVehicle> = {};
-    const spawns = spawnPositions(Object.keys(s.vehicles).length);
-    Object.values(s.vehicles).forEach((v, idx) => {
-      const sp = spawns[idx] ?? { x: 0, y: 0, angle: 0 };
-      nextVehicles[v.id] = {
-        ...v,
-        x: sp.x,
-        y: sp.y,
-        vx: 0,
-        vy: 0,
-        angle: sp.angle,
-        alive: true,
-        snowballRadius: 10,
-      };
-    });
-
-    const now = Date.now();
-    return {
-      ...s,
-      stage: 'playing',
-      round: s.round + 1,
-      roundStartedAt: now,
-      roundEndsAt: now + ROUND_DURATION_SEC * 1000,
-      vehicles: nextVehicles,
-      snowballs: [],
-      winnerId: null,
-      result: null,
-      seq: s.seq + 1,
-    };
+  configOf: (s) => ({ maxRounds: s.maxRounds, roundSeconds: s.roundSeconds, map: s.map, scale: s.scale, slip: s.slip }),
+  advance(s, c) {
+    // Hết trận: về chọn áo, xóa điểm. Hết hiệp: vào hiệp sau với những người đang trong phòng.
+    if (s.stage === 'game_over') return { ...fresh(), maxRounds: s.maxRounds, roundSeconds: s.roundSeconds, map: s.map, scale: s.scale, slip: s.slip, skins: s.skins, seq: s.seq + 1 };
+    if (s.stage === 'round_over') return newRound(s, c?.players ?? [], c?.now ?? Date.now());
+    return s;
   },
   reduce(s, a, c) {
+    if (a.type === 'config') {
+      if (!c.host || s.stage !== 'garage') return s;
+      const { maxRounds, roundSeconds, map, scale, slip } = a.config;
+      const next = { ...s };
+      if (ROUND_OPTIONS.includes(maxRounds as (typeof ROUND_OPTIONS)[number])) next.maxRounds = maxRounds as number;
+      if (ROUND_TIME_OPTIONS.includes(roundSeconds as (typeof ROUND_TIME_OPTIONS)[number])) next.roundSeconds = roundSeconds as number;
+      if (map === 'random' || (map && map in MAPS)) next.map = map;
+      const inRange = (v: unknown, r: { min: number; max: number }): v is number => typeof v === 'number' && v >= r.min && v <= r.max;
+      if (inRange(scale, SCALE)) next.scale = Math.round(scale * 100) / 100;
+      if (inRange(slip, SLIP)) next.slip = Math.round(slip * 100) / 100;
+      return { ...next, seq: s.seq + 1 };
+    }
     if (a.type === 'set_skin') {
-      const from = c.from;
-      if (!from) return s;
-      return {
-        ...s,
-        lobbySkins: {
-          ...s.lobbySkins,
-          [from]: a.skin,
-        },
-      };
+      if (!c.players.some((p) => p.id === c.from)) return s;
+      const { color, hat } = a.skin;
+      if (typeof color !== 'string' || typeof hat !== 'string') return s;
+      return { ...s, skins: { ...s.skins, [c.from]: { color, hat } } };
     }
-
-    if (a.type === 'start_game') {
-      if (!c.host) return s;
-      const vehicles = initVehicles(c.players, s.lobbySkins);
-      const now = Date.now();
-      return {
-        ...s,
-        stage: 'playing',
-        roundStartedAt: now,
-        roundEndsAt: now + ROUND_DURATION_SEC * 1000,
-        vehicles,
-        snowballs: [],
-        winnerId: null,
-        result: null,
-        seq: s.seq + 1,
-      };
+    if (a.type === 'start') {
+      if (!c.host || s.stage !== 'garage' || !c.players.length) return s;
+      return newRound({ ...s, round: 0, wins: {}, kos: {} }, c.players, c.now ?? Date.now());
     }
-
-    if (a.type === 'steer') {
-      const from = c.from;
-      if (!from || !s.vehicles[from] || !s.vehicles[from].alive) return s;
-      return {
-        ...s,
-        vehicles: {
-          ...s.vehicles,
-          [from]: {
-            ...s.vehicles[from],
-            angle: a.angle,
-            vx: a.rolling ? Math.cos(a.angle) * 3.6 : s.vehicles[from].vx * 0.88,
-            vy: a.rolling ? Math.sin(a.angle) * 3.6 : s.vehicles[from].vy * 0.88,
-          },
-        },
-      };
-    }
-    if (a.type === 'shoot_ball') {
-      return {
-        ...s,
-        snowballs: [...s.snowballs, a.ball],
-      };
-    }
-
-    if (a.type === 'sync_world') {
-      if (!c.host) return s;
-      return {
-        ...s,
-        vehicles: a.vehicles,
-        snowballs: a.snowballs,
-      };
-    }
-
-    if (a.type === 'round_win') {
-      if (!c.host || s.stage !== 'playing') return s;
-      const winId = a.winnerId;
-      const nextVehicles = { ...s.vehicles };
-      if (winId && nextVehicles[winId]) {
-        nextVehicles[winId] = {
-          ...nextVehicles[winId],
-          score: nextVehicles[winId].score + 1,
-        };
+    if (a.type === 'round_end') {
+      if (!c.host || s.stage !== 'playing' || a.round !== s.round) return s;
+      const wins = { ...s.wins };
+      if (a.winnerId) wins[a.winnerId] = (wins[a.winnerId] ?? 0) + 1;
+      const kos = { ...s.kos };
+      for (const [id, n] of Object.entries(a.kos)) if (typeof n === 'number') kos[id] = (kos[id] ?? 0) + n;
+      const over = s.round >= s.maxRounds;
+      const next: SnowarState = { ...s, stage: over ? 'game_over' : 'round_over', winnerId: a.winnerId, wins, kos };
+      const name = (id: string | null) => c.players.find((p) => p.id === id)?.name ?? '';
+      if (over) {
+        const [top] = standings(next, c.players);
+        return withResult(next, { playerId: top?.p.id ?? '', text: strings.champion(top?.p.name ?? '', top?.wins ?? 0), safe: true });
       }
-
-      const isGameOver = s.round >= s.maxRounds;
-      const winnerPlayer = c.players.find((p) => p.id === winId);
-      const winText = winnerPlayer ? `🏆 ${winnerPlayer.name} sống sót cuối cùng!` : 'Hòa ván!';
-
-      return withResult(
-        {
-          ...s,
-          stage: isGameOver ? 'game_over' : 'round_over',
-          winnerId: winId,
-          vehicles: nextVehicles,
-          seq: s.seq + 1,
-        },
-        {
-          playerId: winId ?? c.players[0]?.id ?? '',
-          text: winText,
-          safe: true,
-        },
-      );
+      return withResult(next, {
+        playerId: a.winnerId ?? c.players[0]?.id ?? '',
+        text: a.winnerId ? (a.timeUp ? strings.timeWin(name(a.winnerId)) : strings.roundWin(name(a.winnerId))) : strings.roundDraw,
+        safe: true,
+      });
     }
-
-    if (a.type === 'next_round') {
-      if (!c.host || s.stage !== 'round_over') return s;
-      return iceBumperGame.advance(s);
-    }
-
-    if (a.type === 'restart') {
-      if (!c.host) return s;
-      return {
-        ...fresh(),
-        lobbySkins: s.lobbySkins,
-        seq: s.seq + 1,
-      };
-    }
-
     return s;
   },
 };

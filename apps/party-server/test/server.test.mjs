@@ -13,7 +13,7 @@ beforeAll(async () => {
   const dir = mkdtempSync(join(tmpdir(), 'party-'));
   writeFileSync(join(dir, 'index.html'), `<!doctype html><title>t</title>${'x'.repeat(4000)}`);
   proc = spawn(process.execPath, [fileURLToPath(new URL('../server.mjs', import.meta.url))], {
-    env: { ...process.env, PORT: String(PORT), HOST: '127.0.0.1', STATIC_DIR: dir },
+    env: { ...process.env, PORT: String(PORT), HOST: '127.0.0.1', STATIC_DIR: dir, HOST_HANDOFF_MS: '300' },
     stdio: ['ignore', 'pipe', 'inherit'],
   });
   await new Promise((resolve) => proc.stdout.once('data', resolve));
@@ -81,6 +81,60 @@ describe('party-server', () => {
     const action = await next(host, 'action');
     expect(action).toEqual({ t: 'action', from: you, action: { type: 'tap' } });
     host.close();
+    guest.close();
+  });
+
+  it('trả giờ server cho ping, kể cả trước khi vào phòng', async () => {
+    const ws = await open();
+    ws.send(JSON.stringify({ t: 'ping', c: 42 }));
+    const pong = await next(ws, 'pong');
+    expect(pong.c).toBe(42);
+    expect(Math.abs(pong.now - Date.now())).toBeLessThan(1000);
+    ws.close();
+  });
+
+  it('ghép patch của chủ phòng vào trạng thái đã lưu và phát cho khách', async () => {
+    const host = await open();
+    hello(host, { t: 'create', id: 'host-key-3', name: 'Chủ' });
+    const { code } = await next(host, 'joined');
+    host.send(JSON.stringify({ t: 'state', state: { a: 1, b: 2, c: 3 } }));
+    const guest = await open();
+    hello(guest, { t: 'join', code, id: 'guest-key-3', name: 'Khách' });
+    expect((await next(guest, 'joined')).state).toEqual({ a: 1, b: 2, c: 3 });
+
+    host.send(JSON.stringify({ t: 'patch', set: { b: 5 }, del: ['c'] }));
+    expect(await next(guest, 'patch')).toEqual({ t: 'patch', set: { b: 5 }, del: ['c'] });
+    // Khách patch thì bị bỏ qua.
+    guest.send(JSON.stringify({ t: 'patch', set: { a: 9 }, del: [] }));
+
+    const late = await open();
+    hello(late, { t: 'join', code, id: 'late-key-3', name: 'Muộn' });
+    expect((await next(late, 'joined')).state).toEqual({ a: 1, b: 5 });
+    host.close();
+    guest.close();
+    late.close();
+  });
+
+  it('patch khi server chưa có trạng thái thì bảo chủ phòng gửi lại cả bản', async () => {
+    const host = await open();
+    hello(host, { t: 'create', id: 'host-key-4', name: 'Chủ' });
+    await next(host, 'joined');
+    host.send(JSON.stringify({ t: 'patch', set: { a: 1 }, del: [] }));
+    expect(await next(host, 'resync')).toEqual({ t: 'resync' });
+    host.close();
+  });
+
+  it('chủ phòng mất kết nối lâu thì người online khác lên thay', async () => {
+    const host = await open();
+    hello(host, { t: 'create', id: 'host-key-5', name: 'Chủ' });
+    const { code, you: hostId } = await next(host, 'joined');
+    const guest = await open();
+    hello(guest, { t: 'join', code, id: 'guest-key-5', name: 'Khách' });
+    const { you } = await next(guest, 'joined');
+    host.close();
+    let m = await next(guest, 'members');
+    while (m.hostId === hostId) m = await next(guest, 'members');
+    expect(m.hostId).toBe(you);
     guest.close();
   });
 

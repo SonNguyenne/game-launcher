@@ -3,12 +3,14 @@
  * Server phòng chơi cho các game nhóm (mini-apps dùng @bang/party).
  *
  * - WebSocket ở đường dẫn /party: chỉ chuyển tin, không chạy luật chơi.
- *   Chủ phòng gửi trạng thái -> server lưu bản mới nhất và phát cho cả phòng.
+ *   Chủ phòng gửi trạng thái (cả bản hoặc chỉ phần đổi) -> server lưu bản mới nhất và phát cho cả phòng.
  *   Khách gửi hành động -> server chuyển cho chủ phòng.
+ *   ping -> pong kèm giờ server, để các máy dùng chung một đồng hồ.
+ *   Game thời gian thực: tick (chủ phòng -> cả phòng) và input (khách -> chủ phòng) chỉ chuyển, không lưu.
  * - Nếu có thư mục build của launcher (apps/launcher/dist) thì phục vụ luôn web app,
  *   nên deploy chỉ cần một process: `node apps/party-server/server.mjs`.
  *
- * Biến môi trường: PORT (8787), HOST (0.0.0.0), STATIC_DIR (../launcher/dist),
+ * Biến môi trường: PORT (8787), HOST (0.0.0.0), STATIC_DIR (../launcher/dist), HOST_HANDOFF_MS (15000),
  * TRUST_PROXY=1 khi chạy sau Cloudflare/nginx (lấy IP thật từ CF-Connecting-IP / X-Forwarded-For để giới hạn theo IP;
  * thiếu biến này thì mọi người qua cùng proxy bị tính chung một IP).
  * Giao thức giữ khớp với packages/party/src/net.ts.
@@ -34,6 +36,8 @@ const MAX_ROOMS = 2000;
 const MAX_MESSAGE = 64 * 1024;
 /** Máy mất kết nối được giữ chỗ bấy lâu (khóa màn hình, đổi mạng) rồi mới bị xóa khỏi phòng. */
 const OFFLINE_GRACE_MS = 90_000;
+/** Chủ phòng mất kết nối lâu hơn thế này thì người đang online khác lên thay, để cả phòng không phải chờ. */
+const HOST_HANDOFF_MS = Number(process.env.HOST_HANDOFF_MS ?? 15_000);
 const HEARTBEAT_MS = 25_000;
 /** Chống một máy/script chiếm hết tài nguyên: số kết nối mở cùng lúc và số phòng tạo mới mỗi cửa sổ thời gian, theo IP. */
 const MAX_CONN_PER_IP = 30;
@@ -47,7 +51,7 @@ const CREATE_WINDOW_MS = 10 * 60_000;
  * @typedef {{ key: string, id: string, name: string, ws: import('ws').WebSocket | null, timer?: NodeJS.Timeout }} Member
  */
 /** `members` theo key bí mật; `hostKey` là key của chủ phòng. */
-/** @typedef {{ code: string, game: string, hostKey: string, members: Map<string, Member>, state: unknown }} Room */
+/** @typedef {{ code: string, game: string, hostKey: string, members: Map<string, Member>, state: unknown, handoff?: NodeJS.Timeout }} Room */
 
 /** @type {Map<string, Room>} */
 const rooms = new Map();
@@ -83,6 +87,7 @@ function removeMember(room, key) {
   clearTimeout(m.timer);
   room.members.delete(key);
   if (!room.members.size) {
+    clearTimeout(room.handoff);
     rooms.delete(room.code);
     return;
   }
@@ -93,6 +98,20 @@ function removeMember(room, key) {
   }
   broadcastMembers(room);
 }
+
+/** Chủ phòng vẫn mất kết nối sau HOST_HANDOFF_MS: trao quyền cho người online vào sớm nhất (chủ cũ quay lại thành khách). */
+function scheduleHandoff(room) {
+  clearTimeout(room.handoff);
+  room.handoff = setTimeout(() => {
+    if (rooms.get(room.code) !== room || room.members.get(room.hostKey)?.ws) return;
+    const next = [...room.members.values()].find((x) => x.ws);
+    if (!next) return;
+    room.hostKey = next.key;
+    broadcastMembers(room);
+  }, HOST_HANDOFF_MS);
+}
+
+const isObject = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
 
 /* ---------- Giới hạn theo IP ---------- */
 
@@ -154,6 +173,9 @@ wss.on('connection', (ws, req) => {
     }
     if (!msg || typeof msg.t !== 'string') return;
 
+    // Đo giờ: trả lại `c` của máy gửi kèm giờ server; dùng được cả trước khi vào phòng.
+    if (msg.t === 'ping') return send(ws, { t: 'pong', c: typeof msg.c === 'number' ? msg.c : 0, now: Date.now() });
+
     if (msg.t === 'create' || msg.t === 'join') {
       if (room) return;
       const key = cleanId(msg.id);
@@ -181,6 +203,7 @@ wss.on('connection', (ws, req) => {
         if (member.ws && member.ws !== ws) member.ws.close();
         member.ws = ws;
         member.name = name;
+        if (target.hostKey === key) clearTimeout(target.handoff);
       } else {
         member = { key, id: publicId(), name, ws };
         target.members.set(key, member);
@@ -199,6 +222,22 @@ wss.on('connection', (ws, req) => {
       if (memberKey !== room.hostKey) return;
       room.state = msg.state ?? null;
       broadcast(room, { t: 'state', state: room.state }, me.id);
+    } else if (msg.t === 'patch') {
+      // Chỉ phần trạng thái đổi so với bản trước (theo khóa cấp đầu). Lệch bản thì bảo chủ phòng gửi lại cả bản.
+      if (memberKey !== room.hostKey) return;
+      if (!isObject(room.state) || !isObject(msg.set)) return send(ws, { t: 'resync' });
+      const del = Array.isArray(msg.del) ? msg.del.filter((k) => typeof k === 'string') : [];
+      const next = { ...room.state, ...msg.set };
+      for (const k of del) delete next[k];
+      room.state = next;
+      broadcast(room, { t: 'patch', set: msg.set, del }, me.id);
+    } else if (msg.t === 'tick') {
+      // Game thời gian thực: ảnh chụp thế giới của chủ phòng, chỉ chuyển tiếp, không lưu.
+      if (memberKey !== room.hostKey) return;
+      broadcast(room, { t: 'tick', data: msg.data }, me.id);
+    } else if (msg.t === 'input') {
+      if (memberKey === room.hostKey) return;
+      send(room.members.get(room.hostKey)?.ws, { t: 'input', from: me.id, data: msg.data });
     } else if (msg.t === 'action') {
       if (memberKey === room.hostKey) return;
       send(room.members.get(room.hostKey)?.ws, { t: 'action', from: me.id, action: msg.action });
@@ -216,6 +255,7 @@ wss.on('connection', (ws, req) => {
     if (!m || m.ws !== ws) return;
     m.ws = null;
     m.timer = setTimeout(() => removeMember(r, m.key), OFFLINE_GRACE_MS);
+    if (r.hostKey === m.key) scheduleHandoff(r);
     broadcastMembers(r);
   });
 });

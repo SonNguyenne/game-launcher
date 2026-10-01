@@ -2,7 +2,7 @@ export * from './engine';
 export { partyServerUrl, type ConnectionStatus, type RoomError } from './net';
 export { playTone, vibrate, type Tone } from './sound';
 export { partyStrings } from './strings';
-export { useParty, type Party, type PartyData, type PartyMode } from './useParty';
+export { useParty, type Party, type PartyData, type PartyMode, type RealtimeMessage } from './useParty';
 export { PartyShell, Avatar, SettingsCard, type GameInfo, type SettingsProps } from './PartyShell';
 export { ResultCard } from './ResultCard';
 export { Chips } from './Chips';

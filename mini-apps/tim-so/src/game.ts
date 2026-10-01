@@ -36,6 +36,8 @@ export interface Round {
   at: number;
   /** Mỗi lần đồng hồ chạy lại (vòng mới, hoặc lượt mới khi chơi lần lượt) có id riêng. */
   attempt: number;
+  /** Giờ chung của phòng lúc đồng hồ chạy lại (bắt đầu đếm 3-2-1), để máy nào cũng hết giờ cùng lúc. */
+  startedAt?: number;
   /** Chơi lần lượt: find đang tìm; spin hết giờ, chờ quay vòng phạt. */
   phase: 'find' | 'spin';
   spin: Spin | null;
@@ -172,7 +174,7 @@ export const findGame: GameDef<FindState, FindAction> = {
     shuffles: 1,
   }),
   configOf: ({ order, size, seconds, turnSeconds, penalty, play }) => ({ order, size, seconds, turnSeconds, penalty, play }),
-  advance(s) {
+  advance(s, c) {
     // Chơi cùng lúc thì không có lượt riêng: giữ nguyên lượt, chỉ dọn vòng cũ.
     // Hết vòng thì viết sẵn bàn số mới cho vòng sau.
     const fresh = { dots: layout(s.size), shuffles: s.shuffles + 1, round: null };
@@ -180,7 +182,7 @@ export const findGame: GameDef<FindState, FindAction> = {
     const next = nextTurn(s);
     if (!s.round || isBoardDone(s.round)) return { ...next, ...fresh };
     // Sang người kế, cùng bàn số, số cần tìm giữ nguyên nếu người trước không tìm được.
-    return { ...next, round: { ...s.round, attempt: next.seq, phase: 'find', spin: null } };
+    return { ...next, round: { ...s.round, attempt: next.seq, startedAt: c?.now ?? Date.now(), phase: 'find', spin: null } };
   },
   reduce(s, a, c) {
     if (a.type === 'config') {
@@ -208,7 +210,7 @@ export const findGame: GameDef<FindState, FindAction> = {
       if (s.play === 'turns' ? !isTurnOf(s, c) : !c.host) return s;
       const targets = s.order === 'up' ? range(s.size) : shuffle(range(s.size));
       const id = s.seq + 1;
-      return { ...s, seq: id, round: { id, targets, found: {}, at: 0, attempt: id, phase: 'find', spin: null } };
+      return { ...s, seq: id, round: { id, targets, found: {}, at: 0, attempt: id, startedAt: c.now ?? Date.now(), phase: 'find', spin: null } };
     }
 
     const round = s.round;

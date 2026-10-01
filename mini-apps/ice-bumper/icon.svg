@@ -1,28 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <defs>
-    <radialGradient id="sky" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#38bdf8"/>
-      <stop offset="100%" stop-color="#0284c7"/>
-    </radialGradient>
-    <radialGradient id="ball" cx="40%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="80%" stop-color="#e0f2fe"/>
-      <stop offset="100%" stop-color="#bae6fd"/>
-    </radialGradient>
-  </defs>
-  <rect width="100" height="100" rx="22" fill="url(#sky)"/>
-  <!-- Tảng băng nổi -->
-  <ellipse cx="50" cy="62" rx="42" ry="24" fill="#0369a1"/>
-  <ellipse cx="50" cy="58" rx="40" ry="22" fill="#ffffff"/>
-  <!-- Quả cầu tuyết to tròn -->
-  <circle cx="62" cy="50" r="20" fill="url(#ball)" stroke="#7dd3fc" stroke-width="1.5"/>
-  <!-- Xe ủi đỏ mini -->
-  <rect x="22" y="44" width="22" height="14" rx="3" fill="#ef4444"/>
-  <rect x="18" y="54" width="28" height="6" rx="2" fill="#334155"/>
-  <!-- Lưỡi ủi -->
-  <polygon points="44,40 50,44 50,56 44,60" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1"/>
-  <!-- Cánh cụt -->
-  <circle cx="33" cy="42" r="6" fill="#0f172a"/>
-  <circle cx="34" cy="42" r="4" fill="#ffffff"/>
-  <polygon points="36,41 40,42 36,43" fill="#f59e0b"/>
+  <rect width="100" height="100" rx="22" fill="#0F3550"/>
+  <circle cx="50" cy="56" r="36" fill="none" stroke="#A0D6EC" stroke-opacity="0.25" stroke-width="2"/>
+  <!-- Tảng băng: thành băng, mép sắp vỡ màu cam, mặt băng trắng -->
+  <path d="M20 58 C18 40 34 26 52 27 C70 28 83 40 81 57 C79 73 65 82 49 81 C33 80 22 72 20 58 Z" fill="#7FB6CE" transform="translate(0 5)"/>
+  <path d="M20 58 C18 40 34 26 52 27 C70 28 83 40 81 57 C79 73 65 82 49 81 C33 80 22 72 20 58 Z" fill="#FF6A2B"/>
+  <path d="M26 57 C25 43 37 33 51 33 C66 34 76 43 75 56 C74 69 63 76 49 75 C36 74 27 68 26 57 Z" fill="#F2FAFD"/>
+  <!-- Cầu tuyết -->
+  <circle cx="64" cy="49" r="10" fill="#FFFFFF" stroke="#B9DDEB" stroke-width="2"/>
+  <!-- Cánh cụt nhìn từ trên: xe trượt đỏ, thân đen, bụng trắng, mỏ vàng -->
+  <rect x="31" y="47" width="21" height="18" rx="8" fill="#FF4757"/>
+  <ellipse cx="42" cy="56" rx="9" ry="8" fill="#13202E"/>
+  <ellipse cx="45" cy="56" rx="5" ry="5.5" fill="#FFFFFF"/>
+  <path d="M49.5 54.5 L53 56 L49.5 57.5 Z" fill="#FFB000"/>
+  <circle cx="39" cy="56" r="4" fill="#FF4757"/>
+  <circle cx="39" cy="56" r="1.5" fill="#FFFFFF"/>
 </svg>

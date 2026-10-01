@@ -34,6 +34,8 @@ export interface ReduceContext {
   players: Player[];
   /** Người gửi là chủ phòng (chơi 1 máy luôn đúng). */
   host: boolean;
+  /** Giờ chung của phòng (ms, đã khớp giờ server) lúc chạy luật; máy nào cũng tính đồng hồ theo mốc này. */
+  now?: number;
 }
 
 export interface GameAction {
@@ -46,7 +48,7 @@ export interface GameDef<S extends BaseState, A extends GameAction> {
   init(players: Player[]): S;
   reduce(state: S, action: A, ctx: ReduceContext): S;
   /** Sang lượt kế tiếp: dọn dữ liệu của lượt cũ. */
-  advance(state: S): S;
+  advance(state: S, c?: ReduceContext): S;
   /**
    * Game có cài đặt: lấy phần cài đặt ra khỏi trạng thái.
    * Chủ phòng chỉnh ở phòng chờ; lúc bắt đầu, launcher gửi { type: 'config', config } vào reduce để áp vào ván mới.
@@ -82,10 +84,10 @@ export function runReduce<S extends BaseState, A extends GameAction>(
 ): S {
   if (a.type === 'next') {
     const seq = (a as { seq: number }).seq;
-    return s.result && s.result.seq === seq ? game.advance(s) : s;
+    return s.result && s.result.seq === seq ? game.advance(s, c) : s;
   }
   // Chủ phòng bỏ lượt người đang mất kết nối để cả bàn không phải chờ.
-  if (a.type === 'skip') return c.host ? game.advance(s) : s;
+  if (a.type === 'skip') return c.host ? game.advance(s, c) : s;
   return game.reduce(s, a as A, c);
 }
 
