@@ -26,6 +26,11 @@ import s from './IceBumper.module.css';
 
 /** Chủ phòng phát ảnh chụp 20 lần/giây; khách gửi điều khiển ngay khi đổi, tối đa 30 lần/giây. */
 const SNAPSHOT_MS = 50;
+/** Khách: mỗi ảnh chụp chỉ kéo vị trí tự đoán của mình về đúng chừng này phần; lệch quá RECONCILE_SNAP (bị húc văng) thì nhảy theo luôn. */
+const RECONCILE_RATE = 0.15;
+/** Người khác: kéo về nhanh hơn một chút để bám sát vị trí thật của họ. */
+const RECONCILE_RATE_OTHERS = 0.3;
+const RECONCILE_SNAP = 70;
 const INPUT_MS = 33;
 /** Còn một người (hoặc không ai) trên băng: chờ chừng này cho cả phòng xem cú rơi rồi mới báo hết hiệp. */
 const END_DELAY_MS = 1300;
@@ -328,7 +333,13 @@ export function Arena({ party }: { party: SnowarParty }) {
         }
       } else if (playing) {
         // Khách: lấy ảnh chụp mới nhất của chủ phòng làm gốc, rồi chạy tiếp tới hiện tại với điều khiển đã biết.
+        // Chủ phòng nhận điều khiển của mình trễ (~1 vòng mạng), nên ảnh chụp thường lệch với chỗ mình đã tự đoán.
+        // Đặt lại thẳng sẽ giật mỗi lần đổi hướng: so hai vị trí ở cùng thời điểm rồi chỉ kéo về dần (reconciliation).
+        // Người khác cũng vậy: máy này đoán họ đi tiếp theo điều khiển cũ, ảnh chụp tới báo họ đã đổi hướng.
+        const predicted = new Map<string, { x: number; y: number }>();
         if (g.snap) {
+          advance(now, false);
+          for (const b of Object.values(g.world.bodies)) if (b.alive) predicted.set(b.id, { x: b.x, y: b.y });
           const snap = g.snap;
           g.snap = null;
           g.world = decode(snap, g.world.arena);
@@ -337,6 +348,16 @@ export function Arena({ party }: { party: SnowarParty }) {
           for (const b of Object.values(g.world.bodies)) if (b.alive) g.seen.delete(`fall:${b.id}`);
         }
         advance(now, false);
+        for (const [id, guess] of predicted) {
+          const fixed = g.world.bodies[id];
+          if (!fixed?.alive) continue;
+          const ex = guess.x - fixed.x;
+          const ey = guess.y - fixed.y;
+          if (Math.hypot(ex, ey) >= RECONCILE_SNAP) continue;
+          const rate = id === me ? RECONCILE_RATE : RECONCILE_RATE_OTHERS;
+          fixed.x += ex * (1 - rate);
+          fixed.y += ey * (1 - rate);
+        }
         // Gửi điều khiển khi đổi.
         const cur = input.current;
         const changed =
