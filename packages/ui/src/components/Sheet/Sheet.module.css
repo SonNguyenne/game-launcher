@@ -52,7 +52,8 @@
   padding: var(--space-1) var(--space-5) 0 var(--space-7);
   border: 0;
   border-bottom: 1px solid var(--rule-soft);
-  background: transparent;
+  /* Tiêu đề dính trên cùng khi cuộn: nền đặc để nội dung cuộn qua không đè lên chữ. */
+  background: var(--bg);
 }
 :global(:root[data-look="quan"]) .head h2 {
   font-family: var(--font-ui);

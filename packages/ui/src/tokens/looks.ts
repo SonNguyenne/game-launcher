@@ -61,10 +61,11 @@ const partyLight = {
   cardRaised: '#F1F5F9',
   ink: '#0F172A',
   inkMid: '#475569',
-  inkLow: '#94A3B8',
+  // Chữ phụ và placeholder trên nền trắng cần 4.5:1 (#94A3B8 chỉ 2.56:1).
+  inkLow: '#64748B',
   line: '#CBD5E1',
   lineSoft: '#E2E8F0',
-  coral: '#FF4757',
+  coral: '#D62839',
   danger: '#E11D48',
 } as const;
 
@@ -79,9 +80,9 @@ const partyDark = {
   lineSoft: '#1A2438',
   coral: '#FF5252',
   danger: '#FF4D6D',
-  red2: '#FF4757',
+  red2: '#D62839',
   yellow2: '#FFC000',
-  green2: '#05C46B',
+  green2: '#07804A',
   blue2: '#3867D6',
 } as const;
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BALL_MIN, ICE_R, SCALE, SLIP, STEP, arenaOf, closestToCenter, decode, encode, lobPath, spawn, step, type Input } from './sim';
+import { BALL_MIN, FISH_TARGET, ICE_R, KING_TARGET, LIVES, RESPAWN_MS, SCALE, SLIP, STEP, ZONE_MOVE, arenaOf, botInput, closestToCenter, decode, encode, lobPath, spawn, step, verdict, zoneOf, type Input } from './sim';
 import { MAP_IDS, MAPS, onIce, spawnPoint } from './maps';
 import { iceBumperGame } from './game';
 
@@ -228,11 +228,11 @@ describe('ma sát và va chạm', () => {
 });
 
 describe('bản đồ và độ trơn', () => {
-  it('mọi bản đồ, mọi cỡ: chỗ xuất phát của 1-6 người đều nằm trên băng', () => {
+  it('mọi bản đồ, mọi cỡ: chỗ xuất phát của 1-8 người đều nằm trên băng', () => {
     for (const id of MAP_IDS) {
       for (const size of [0.7, 1, 1.5]) {
         const { map, R } = arenaOf(id, size, 0.5);
-        for (let n = 1; n <= 6; n++) {
+        for (let n = 1; n <= 8; n++) {
           for (let i = 0; i < n; i++) {
             const p = spawnPoint(map, R, i, n);
             expect(onIce(map, R, p.x, p.y, 20), `${id} ${size} ${i}/${n}`).toBe(true);
@@ -371,9 +371,174 @@ describe('luật ván snowar', () => {
     expect(s).toMatchObject({ map: 'floe', scale: SCALE.default, slip: SLIP.default });
   });
 
+  it('hết hiệp lưu kết quả riêng của hiệp (giây hoặc mạng), bỏ số lạ', () => {
+    let s = iceBumperGame.reduce(iceBumperGame.init(players), { type: 'start' }, ctx('a'));
+    s = iceBumperGame.reduce(s, { type: 'round_end', round: 1, winnerId: 'a', kos: {}, tally: { a: 15.7, b: Number.NaN, c: -2 } }, ctx('a'));
+    expect(s.roundTally).toEqual({ a: 15, c: 0 });
+  });
+
   it('khách không báo hết hiệp được', () => {
     let s = iceBumperGame.reduce(iceBumperGame.init(players), { type: 'start' }, ctx('a'));
     s = iceBumperGame.reduce(s, { type: 'round_end', round: 1, winnerId: 'b', kos: {} }, ctx('b'));
     expect(s.stage).toBe('playing');
+  });
+});
+
+describe('chế độ chơi', () => {
+  /** Đẩy người `id` ra ngoài mép băng cho rơi. */
+  const dunk = (w: ReturnType<typeof spawn>, id: string) => {
+    Object.assign(w.bodies[id], { x: w.arena.R * 3, y: 0, vx: 0, vy: 0, ghost: 0 });
+    step(w, {}, true);
+  };
+  const wait = (w: ReturnType<typeof spawn>, ms: number) => run(Math.ceil(ms / 1000 / STEP), () => step(w, {}, true));
+
+  it('trụ cuối: rơi là không quay lại, còn một người thì xong hiệp', () => {
+    const w = spawn(['a', 'b'], 0, arenaOf('floe', 1, 0.5));
+    dunk(w, 'a');
+    wait(w, RESPAWN_MS + 200);
+    expect(w.bodies.a.alive).toBe(false);
+    expect(verdict(w, ['a', 'b'], false)).toEqual({ done: true, winner: 'b' });
+  });
+
+  it('ba mạng: rơi thì quay lại sân, mờ đi một lúc rồi mới va chạm; hết mạng là bị loại', () => {
+    const w = spawn(['a', 'b'], 0, arenaOf('floe', 1, 0.5, 'lives'));
+    dunk(w, 'a');
+    expect(w.bodies.a).toMatchObject({ alive: false, lives: LIVES - 1 });
+    expect(verdict(w, ['a', 'b'], false).done).toBe(false);
+    wait(w, RESPAWN_MS + 50);
+    const a = w.bodies.a;
+    expect(a.alive).toBe(true);
+    expect(a.ghost).toBeGreaterThan(0);
+    expect(onIce(w.arena.map, w.arena.R, a.x, a.y, 20)).toBe(true);
+    // Đang mờ thì đi xuyên qua người khác.
+    Object.assign(w.bodies.b, { x: a.x + 10, y: a.y, vx: 0, vy: 0 });
+    step(w, {}, true);
+    expect(Math.hypot(w.bodies.b.vx, w.bodies.b.vy)).toBe(0);
+    for (let k = 1; k < LIVES; k++) {
+      dunk(w, 'a');
+      wait(w, RESPAWN_MS + 50);
+    }
+    expect(w.bodies.a).toMatchObject({ alive: false, lives: 0, back: 0 });
+    expect(verdict(w, ['a', 'b'], false)).toEqual({ done: true, winner: 'b' });
+  });
+
+  it('ba mạng hết giờ: nhiều mạng nhất thắng', () => {
+    const w = spawn(['a', 'b'], 0, arenaOf('floe', 1, 0.5, 'lives'));
+    dunk(w, 'b');
+    expect(verdict(w, ['a', 'b'], true)).toEqual({ done: true, winner: 'a' });
+  });
+
+  it('vua đỉnh băng: đứng một mình trong vòng mới tích giây, hai người thì không ai được; vòng dời chỗ', () => {
+    const w = spawn(['a', 'b'], 0, arenaOf('floe', 1, 0.5, 'king'));
+    const zone = zoneOf(w)!;
+    Object.assign(w.bodies.a, { x: zone.x, y: zone.y });
+    run(60, () => step(w, {}, true));
+    expect(w.bodies.a.score).toBeCloseTo(1, 1);
+    Object.assign(w.bodies.b, { x: zone.x + 30, y: zone.y + 25 });
+    Object.assign(w.bodies.a, { x: zone.x, y: zone.y - 20 });
+    const before = w.bodies.a.score;
+    run(30, () => step(w, {}, true));
+    expect(w.bodies.a.score).toBe(before);
+    // Đếm ngược chưa tính.
+    const idle = w.bodies.a.score;
+    step(w, {}, false);
+    expect(w.bodies.a.score).toBe(idle);
+    w.play = ZONE_MOVE + 0.1;
+    expect(zoneOf(w)).not.toMatchObject({ x: zone.x, y: zone.y });
+    w.bodies.a.score = KING_TARGET;
+    expect(verdict(w, ['a', 'b'], false)).toEqual({ done: true, winner: 'a' });
+  });
+
+  it('giữ cá: chạm là ôm và tích giây, bị bắn trúng thì văng cá, ôm cá rơi xuống nước thì cá về chỗ khác', () => {
+    const w = spawn(['a', 'b'], 0, arenaOf('floe', 1.3, 0.5, 'fish'));
+    const fish = w.fish!;
+    Object.assign(w.bodies.a, { x: fish.x + 5, y: fish.y });
+    step(w, {}, true);
+    expect(w.fish!.holder).toBe('a');
+    run(60, () => step(w, {}, true));
+    expect(w.bodies.a.score).toBeCloseTo(1, 1);
+    // b bắn thẳng vào a.
+    const a = w.bodies.a;
+    Object.assign(w.bodies.b, { x: a.x - 120, y: a.y, face: 0, ball: 30, cool: 0 });
+    let dropped = false;
+    for (let i = 0; i < 40 && !dropped; i++) dropped = step(w, { b: { angle: null, shots: 1 } }, true).some((e) => e.type === 'drop');
+    expect(dropped).toBe(true);
+    expect(w.fish!.holder).toBe(null);
+    // Ôm lại rồi rơi.
+    w.fish!.cool = 0;
+    Object.assign(w.bodies.a, { x: w.fish!.x, y: w.fish!.y, ghost: 0 });
+    Object.assign(w.bodies.b, { x: -200, y: 0 });
+    step(w, {}, true);
+    expect(w.fish!.holder).toBe('a');
+    const n = w.fish!.n;
+    dunk(w, 'a');
+    expect(w.fish!.holder).toBe(null);
+    expect(w.fish!.n).toBe(n + 1);
+    w.bodies.b.score = FISH_TARGET;
+    expect(verdict(w, ['a', 'b'], false)).toEqual({ done: true, winner: 'b' });
+  });
+
+  it('hết giờ ở chế độ tính giây: dẫn đầu thắng, bằng nhau là hòa', () => {
+    const w = spawn(['a', 'b'], 0, arenaOf('floe', 1, 0.5, 'king'));
+    expect(verdict(w, ['a', 'b'], true)).toEqual({ done: true, winner: null });
+    w.bodies.b.score = 0.6;
+    expect(verdict(w, ['a', 'b'], true)).toEqual({ done: true, winner: null });
+    w.bodies.b.score = 3.2;
+    w.bodies.a.score = 3.9;
+    expect(verdict(w, ['a', 'b'], true)).toEqual({ done: true, winner: null });
+    w.bodies.b.score = 4.1;
+    expect(verdict(w, ['a', 'b'], true)).toEqual({ done: true, winner: 'b' });
+  });
+
+  it('ảnh chụp giữ đủ điểm, mạng, chờ quay lại và con cá', () => {
+    const w = spawn(['a', 'b'], 0, arenaOf('floe', 1, 0.5, 'fish'));
+    Object.assign(w.bodies.a, { score: 4.5, lives: 2, back: 1234, ghost: 0.7, downs: 3 });
+    w.fish!.holder = 'b';
+    w.play = 7.5;
+    const back = decode(JSON.parse(JSON.stringify(encode(w, {}))), w.arena);
+    expect(back.bodies.a).toMatchObject({ score: 4.5, lives: 2, back: 1234, ghost: 0.7, downs: 3 });
+    expect(back.fish).toMatchObject({ holder: 'b', n: 0 });
+    expect(back.play).toBe(7.5);
+  });
+
+  it('giữ cá: cầu tuyết trước mặt chạm cá cũng nhặt được', () => {
+    const w = spawn(['a', 'b'], 0, arenaOf('floe', 1.3, 0.5, 'fish'));
+    const f = w.fish!;
+    // Cầu bán kính 30 ở trước mặt, thân cách cá xa hơn tầm chạm của thân.
+    Object.assign(w.bodies.a, { x: f.x - 22 - 30 - 25, y: f.y, face: 0, ball: 30 });
+    step(w, {}, true);
+    expect(w.fish!.holder).toBe('a');
+  });
+
+  it('giữ cá: ba máy tự lái không kẹt, có người ôm được cá', () => {
+    const w = spawn(['a', 'b', 'c'], 0, arenaOf('floe', 1.3, 0.35, 'fish'));
+    const inputs: Record<string, Input> = {};
+    for (let i = 0; i < 60 * 20; i++) {
+      if (i % 5 === 0) for (const p of ['a', 'b', 'c']) inputs[p] = botInput(w, p, inputs[p]);
+      step(w, inputs, true);
+    }
+    expect(Math.max(...Object.values(w.bodies).map((b) => b.score))).toBeGreaterThan(2);
+  });
+
+  it('máy tự lái không lỗi ở mọi chế độ và mọi bản đồ', () => {
+    for (const mode of ['classic', 'lives', 'king', 'fish'] as const) {
+      for (const id of MAP_IDS) {
+        const w = spawn(['a', 'b', 'c'], 0, arenaOf(id, 1, 0.4, mode));
+        const inputs: Record<string, Input> = {};
+        for (let i = 0; i < 300; i++) {
+          if (i % 5 === 0) for (const p of ['a', 'b', 'c']) inputs[p] = botInput(w, p, inputs[p]);
+          step(w, inputs, true);
+        }
+        for (const b of Object.values(w.bodies)) expect(Number.isFinite(b.x) && Number.isFinite(b.y), `${mode} ${id}`).toBe(true);
+      }
+    }
+  });
+
+  it('mọi bản đồ: chỗ đặt vòng vua / cá nằm trên băng, đủ rộng', () => {
+    for (const id of MAP_IDS) {
+      const a = arenaOf(id, 0.7, 0.5, 'king');
+      expect(a.spots.length, id).toBeGreaterThanOrEqual(2);
+      for (const p of a.spots) expect(onIce(a.map, a.R, p.x, p.y, a.R * 0.15), id).toBe(true);
+    }
   });
 });

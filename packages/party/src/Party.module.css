@@ -173,9 +173,9 @@
 .turnMine { background: var(--accent); color: var(--on-accent); }
 .turnMine .avatar { background: color-mix(in srgb, currentColor 14%, transparent); }
 .turnText { flex: 1; min-width: 0; display: grid; }
-.turnText small { font-size: var(--fs-sm); opacity: 0.75; }
+.turnText small { font-size: var(--fs-sm); opacity: 0.75; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .turnText strong { font-size: var(--fs-xl); font-weight: var(--fw-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.roomChip { padding: var(--space-1) var(--space-4); border-radius: 999px; background: color-mix(in srgb, currentColor 10%, transparent); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; letter-spacing: 0.08em; }
+.roomChip { flex: none; padding: var(--space-1) var(--space-4); border-radius: 999px; background: color-mix(in srgb, currentColor 10%, transparent); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; letter-spacing: 0.08em; }
 .notice { display: flex; align-items: center; gap: var(--space-4); margin: 0; padding: var(--space-4) var(--space-8); background: var(--cell-raised); color: var(--ink-secondary); font-size: var(--fs-sm); }
 .noticeAction { margin-left: auto; padding: var(--space-2) var(--space-6); border-radius: 999px; background: var(--ink); color: var(--bg); font-size: var(--fs-sm); }
 
@@ -477,6 +477,10 @@
   transition: background-color var(--dur-base), box-shadow var(--dur-base);
 }
 :global(:root[data-look="quan"]) .turn .avatar { width: 50px; height: 50px; font-size: 34px; }
+/* Màn hẹp chơi chung: icon nhóm chỉ để trang trí, nhường chỗ cho "cả phòng cùng chơi" và số người. */
+@media (max-width: 420px) {
+  .turn > span.avatar[aria-hidden="true"] { display: none; }
+}
 :global(:root[data-look="quan"]) .turnText small {
   font-family: var(--font-hand);
   font-size: var(--fs-md);
@@ -488,7 +492,8 @@
   padding: 0.08em 0.1em 0.1em 0;
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 40px;
+  /* Màn hẹp còn mã phòng và hai nút cạnh tên: thu cỡ để "2 người" không bị cắt. */
+  font-size: clamp(26px, 8.5vw, 40px);
   line-height: 1;
 }
 :global(:root[data-look="quan"]) .turnMine {

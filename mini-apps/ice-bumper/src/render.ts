@@ -28,6 +28,8 @@ export interface PenguinPose {
   sink?: number;
   /** Nhún nhẹ khi đứng chờ (ms). */
   bob?: number;
+  /** Vừa quay lại sân, đang được miễn va chạm: vẽ mờ. */
+  ghost?: boolean;
 }
 
 /** Mép băng lởm chởm, cố định theo hiệp để hai máy vẽ giống nhau. */
@@ -92,7 +94,7 @@ export function drawSea(ctx: CanvasRenderingContext2D, w: number, h: number, cx:
 }
 
 /** Bản đồ băng: thành băng nhô khỏi mặt nước, mặt băng có vết nứt từ mép vào, lỗ nước có thành băng bên trong. */
-export function drawFloe(ctx: CanvasRenderingContext2D, floe: Floe, map: MapDef, R: number) {
+export function drawFloe(ctx: CanvasRenderingContext2D, floe: Floe, map: MapDef, R: number, center = true) {
   ctx.fillStyle = COLORS.iceSide;
   mapPath(ctx, floe, map, R, 10);
   ctx.fill();
@@ -124,7 +126,7 @@ export function drawFloe(ctx: CanvasRenderingContext2D, floe: Floe, map: MapDef,
     }
   }
   // Vòng tâm mờ: hết giờ ai đứng gần tâm nhất thắng (bỏ qua khi tâm là lỗ nước).
-  if (onIce(map, R, 0, 0) && !map.holes.some((h) => Math.hypot(h.x, h.y) < h.r)) {
+  if (center && onIce(map, R, 0, 0) && !map.holes.some((h) => Math.hypot(h.x, h.y) < h.r + 0.28)) {
     ctx.strokeStyle = 'rgba(127, 182, 206, 0.7)';
     ctx.setLineDash([3, 9]);
     ctx.beginPath();
@@ -134,7 +136,10 @@ export function drawFloe(ctx: CanvasRenderingContext2D, floe: Floe, map: MapDef,
   }
   ctx.restore();
 
-  // Lỗ nước: thấy thành băng ở mép trên của lỗ.
+  // Lỗ nước: thấy thành băng ở mép trên của lỗ. Chỉ vẽ trong tảng băng (lỗ khoét lẹm ra mép như trăng khuyết).
+  ctx.save();
+  mapPath(ctx, floe, map, R);
+  ctx.clip();
   for (const h of map.holes) {
     ctx.fillStyle = COLORS.iceSide;
     ctx.beginPath();
@@ -148,6 +153,7 @@ export function drawFloe(ctx: CanvasRenderingContext2D, floe: Floe, map: MapDef,
     ctx.fill();
     ctx.restore();
   }
+  ctx.restore();
 }
 
 /** Cầu tuyết; `z` là độ cao khi đang bay vồng: bóng đổ ở mặt băng, cầu ở trên cao, bay càng cao bóng càng nhạt. */
@@ -232,7 +238,7 @@ export function drawPenguin(ctx: CanvasRenderingContext2D, p: PenguinPose) {
   const bob = p.bob ? Math.sin(p.bob / 260) * 1.2 : 0;
   ctx.save();
   ctx.translate(p.x, p.y + bob);
-  ctx.globalAlpha = 1 - sink;
+  ctx.globalAlpha = (1 - sink) * (p.ghost ? 0.45 : 1);
   ctx.scale(1 - sink * 0.6, 1 - sink * 0.6);
 
   // Cầu tuyết trước mặt (vẽ trước để thân đè lên mép cầu).
@@ -365,3 +371,161 @@ export function drawParticles(ctx: CanvasRenderingContext2D, list: Particle[], d
 
 /** Độ đầy của cầu tuyết (0..1), dùng cho vòng sạc trên nút bắn. */
 export const ballCharge = (ball: number) => Math.max(0, Math.min(1, ball / BALL_FULL));
+
+/** Vàng vương miện của vòng vua; cam phao khi bị tranh. */
+const CROWN = '#FFC93C';
+const CONTEST = '#FF6A2B';
+
+export interface ZoneLook {
+  /** Màu áo người đang đứng riêng trong vòng (đang tích giây). */
+  owner?: string | null;
+  /** Từ hai người trở lên trong vòng: không ai được tính. */
+  contested?: boolean;
+  /** Tiến độ của người đang giữ, 0..1, vẽ thành cung quanh vòng. */
+  progress?: number;
+  /** 0..1: vẽ mờ, nét đứt (chỗ vòng sắp dời tới). */
+  fade?: number;
+}
+
+/** Vương miện nhỏ, tâm (x, y), cỡ s. */
+function crown(ctx: CanvasRenderingContext2D, x: number, y: number, s: number) {
+  ctx.beginPath();
+  ctx.moveTo(x - s, y + s * 0.5);
+  ctx.lineTo(x - s, y - s * 0.4);
+  ctx.lineTo(x - s * 0.5, y + s * 0.05);
+  ctx.lineTo(x, y - s * 0.6);
+  ctx.lineTo(x + s * 0.5, y + s * 0.05);
+  ctx.lineTo(x + s, y - s * 0.4);
+  ctx.lineTo(x + s, y + s * 0.5);
+  ctx.closePath();
+}
+
+/**
+ * Vòng vua trên mặt băng. Trống: vàng nhịp nhẹ. Một người đứng riêng: tô màu áo người đó, cung tiến độ chạy quanh.
+ * Bị tranh: viền cam nét đứt chạy vòng, kèm chữ "Đang tranh" để biết vì sao không ai được giây.
+ */
+export function drawZone(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, time: number, look: ZoneLook = {}) {
+  const { owner = null, contested = false, progress = 0, fade = 1 } = look;
+  const pulse = 0.5 + 0.5 * Math.sin(time / 300);
+  const edge = contested ? CONTEST : (owner ?? CROWN);
+  ctx.save();
+  ctx.globalAlpha = fade;
+  ctx.fillStyle = contested ? 'rgba(255, 106, 43, 0.14)' : owner ? `${owner}2E` : 'rgba(255, 201, 60, 0.16)';
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.lineWidth = 4 + pulse * 2;
+  ctx.strokeStyle = edge;
+  if (fade < 1) ctx.setLineDash([8, 8]);
+  else if (contested) {
+    ctx.setLineDash([12, 9]);
+    ctx.lineDashOffset = -time / 40;
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // Cung tiến độ của người đang giữ: chạy từ đỉnh theo chiều kim đồng hồ.
+  if (owner && progress > 0 && fade === 1) {
+    ctx.lineWidth = 7;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(x, y, r + 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, progress));
+    ctx.stroke();
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = owner;
+    ctx.stroke();
+  }
+  const s = Math.max(10, r * 0.22);
+  ctx.globalAlpha = fade * 0.55;
+  ctx.fillStyle = edge;
+  ctx.strokeStyle = 'rgba(10, 39, 64, 0.6)';
+  ctx.lineWidth = 2;
+  crown(ctx, x, y, s);
+  ctx.fill();
+  ctx.stroke();
+  if (contested && fade === 1) {
+    ctx.globalAlpha = 1;
+    ctx.font = `800 ${Math.max(12, r * 0.2)}px "Be Vietnam Pro", system-ui, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'rgba(10, 39, 64, 0.85)';
+    ctx.strokeText('Đang tranh', x, y + r + 20);
+    ctx.fillStyle = CONTEST;
+    ctx.fillText('Đang tranh', x, y + r + 20);
+  }
+  ctx.restore();
+}
+
+/** Vòng sáng dưới chân người đang ôm cá, màu áo, nhịp nhanh để dễ tìm giữa đám đông. */
+export function drawHolderRing(ctx: CanvasRenderingContext2D, x: number, y: number, color: string, time: number) {
+  const pulse = 0.5 + 0.5 * Math.sin(time / 160);
+  ctx.save();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = CROWN;
+  ctx.globalAlpha = 0.6 + 0.4 * pulse;
+  ctx.beginPath();
+  ctx.ellipse(x, y + 4, BODY_R * (1.55 + 0.15 * pulse), BODY_R * (1.25 + 0.12 * pulse), 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = color;
+  ctx.globalAlpha = 0.9;
+  ctx.beginPath();
+  ctx.ellipse(x, y + 4, BODY_R * 1.35, BODY_R * 1.08, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/**
+ * Con cá bạc. Nằm trên băng: quẫy nhẹ, có vòng sáng vàng nhịp dưới bụng để thấy từ xa.
+ * Đang được ôm (`lift` > 0): nảy trên đầu người ôm, to hơn một chút.
+ */
+export function drawFish(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, time: number, lift = 0) {
+  const wiggle = Math.sin(time / 120) * 0.25;
+  ctx.save();
+  if (!lift) {
+    const pulse = 0.5 + 0.5 * Math.sin(time / 220);
+    ctx.strokeStyle = CROWN;
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = 0.4 + 0.5 * pulse;
+    ctx.beginPath();
+    ctx.ellipse(x, y + 3, r * (1.9 + 0.5 * pulse), r * (1.3 + 0.35 * pulse), 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  // Bóng đổ trên băng.
+  ctx.fillStyle = 'rgba(10, 39, 64, 0.22)';
+  ctx.beginPath();
+  ctx.ellipse(x + 2, y + 4, r * 1.1, r * 0.55, 0, 0, Math.PI * 2);
+  ctx.fill();
+  const bounce = lift ? Math.abs(Math.sin(time / 180)) * 4 : 0;
+  ctx.translate(x, y - lift - bounce);
+  if (lift) ctx.scale(1.25, 1.25);
+  ctx.rotate(-0.35 + wiggle);
+  ctx.fillStyle = '#9CC9DE';
+  ctx.strokeStyle = '#0A2740';
+  ctx.lineWidth = 2;
+  // Đuôi.
+  ctx.beginPath();
+  ctx.moveTo(-r * 0.8, 0);
+  ctx.lineTo(-r * 1.5, -r * 0.6);
+  ctx.lineTo(-r * 1.5, r * 0.6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  // Thân.
+  ctx.fillStyle = '#D8EEF7';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, r, r * 0.55, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#FF6A2B';
+  ctx.beginPath();
+  ctx.ellipse(-r * 0.1, r * 0.12, r * 0.55, r * 0.16, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#0A2740';
+  ctx.beginPath();
+  ctx.arc(r * 0.55, -r * 0.12, r * 0.12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}

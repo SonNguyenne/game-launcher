@@ -100,8 +100,18 @@
   transition: opacity 300ms;
 }
 .rosterItem i { width: 14px; height: 14px; border-radius: 50%; background: var(--skin); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85); flex: none; }
-.rosterItem span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rosterItem b { min-width: 16px; padding: 0 4px; border-radius: 8px; background: var(--ib-ice); color: var(--ib-ink); font-size: 11px; text-align: center; }
+.rosterName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Số hiệp thắng: huy hiệu sao, tách hẳn khỏi điểm và tim để không đọc lẫn thành một số. */
+.rosterItem b { flex: none; padding: 1px 5px; border-radius: 8px; background: var(--ib-ice); color: var(--ib-ink); font-size: 11px; font-weight: 800; letter-spacing: 0.02em; }
+/* Người đang ôm cá / giữ vòng: viền vàng quanh tên, kèm dấu hiệu. */
+.rosterLead { box-shadow: 0 0 0 2px #FFC93C; background: rgba(10, 39, 64, 0.88); }
+.leadMark { flex: none; font-size: 13px; line-height: 1; animation: lead-bob 900ms ease-in-out infinite alternate; }
+@keyframes lead-bob { to { transform: translateY(-2px); } }
+.rosterItem em { flex: none; font-style: normal; font-weight: 800; color: #FFC93C; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.rosterItem em small { font-size: 10px; font-weight: 700; opacity: 0.7; }
+.hearts { display: inline-flex; gap: 1px; }
+.rosterItem .hearts small { font-size: 13px; opacity: 1; color: #FF6B7A; }
+.rosterItem .hearts small.heartLost { color: rgba(242, 250, 253, 0.25); }
 .rosterOut { opacity: 0.4; text-decoration: line-through; }
 
 .feed {
@@ -268,6 +278,25 @@
   z-index: 2;
 }
 
+/* Chờ quay lại sân: số đếm lớn giữa màn, không chặn chạm. */
+.respawn {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 12px 22px 14px;
+  border-radius: 18px;
+  background: rgba(10, 39, 64, 0.78);
+  pointer-events: none;
+}
+.respawn small { font-size: 13px; font-weight: 700; color: var(--ib-shade); }
+.respawn span { font: 400 56px/0.9 var(--ib-display); color: var(--ib-ice); animation: tick-in 260ms cubic-bezier(0.2, 0.9, 0.2, 1); }
+@keyframes tick-in { from { transform: scale(1.4); opacity: 0; } }
+
 /* Bảng hết hiệp: tấm băng trắng trồi lên, viền trên màu áo người thắng. */
 .panel {
   position: absolute;
@@ -292,7 +321,7 @@
 .table { display: grid; gap: 2px; margin: 0 0 16px; padding: 0; list-style: none; }
 .row {
   display: grid;
-  grid-template-columns: 16px 1fr auto auto;
+  grid-template-columns: 16px minmax(0, 1fr) auto auto auto;
   align-items: center;
   gap: 10px;
   padding: 8px 6px;
@@ -305,6 +334,7 @@
 .pips { display: inline-flex; gap: 3px; }
 .pips b { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--ib-shade); }
 .pips b.pipOn { background: var(--ib-ink); border-color: var(--ib-ink); }
+.rowTally { padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--skin) 18%, transparent); font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .rowKos { font-size: 12px; color: var(--ib-ink-soft); font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; }
 .panelButton {
   width: 100%;
@@ -372,7 +402,7 @@
 .keys { margin: 0; font-size: 12px; color: var(--ink-muted); text-align: center; }
 
 @media (prefers-reduced-motion: reduce) {
-  .countNum, .feedItem, .panel { animation: none; }
+  .countNum, .feedItem, .panel, .leadMark, .respawn span { animation: none; }
 }
 
 /* Màn ngang thấp: bảng kết quả nằm dọc bên phải để còn thấy tảng băng. */

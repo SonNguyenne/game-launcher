@@ -86,7 +86,7 @@ function Garage({ party }: { party: SnowarParty }) {
         <h2 className={s.garageTitle}>{strings.garageTitle}</h2>
         <p className={s.garageHint}>{local ? strings.practice : strings.garageHint}</p>
         <p className={s.arenaLine}>
-          {strings.arena(st.map === 'random' ? strings.randomMaps : (MAPS[st.map]?.label ?? ''), st.scale, st.slip, strings.roundTimeValue(st.roundSeconds ?? 60))}
+          {strings.arena(strings.modeName[st.mode ?? 'classic'], st.map === 'random' ? strings.randomMaps : (MAPS[st.map]?.label ?? ''), st.scale, st.slip, strings.roundTimeValue(st.roundSeconds ?? 60))}
         </p>
 
         <div className={s.group} role="radiogroup" aria-label={strings.color}>

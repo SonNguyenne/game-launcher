@@ -3,13 +3,14 @@ import { Chips, SettingsCard, type SettingsProps } from '@bang/party';
 import { cx } from '@bang/ui';
 import { ROUND_OPTIONS, ROUND_TIME_OPTIONS, type SnowarState } from './game';
 import { MAPS, MAP_IDS, extentOf, spawnPoint, type MapChoice, type MapId } from './maps';
-import { COLORS, drawFloe, drawPenguin, floeShape } from './render';
+import { COLORS, drawFish, drawFloe, drawPenguin, drawZone, floeShape } from './render';
 import { skinFor } from './avatar';
-import { BALL_MIN, ICE_R, SCALE, SLIP } from './sim';
+import { BALL_MIN, FISH_R, ICE_R, MODE_IDS, SCALE, SLIP, arenaOf, type ModeId } from './sim';
 import { strings } from './strings';
 import s from './IceBumper.module.css';
 
 const roundOptions = ROUND_OPTIONS.map((n) => ({ value: String(n), label: strings.roundsValue(n) }));
+const modeOptions = MODE_IDS.map((id) => ({ value: id, label: strings.modeName[id] }));
 const timeOptions = ROUND_TIME_OPTIONS.map((n) => ({ value: String(n), label: strings.roundTimeValue(n) }));
 
 /** Hình thu nhỏ của một bản đồ, vẽ bằng cùng hàm với trận đấu. */
@@ -38,10 +39,10 @@ function MapThumb({ id }: { id: MapId }) {
  * Xem trước sân đúng cỡ: khung cố định theo bản đồ này ở cỡ lớn nhất, nên kéo cỡ sân thấy băng to nhỏ thật
  * so với bốn chú cánh cụt đứng ở chỗ xuất phát. Chọn ngẫu nhiên thì lần lượt hiện các bản đồ.
  */
-function ArenaPreview({ map, scale }: { map: MapChoice; scale: number }) {
+function ArenaPreview({ map, scale, mode }: { map: MapChoice; scale: number; mode: ModeId }) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const live = useRef({ map, scale });
-  live.current = { map, scale };
+  const live = useRef({ map, scale, mode });
+  live.current = { map, scale, mode };
 
   useEffect(() => {
     const canvas = ref.current!;
@@ -55,7 +56,7 @@ function ArenaPreview({ map, scale }: { map: MapChoice; scale: number }) {
       const h = canvas.clientHeight;
       if (canvas.width !== Math.round(w * dpr)) canvas.width = Math.round(w * dpr);
       if (canvas.height !== Math.round(h * dpr)) canvas.height = Math.round(h * dpr);
-      const { map: choice, scale: k } = live.current;
+      const { map: choice, scale: k, mode } = live.current;
       const id: MapId = choice === 'random' ? MAP_IDS[Math.floor(t / 1400) % MAP_IDS.length] : choice;
       const def = MAPS[id];
       const R = ICE_R * k;
@@ -65,7 +66,14 @@ function ArenaPreview({ map, scale }: { map: MapChoice; scale: number }) {
       ctx.fillRect(0, 0, w, h);
       ctx.translate(w / 2, h / 2);
       ctx.scale(zoom, zoom);
-      drawFloe(ctx, floe, def, R);
+      drawFloe(ctx, floe, def, R, mode === 'classic' || mode === 'lives');
+      // Chế độ vua / giữ cá: hiện chỗ đặt vòng hoặc cá đầu tiên.
+      if (mode === 'king' || mode === 'fish') {
+        const arena = arenaOf(id, k, 0.5, mode);
+        const spot = arena.spots[0];
+        if (mode === 'king') drawZone(ctx, spot.x, spot.y, arena.R * 0.2, t);
+        else drawFish(ctx, spot.x, spot.y, FISH_R, t);
+      }
       for (let i = 0; i < 4; i++) {
         const p = spawnPoint(def, R, i, 4);
         drawPenguin(ctx, { x: p.x, y: p.y, face: Math.atan2(-p.y, -p.x), ball: BALL_MIN, skin: skinFor(i), bob: t + i * 300 });
@@ -129,7 +137,10 @@ export function SnowarSettings({ value, onChange, editable }: SettingsProps<Snow
   const choices: MapChoice[] = [...MAP_IDS, 'random'];
   return (
     <SettingsCard editable={editable}>
-      <ArenaPreview map={map} scale={scale} />
+      <Chips label={strings.mode} options={modeOptions} value={value.mode ?? 'classic'} onChange={(v) => onChange({ mode: v as SnowarState['mode'] })} disabled={!editable} />
+      <p className={s.gripHint}>{strings.modeHint[value.mode ?? 'classic']}</p>
+
+      <ArenaPreview map={map} scale={scale} mode={value.mode ?? 'classic'} />
 
       <div className={s.mapGroup} role="radiogroup" aria-label={strings.map}>
         <span className={s.mapLabel}>{strings.map}</span>

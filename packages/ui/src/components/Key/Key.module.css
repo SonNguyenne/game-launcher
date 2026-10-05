@@ -106,7 +106,8 @@
   font-size: var(--fs-lg);
   font-weight: 700;
   line-height: 1;
-  opacity: 0.72;
+  /* Số thứ tự trên nền sơn đỏ, xanh: để đủ đậm, mờ đi là tụt dưới 4.5:1. */
+  opacity: 1;
 }
 :global(:root[data-look="quan"]) .top:has(.status) .index { visibility: hidden; }
 :global(:root[data-look="quan"]) .label {

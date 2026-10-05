@@ -135,7 +135,7 @@
   margin: var(--space-4) 0 0;
   padding: var(--space-2) var(--space-5);
   border-radius: 999px;
-  background: color-mix(in oklab, var(--accent) 10%, var(--cell));
+  background: color-mix(in oklab, var(--accent) 6%, var(--cell));
   border: 1px solid color-mix(in oklab, var(--accent) 22%, transparent);
   font-family: var(--font-ui);
   font-size: var(--fs-sm);

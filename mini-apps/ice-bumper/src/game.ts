@@ -1,6 +1,6 @@
 import { baseState, withResult, type BaseState, type GameDef, type Party, type Player } from '@bang/party';
 import { skinFor, type PenguinSkin } from './avatar';
-import { COUNTDOWN_MS, ROUND_SECONDS, SCALE, SLIP, arenaOf } from './sim';
+import { COUNTDOWN_MS, MODE_IDS, ROUND_SECONDS, SCALE, SLIP, arenaOf, type ModeId } from './sim';
 import { MAPS, MAP_IDS, type MapChoice, type MapId } from './maps';
 import { strings } from './strings';
 
@@ -18,6 +18,8 @@ export interface SnowarState extends BaseState {
   maxRounds: number;
   /** Thời gian mỗi hiệp (giây), 0 là vô hạn. */
   roundSeconds: number;
+  /** Chế độ chơi. */
+  mode: ModeId;
   /** Cài đặt của chủ phòng: bản đồ (hoặc ngẫu nhiên mỗi hiệp), cỡ sân, độ trơn. */
   map: MapChoice;
   /** Cỡ sân (nhân với bán kính chuẩn), SCALE.min..max. */
@@ -35,25 +37,28 @@ export interface SnowarState extends BaseState {
   wins: Record<string, number>;
   /** Số lần đẩy được người khác xuống nước. */
   kos: Record<string, number>;
+  /** Kết quả riêng của hiệp vừa xong theo chế độ: số giây đã tích (vua, giữ cá) hoặc số mạng còn lại. */
+  roundTally: Record<string, number>;
   winnerId: string | null;
   skins: Record<string, PenguinSkin>;
 }
 
 export type SnowarParty = Party<SnowarState, SnowarAction>;
-export type Config = Partial<Pick<SnowarState, 'maxRounds' | 'roundSeconds' | 'map' | 'scale' | 'slip'>>;
+export type Config = Partial<Pick<SnowarState, 'maxRounds' | 'roundSeconds' | 'mode' | 'map' | 'scale' | 'slip'>>;
 
 export type SnowarAction =
   | { type: 'config'; config: Config }
   | { type: 'set_skin'; skin: PenguinSkin }
   | { type: 'start' }
   /** Chủ phòng báo hết hiệp: người trụ lại (null nếu cùng rơi) và ai đẩy được ai trong hiệp. */
-  | { type: 'round_end'; round: number; winnerId: string | null; kos: Record<string, number>; timeUp?: boolean };
+  | { type: 'round_end'; round: number; winnerId: string | null; kos: Record<string, number>; timeUp?: boolean; tally?: Record<string, number> };
 
 const fresh = (): SnowarState => ({
   ...baseState(),
   stage: 'garage',
   maxRounds: 3,
   roundSeconds: ROUND_SECONDS,
+  mode: 'classic',
   map: 'floe',
   scale: SCALE.default,
   slip: SLIP.default,
@@ -63,6 +68,7 @@ const fresh = (): SnowarState => ({
   startedAt: 0,
   wins: {},
   kos: {},
+  roundTally: {},
   winnerId: null,
   skins: {},
 });
@@ -98,7 +104,7 @@ export function standings(s: SnowarState, players: Player[]) {
 export const skinOf = (s: SnowarState, players: Player[], id: string) => s.skins[id] ?? skinFor(Math.max(0, players.findIndex((p) => p.id === id)));
 
 /** Sân của hiệp đang chơi. */
-export const arenaOfState = (s: SnowarState) => arenaOf(s.roundMap, s.scale, s.slip);
+export const arenaOfState = (s: SnowarState) => arenaOf(s.roundMap, s.scale, s.slip, s.mode ?? 'classic');
 
 /** Hiệp bắt đầu được lái khi hết đếm ngược. */
 export const controlStartsAt = (s: SnowarState) => s.startedAt + COUNTDOWN_MS;
@@ -106,20 +112,21 @@ export const controlStartsAt = (s: SnowarState) => s.startedAt + COUNTDOWN_MS;
 export const iceBumperGame: GameDef<SnowarState, SnowarAction> = {
   id: 'ice-bumper',
   init: fresh,
-  configOf: (s) => ({ maxRounds: s.maxRounds, roundSeconds: s.roundSeconds, map: s.map, scale: s.scale, slip: s.slip }),
+  configOf: (s) => ({ maxRounds: s.maxRounds, roundSeconds: s.roundSeconds, mode: s.mode, map: s.map, scale: s.scale, slip: s.slip }),
   advance(s, c) {
     // Hết trận: về chọn áo, xóa điểm. Hết hiệp: vào hiệp sau với những người đang trong phòng.
-    if (s.stage === 'game_over') return { ...fresh(), maxRounds: s.maxRounds, roundSeconds: s.roundSeconds, map: s.map, scale: s.scale, slip: s.slip, skins: s.skins, seq: s.seq + 1 };
+    if (s.stage === 'game_over') return { ...fresh(), maxRounds: s.maxRounds, roundSeconds: s.roundSeconds, mode: s.mode, map: s.map, scale: s.scale, slip: s.slip, skins: s.skins, seq: s.seq + 1 };
     if (s.stage === 'round_over') return newRound(s, c?.players ?? [], c?.now ?? Date.now());
     return s;
   },
   reduce(s, a, c) {
     if (a.type === 'config') {
       if (!c.host || s.stage !== 'garage') return s;
-      const { maxRounds, roundSeconds, map, scale, slip } = a.config;
+      const { maxRounds, roundSeconds, mode, map, scale, slip } = a.config;
       const next = { ...s };
       if (ROUND_OPTIONS.includes(maxRounds as (typeof ROUND_OPTIONS)[number])) next.maxRounds = maxRounds as number;
       if (ROUND_TIME_OPTIONS.includes(roundSeconds as (typeof ROUND_TIME_OPTIONS)[number])) next.roundSeconds = roundSeconds as number;
+      if (mode && MODE_IDS.includes(mode)) next.mode = mode;
       if (map === 'random' || (map && map in MAPS)) next.map = map;
       const inRange = (v: unknown, r: { min: number; max: number }): v is number => typeof v === 'number' && v >= r.min && v <= r.max;
       if (inRange(scale, SCALE)) next.scale = Math.round(scale * 100) / 100;
@@ -143,7 +150,9 @@ export const iceBumperGame: GameDef<SnowarState, SnowarAction> = {
       const kos = { ...s.kos };
       for (const [id, n] of Object.entries(a.kos)) if (typeof n === 'number') kos[id] = (kos[id] ?? 0) + n;
       const over = s.round >= s.maxRounds;
-      const next: SnowarState = { ...s, stage: over ? 'game_over' : 'round_over', winnerId: a.winnerId, wins, kos };
+      const roundTally: Record<string, number> = {};
+      for (const [id, n] of Object.entries(a.tally ?? {})) if (typeof n === 'number' && Number.isFinite(n)) roundTally[id] = Math.max(0, Math.floor(n));
+      const next: SnowarState = { ...s, stage: over ? 'game_over' : 'round_over', winnerId: a.winnerId, wins, kos, roundTally };
       const name = (id: string | null) => c.players.find((p) => p.id === id)?.name ?? '';
       if (over) {
         const [top] = standings(next, c.players);
@@ -151,7 +160,7 @@ export const iceBumperGame: GameDef<SnowarState, SnowarAction> = {
       }
       return withResult(next, {
         playerId: a.winnerId ?? c.players[0]?.id ?? '',
-        text: a.winnerId ? (a.timeUp ? strings.timeWin(name(a.winnerId)) : strings.roundWin(name(a.winnerId))) : strings.roundDraw,
+        text: a.winnerId ? strings.winText(s.mode ?? 'classic', name(a.winnerId), !!a.timeUp) : strings.roundDraw,
         safe: true,
       });
     }

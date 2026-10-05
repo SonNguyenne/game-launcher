@@ -33,9 +33,10 @@ export const palette = {
  * Dùng cho kiểu "sôi động", ảnh minh họa và icon PWA.
  */
 export const signPaint = {
-  red: '#FF4757',
+  // Đỏ và xanh lá đủ đậm để chữ trắng trên nền sơn đạt tương phản 4.5:1 (đỏ 4.97, xanh 5.01).
+  red: '#D62839',
   yellow: '#FFC000',
-  green: '#05C46B',
+  green: '#07804A',
   blue: '#3867D6',
   ink: '#0F172A',
   paper: '#FFFFFF',
@@ -133,8 +134,8 @@ export const keyColors = {
   bone: { label: 'trắng', fill: '#FFFFFF', text: '#0F172A' },
   yellow: { label: 'vàng', fill: '#FFC000', text: '#0F172A' },
   blue: { label: 'xanh lam', fill: '#3867D6', text: '#FFFFFF' },
-  red: { label: 'đỏ', fill: '#FF4757', text: '#FFFFFF' },
-  green: { label: 'xanh lá', fill: '#05C46B', text: '#FFFFFF' },
+  red: { label: 'đỏ', fill: signPaint.red, text: '#FFFFFF' },
+  green: { label: 'xanh lá', fill: signPaint.green, text: '#FFFFFF' },
   black: { label: 'đen', fill: '#0F172A', text: '#FFFFFF' },
 } as const;
 

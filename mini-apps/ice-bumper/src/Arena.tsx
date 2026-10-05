@@ -6,10 +6,15 @@ import { extentOf } from './maps';
 import {
   BALL_READY,
   BODY_R,
+  FISH_R,
+  LIVES,
+  isOut,
+  targetOf,
+  verdict,
+  zoneOf,
   lobPath,
   STEP,
   botInput,
-  closestToCenter,
   decode,
   encode,
   isSnapshot,
@@ -20,7 +25,7 @@ import {
   type Snapshot,
   type World,
 } from './sim';
-import { ballCharge, drawFloe, drawParticles, drawPenguin, drawSea, drawSnowball, drawTag, floeShape, puff, splash, type Particle } from './render';
+import { ballCharge, drawFish, drawFloe, drawHolderRing, drawParticles, drawPenguin, drawSea, drawSnowball, drawTag, drawZone, floeShape, puff, splash, type Particle } from './render';
 import { strings } from './strings';
 import s from './IceBumper.module.css';
 
@@ -35,6 +40,8 @@ const INPUT_MS = 33;
 /** Còn một người (hoặc không ai) trên băng: chờ chừng này cho cả phòng xem cú rơi rồi mới báo hết hiệp. */
 const END_DELAY_MS = 1300;
 const SINK_MS = 800;
+/** Cùng một cú rơi tới lại trong khoảng này (máy khách chạy lại từ ảnh chụp) thì chỉ báo một lần. */
+const FALL_REPEAT_MS = 2000;
 const STICK_MAX = 46;
 /** Bán kính thân cánh cụt tối thiểu trên màn hình (px); sân to hơn mức này thì camera phóng to và đi theo người. */
 const MIN_BODY_PX = 13;
@@ -52,7 +59,14 @@ interface Hud {
   count: number | null;
   /** Số giây còn lại của hiệp. */
   left: number;
-  alive: string;
+  /** Những người đã bị loại hẳn (nối bằng dấu phẩy). */
+  out: string;
+  /** Điểm hoặc số mạng từng người theo thứ tự roster (nối bằng |). */
+  tally: string;
+  /** Mình đang chờ quay lại sân: còn mấy giây (0 là không chờ). */
+  back: number;
+  /** Người đang ôm cá, hoặc đang đứng riêng trong vòng vua. */
+  lead: string;
 }
 
 interface Feed {
@@ -87,7 +101,8 @@ function saveWorld(v: Omit<SavedWorld, 'at'>) {
   }
 }
 
-const sameHud = (a: Hud, b: Hud) => a.count === b.count && a.left === b.left && a.alive === b.alive;
+const hudOut = (h: Hud, id: string) => h.out.split(',').includes(id);
+const sameHud = (a: Hud, b: Hud) => a.count === b.count && a.left === b.left && a.out === b.out && a.tally === b.tally && a.back === b.back && a.lead === b.lead;
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
 function readInput(v: unknown): Input | null {
@@ -125,7 +140,8 @@ export function Arena({ party }: { party: SnowarParty }) {
     world: World;
     inputs: Record<string, Input | undefined>;
     floe: ReturnType<typeof floeShape>;
-    seen: Set<string>;
+    /** Sự kiện đã báo (khóa → lúc báo), để ảnh chụp chạy lại không báo trùng. */
+    seen: Map<string, number>;
     sinking: Map<string, { x: number; y: number; at: number }>;
     kos: Record<string, number>;
     endAt: number;
@@ -141,7 +157,7 @@ export function Arena({ party }: { party: SnowarParty }) {
       world: saved ? decode(saved.snap, arena) : spawn(st.roster, Math.min(controlAt, party.now()), arena),
       inputs: {},
       floe: floeShape(st.round * 1.7 + st.roster.length),
-      seen: new Set(),
+      seen: new Map(),
       sinking: new Map(),
       kos: saved?.kos ?? {},
       endAt: 0,
@@ -156,7 +172,7 @@ export function Arena({ party }: { party: SnowarParty }) {
     input.current = { angle: null, shots: 0 };
   }
 
-  const [hud, setHud] = useState<Hud>({ count: 3, left: st.roundSeconds ?? 60, alive: '' });
+  const [hud, setHud] = useState<Hud>({ count: 3, left: st.roundSeconds ?? 60, out: '', tally: '', back: 0, lead: '' });
   const [feed, setFeed] = useState<Feed[]>([]);
   const feedId = useRef(0);
   const pushFeed = useRef((text: string) => {
@@ -232,14 +248,25 @@ export function Arena({ party }: { party: SnowarParty }) {
 
     const nameOf = (id: string) => live.current.party.nameOf(id) || '?';
 
+    /**
+     * Báo sự kiện lần đầu. Máy khách chạy lại từ mỗi ảnh chụp nên cùng một sự kiện tới nhiều lần;
+     * `within` (ms): chỉ chặn lần lặp trong khoảng này, để cú rơi tự đoán sai rồi rơi thật sau đó vẫn được báo.
+     */
+    const first = (key: string, within = Infinity) => {
+      const g = game.current!;
+      const now = performance.now();
+      const at = g.seen.get(key);
+      if (at !== undefined && now - at < within) return false;
+      g.seen.set(key, now);
+      return true;
+    };
+
     const handle = (events: SimEvent[], authority: boolean) => {
       const g = game.current!;
       const { party: p, meId: me } = live.current;
       for (const e of events) {
         if (e.type === 'fall') {
-          const key = `fall:${e.id}`;
-          if (g.seen.has(key)) continue;
-          g.seen.add(key);
+          if (!first(`fall:${e.id}:${g.world.bodies[e.id]?.downs ?? 0}`, FALL_REPEAT_MS)) continue;
           g.sinking.set(e.id, { x: e.x, y: e.y, at: performance.now() });
           splash(particles, e.x, e.y);
           p.sfx('buzz');
@@ -248,21 +275,25 @@ export function Arena({ party }: { party: SnowarParty }) {
           if (authority && by && by !== e.id) g.kos[by] = (g.kos[by] ?? 0) + 1;
           pushFeed(by && by !== e.id ? strings.pushed(nameOf(by), nameOf(e.id)) : strings.fell(nameOf(e.id)));
         } else if (e.type === 'hit') {
-          const key = `hit:${e.id}:${Math.round(g.world.t / 120)}`;
-          if (g.seen.has(key)) continue;
-          g.seen.add(key);
+          if (!first(`hit:${e.id}:${Math.round(g.world.t / 120)}`)) continue;
           puff(particles, e.x, e.y, e.power);
           p.sfx('tap');
           if (e.id === me) vibrate(40);
+        } else if (e.type === 'back') {
+          if (!first(`back:${e.id}:${g.world.bodies[e.id]?.downs ?? 0}`)) continue;
+          g.sinking.delete(e.id);
+          puff(particles, e.x, e.y, 60);
+        } else if (e.type === 'grab' || e.type === 'drop') {
+          if (!first(`${e.type}:${e.id}`, 1000)) continue;
+          puff(particles, e.x, e.y, 50);
+          p.sfx(e.type === 'grab' ? 'tick' : 'tap');
+          if (e.id === me) vibrate(e.type === 'grab' ? 30 : 120);
+          pushFeed(e.type === 'grab' ? strings.grabbed(nameOf(e.id)) : strings.dropped(nameOf(e.id)));
         } else if (e.type === 'splash') {
-          const key = `splash:${Math.round(e.x / 20)}:${Math.round(e.y / 20)}`;
-          if (g.seen.has(key)) continue;
-          g.seen.add(key);
+          if (!first(`splash:${Math.round(e.x / 20)}:${Math.round(e.y / 20)}`)) continue;
           splash(particles, e.x, e.y);
         } else {
-          const key = `shoot:${e.id}:${g.world.bodies[e.id]?.shots}`;
-          if (g.seen.has(key)) continue;
-          g.seen.add(key);
+          if (!first(`shoot:${e.id}:${g.world.bodies[e.id]?.shots}`)) continue;
           puff(particles, e.x, e.y, 40);
         }
       }
@@ -319,16 +350,22 @@ export function Arena({ party }: { party: SnowarParty }) {
         }
         // Hết hiệp: còn một người (hoặc chẳng còn ai) trên băng, hoặc hết giờ thì người gần tâm nhất thắng.
         if (playing && !g.ended && now >= at) {
-          const alive = state.roster.filter((id) => g.world.bodies[id]?.alive);
-          const done = state.roster.length >= 2 ? alive.length <= 1 : alive.length === 0;
-          if (done && !g.endAt) g.endAt = now + END_DELAY_MS;
-          // Thời gian 0 là vô hạn: chỉ hết hiệp khi còn một người trên băng.
+          // Luật thắng theo chế độ (xem verdict). Thời gian 0 là vô hạn: chỉ hết hiệp khi phân thắng bại.
+          const result = verdict(g.world, state.roster, false);
+          if (result.done && !g.endAt) g.endAt = now + END_DELAY_MS;
           const limit = state.roundSeconds ?? 60;
-          const timeUp = !done && limit > 0 && now >= at + limit * 1000;
-          if (timeUp || (done && now >= g.endAt)) {
+          const timeUp = !result.done && limit > 0 && now >= at + limit * 1000;
+          if (timeUp || (result.done && now >= g.endAt)) {
             g.ended = true;
-            const winnerId = state.roster.length < 2 ? null : timeUp ? closestToCenter(g.world, alive) : (alive[0] ?? null);
-            p.dispatch({ type: 'round_end', round: state.round, winnerId, kos: g.kos, timeUp });
+            const { winner } = timeUp ? verdict(g.world, state.roster, true) : result;
+            const tally: Record<string, number> = {};
+            const goal = targetOf(g.world.arena.mode);
+            for (const id of state.roster) {
+              const b = g.world.bodies[id];
+              if (b && goal) tally[id] = Math.floor(b.score);
+              else if (b && g.world.arena.mode === 'lives') tally[id] = b.lives;
+            }
+            p.dispatch({ type: 'round_end', round: state.round, winnerId: winner, kos: g.kos, timeUp, tally });
           }
         }
       } else if (playing) {
@@ -345,7 +382,6 @@ export function Arena({ party }: { party: SnowarParty }) {
           g.world = decode(snap, g.world.arena);
           for (const [id, inp] of Object.entries(snap.i)) if (id !== me) g.inputs[id] = inp;
           for (const id of g.sinking.keys()) if (g.world.bodies[id]?.alive) g.sinking.delete(id);
-          for (const b of Object.values(g.world.bodies)) if (b.alive) g.seen.delete(`fall:${b.id}`);
         }
         advance(now, false);
         for (const [id, guess] of predicted) {
@@ -375,6 +411,10 @@ export function Arena({ party }: { party: SnowarParty }) {
 
       /* ---------- Vẽ ---------- */
       const elapsed = (now - at) / 1000;
+      // Vật lý chạy từng bước 1/60 giây, còn màn hình 120/144Hz (Chrome không giới hạn 60 như Safari) vẽ nhiều khung hơn:
+      // vẽ thẳng vị trí bước cuối thì khung có bước mới, khung không, nhìn bị khựng. Đẩy vị trí tới đúng lúc vẽ theo vận tốc.
+      const lead = playing ? Math.max(0, Math.min(STEP, (now - g.world.t) / 1000)) : 0;
+      const posOf = (b: { x: number; y: number; vx: number; vy: number }) => ({ x: b.x + b.vx * lead, y: b.y + b.vy * lead });
       // Màn dọc chừa chỗ cho HUD phía trên; màn ngang HUD nằm hai bên nên băng dùng hết chiều cao.
       const wide = w > h * 1.2;
       const { map, R } = g.world.arena;
@@ -387,7 +427,7 @@ export function Arena({ party }: { party: SnowarParty }) {
       if (follow) {
         const meBody = g.world.bodies[me];
         const alive = Object.values(g.world.bodies).filter((b) => b.alive);
-        if (meBody?.alive) target = { x: meBody.x, y: meBody.y };
+        if (meBody?.alive) target = posOf(meBody);
         else if (alive.length) target = { x: alive.reduce((a, b) => a + b.x, 0) / alive.length, y: alive.reduce((a, b) => a + b.y, 0) / alive.length };
         // Không cho khung nhìn trôi quá xa khỏi sân.
         const lx = Math.max(0, ext + 40 - w / 2 / zoom);
@@ -404,21 +444,41 @@ export function Arena({ party }: { party: SnowarParty }) {
       ctx.save();
       ctx.translate(cx, cy);
       ctx.scale(zoom, zoom);
-      drawFloe(ctx, g.floe, map, R);
+      // Vòng tâm chỉ có nghĩa khi hết giờ xét người gần tâm nhất.
+      drawFloe(ctx, g.floe, map, R, g.world.arena.mode === 'classic' || g.world.arena.mode === 'lives');
+
+      // Vua đỉnh băng: vòng hiện tại (tô màu người đang giữ một mình), 3 giây cuối hiện mờ chỗ vòng sắp dời tới.
+      const zone = zoneOf(g.world);
+      if (zone && playing) {
+        if (zone.left < 3) {
+          const next = zoneOf(g.world, 1)!;
+          drawZone(ctx, next.x, next.y, next.r, perf, { fade: 0.5 });
+        }
+        const inside = Object.values(g.world.bodies).filter((b) => b.alive && b.ghost === 0 && Math.hypot(b.x - zone.x, b.y - zone.y) <= zone.r);
+        const king = inside.length === 1 ? inside[0] : null;
+        drawZone(ctx, zone.x, zone.y, zone.r, perf, {
+          owner: king ? skinOf(state, p.players, king.id).color : null,
+          contested: inside.length > 1,
+          progress: king ? king.score / targetOf('king') : 0,
+        });
+      }
+      const fish = g.world.fish;
 
       // Cầu đang lăn vẽ dưới cánh cụt, cầu đang bay vồng vẽ đè lên trên.
       const drawShots = (flying: boolean) => {
         for (const shot of g.world.shots) {
           if (shot.z > 0 !== flying) continue;
+          const { x: sx, y: sy } = posOf(shot);
+          const sz = shot.z > 0 ? Math.max(0, shot.z + shot.vz * lead) : 0;
           ctx.strokeStyle = 'rgba(255,255,255,0.35)';
           ctx.lineWidth = shot.r * 0.9;
           ctx.lineCap = 'round';
           ctx.beginPath();
-          ctx.moveTo(shot.x - shot.vx * 0.05, shot.y - shot.vy * 0.05 - (shot.z - shot.vz * 0.05));
-          ctx.lineTo(shot.x, shot.y - shot.z);
+          ctx.moveTo(sx - shot.vx * 0.05, sy - shot.vy * 0.05 - (sz - shot.vz * 0.05));
+          ctx.lineTo(sx, sy - sz);
           ctx.stroke();
           // Cầu đã dừng thì tan dần; đang lăn thì vệt tuyết xoay theo quãng đường.
-          drawSnowball(ctx, shot.x, shot.y, shot.r * (0.3 + 0.7 * shot.life), (shot.x + shot.y) / Math.max(4, shot.r), shot.z);
+          drawSnowball(ctx, sx, sy, shot.r * (0.3 + 0.7 * shot.life), (sx + sy) / Math.max(4, shot.r), sz);
         }
       };
       drawShots(false);
@@ -434,11 +494,23 @@ export function Arena({ party }: { party: SnowarParty }) {
           if (t < 1) drawPenguin(ctx, { x: sinking.x, y: sinking.y, face: b.face, ball: 0, skin, sink: t });
           continue;
         }
+        const pos = posOf(b);
         let d = disp.get(b.id);
-        if (!d || Math.hypot(d.x - b.x, d.y - b.y) > 90) d = { x: b.x, y: b.y, face: b.face };
-        else d = { x: d.x + (b.x - d.x) * k, y: d.y + (b.y - d.y) * k, face: d.face + wrap(b.face - d.face) * k };
+        if (!d || Math.hypot(d.x - pos.x, d.y - pos.y) > 90) d = { x: pos.x, y: pos.y, face: b.face };
+        else d = { x: d.x + (pos.x - d.x) * k, y: d.y + (pos.y - d.y) * k, face: d.face + wrap(b.face - d.face) * k };
         disp.set(b.id, d);
-        drawPenguin(ctx, { x: d.x, y: d.y, face: d.face, ball: b.ball, skin, bob: now < at ? perf + b.x * 7 : undefined });
+        g.sinking.delete(b.id);
+        if (fish?.holder === b.id) drawHolderRing(ctx, d.x, d.y, skin.color, perf);
+        drawPenguin(ctx, { x: d.x, y: d.y, face: d.face, ball: b.ball, skin, bob: now < at ? perf + b.x * 7 : undefined, ghost: b.ghost > 0 });
+      }
+      // Cá vẽ sau cánh cụt để không bị thân và cầu tuyết che: nằm trên băng, hoặc nảy trên đầu người đang ôm.
+      if (fish && !fish.holder) {
+        const fp = posOf(fish);
+        drawFish(ctx, fp.x, fp.y, FISH_R, perf);
+      } else if (fish?.holder) {
+        const d = disp.get(fish.holder);
+        // Ôm cá sau lưng (ngược hướng mặt), không che tên trên đầu.
+        if (d && g.world.bodies[fish.holder]?.alive) drawFish(ctx, d.x - Math.cos(d.face) * BODY_R * 1.1, d.y - Math.sin(d.face) * BODY_R * 1.1, FISH_R, perf, 8);
       }
       for (const b of bodies) {
         const d = disp.get(b.id);
@@ -528,10 +600,29 @@ export function Arena({ party }: { party: SnowarParty }) {
       }
 
       const ms = now - at;
+      const mode = g.world.arena.mode;
+      const goal = targetOf(mode);
+      const myBody = g.world.bodies[me];
       const next: Hud = {
         count: ms < 0 ? Math.min(3, Math.ceil(-ms / 1000)) : ms < 700 ? 0 : null,
         left: (state.roundSeconds ?? 60) > 0 ? Math.max(0, Math.min(state.roundSeconds ?? 60, Math.ceil((state.roundSeconds ?? 60) - elapsed))) : -1,
-        alive: state.roster.filter((id) => g.world.bodies[id]?.alive).join(','),
+        out: state.roster.filter((id) => isOut(g.world.bodies[id])).join(','),
+        tally: state.roster
+          .map((id) => {
+            const b = g.world.bodies[id];
+            if (!b) return '';
+            if (goal) return String(Math.min(goal, Math.floor(b.score)));
+            return mode === 'lives' ? String(b.lives) : '';
+          })
+          .join('|'),
+        back: myBody && !myBody.alive && myBody.back ? Math.max(1, Math.ceil((myBody.back - g.world.t) / 1000)) : 0,
+        lead: (() => {
+          if (g.world.fish?.holder) return g.world.fish.holder;
+          const zone = zoneOf(g.world);
+          if (!zone) return '';
+          const inside = Object.values(g.world.bodies).filter((b) => b.alive && b.ghost === 0 && Math.hypot(b.x - zone.x, b.y - zone.y) <= zone.r);
+          return inside.length === 1 ? inside[0].id : '';
+        })(),
       };
       setHud((prev) => (sameHud(prev, next) ? prev : next));
     };
@@ -543,7 +634,9 @@ export function Arena({ party }: { party: SnowarParty }) {
   }, [pushFeed]);
 
   /* ---------- Điều khiển ---------- */
-  const canControl = inRound && st.stage === 'playing';
+  // Bị loại hẳn hoặc đang chờ quay lại sân thì cất cần lái và nút: bấm cũng không làm gì.
+  const sidelined = hudOut(hud, meId) || hud.back > 0;
+  const canControl = inRound && st.stage === 'playing' && !sidelined;
   const stick = useRef<{ id: number; x: number; y: number } | null>(null);
   const hold = useRef<{ id: number | 'key'; at: number } | null>(null);
   /** Đang giữ nút Thắng (hoặc phím Shift). */
@@ -674,8 +767,10 @@ export function Arena({ party }: { party: SnowarParty }) {
     };
   }, []);
 
-  const alive = new Set(hud.alive.split(',').filter(Boolean));
-  const meAlive = alive.has(meId);
+  const out = new Set(hud.out.split(',').filter(Boolean));
+  const tally = hud.tally.split('|');
+  const mode = st.mode ?? 'classic';
+  const target = targetOf(mode);
   const over = st.stage === 'round_over' || st.stage === 'game_over';
 
   return (
@@ -695,11 +790,33 @@ export function Arena({ party }: { party: SnowarParty }) {
           </div>
         )}
         <ul className={s.roster}>
-          {st.roster.map((id) => (
-            <li key={id} className={cx(s.rosterItem, !alive.has(id) && hud.count === null && s.rosterOut)} style={{ '--skin': skinOf(st, party.players, id).color } as CSSProperties}>
+          {st.roster.map((id, i) => (
+            <li
+              key={id}
+              className={cx(s.rosterItem, out.has(id) && hud.count === null && s.rosterOut, hud.lead === id && s.rosterLead)}
+              style={{ '--skin': skinOf(st, party.players, id).color } as CSSProperties}
+            >
               <i aria-hidden="true" />
-              <span>{party.nameOf(id) || '?'}</span>
-              {(st.wins[id] ?? 0) > 0 && <b>{st.wins[id]}</b>}
+              <span className={s.rosterName}>{party.nameOf(id) || '?'}</span>
+              {hud.lead === id && (
+                <span className={s.leadMark} role="img" aria-label={mode === 'fish' ? strings.holdsFish : strings.holdsZone}>
+                  {mode === 'fish' ? '🐟' : '👑'}
+                </span>
+              )}
+              {tally[i] &&
+                (target ? (
+                  <em aria-label={strings.scored(Number(tally[i]), target)}>
+                    {tally[i]}
+                    <small>/{target}</small>
+                  </em>
+                ) : (
+                  <em className={s.hearts} aria-label={strings.livesLeft(Number(tally[i]))}>
+                    {Array.from({ length: LIVES }, (_, k) => (
+                      <small key={k} className={cx(k >= Number(tally[i]) && s.heartLost)}>♥</small>
+                    ))}
+                  </em>
+                ))}
+              {(st.wins[id] ?? 0) > 0 && <b aria-label={strings.winsBadge(st.wins[id])}>★{st.wins[id]}</b>}
             </li>
           ))}
         </ul>
@@ -761,7 +878,13 @@ export function Arena({ party }: { party: SnowarParty }) {
         </>
       )}
 
-      {!over && st.stage === 'playing' && hud.count === null && (!inRound || !meAlive) && (
+      {!over && st.stage === 'playing' && hud.count === null && hud.back > 0 && (
+        <div className={s.respawn} role="status" aria-label={strings.respawn(hud.back)}>
+          <small>{strings.backIn}</small>
+          <span key={hud.back}>{hud.back}</span>
+        </div>
+      )}
+      {!over && st.stage === 'playing' && hud.count === null && (!inRound || out.has(meId)) && (
         <p className={s.note}>{inRound ? strings.out : strings.spectating}</p>
       )}
 
@@ -776,6 +899,14 @@ function RoundPanel({ party }: { party: SnowarParty }) {
   const result = st.result;
   const final = st.stage === 'game_over';
   const rows = standings(st, party.players.filter((p) => st.roster.includes(p.id) || (st.wins[p.id] ?? 0) > 0));
+  // Hiệp vừa xong: số giây đã tích hoặc số mạng còn lại, tùy chế độ.
+  const mode = st.mode ?? 'classic';
+  const goal = targetOf(mode);
+  const tallyOf = (id: string) => {
+    const n = st.roundTally?.[id];
+    if (final || n === undefined || mode === 'classic') return null;
+    return goal ? strings.seconds(n) : strings.livesLeft(n);
+  };
   const winnerColor = st.winnerId ? skinOf(st, party.players, st.winnerId).color : undefined;
   return (
     <div className={s.panel} role="dialog" aria-label={result?.text} style={{ '--win': winnerColor ?? 'var(--ib-ink-soft)' } as CSSProperties}>
@@ -791,6 +922,7 @@ function RoundPanel({ party }: { party: SnowarParty }) {
                 <b key={k} className={cx(k < wins && s.pipOn)} />
               ))}
             </span>
+            {tallyOf(p.id) && <span className={s.rowTally}>{tallyOf(p.id)}</span>}
             <span className={s.rowKos}>{strings.kos(kos)}</span>
           </li>
         ))}
