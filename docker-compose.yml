@@ -1,9 +1,24 @@
 services:
-  bang-app:
+  launcher-app:
     build:
       context: .
       platforms:
         - linux/amd64
-      args:
-        VITE_PARTY_URL: ${VITE_PARTY_URL:-}
-    image: son29032001/game:${TAG:-latest}
+    # image: son29032001/game:${TAG:-latest}
+    image: nguyentienthanh2909/launcher-app:${TAG:-latest}
+    container_name: launcher-app
+    pull_policy: always
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8787}:8787"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8787/healthz"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
