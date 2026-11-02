@@ -22,7 +22,7 @@ jobs:
             --data @- \
             "$WEBHOOK_URL" <<'EOF'
           {
-            "app": "payload",
+            "app": "launcher-app",
             "repository": "${{ github.repository }}",
             "ref": "${{ github.ref }}",
             "sha": "${{ github.sha }}",
