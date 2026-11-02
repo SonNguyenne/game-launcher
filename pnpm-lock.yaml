@@ -32,6 +32,9 @@ importers:
 
   apps/launcher:
     dependencies:
+      '@bang/party':
+        specifier: workspace:^
+        version: link:../../packages/party
       '@bang/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
@@ -82,6 +85,101 @@ importers:
         specifier: ^8.18.0
         version: 8.22.0
 
+  mini-apps/bai-bip:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/bai-mau:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/ban-tau:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/bi-a:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/bowling:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
   mini-apps/cau-ca:
     dependencies:
       '@bang/party':
@@ -101,7 +199,273 @@ importers:
         specifier: ^19.0.0
         version: 19.3.0
 
+  mini-apps/co-caro:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/co-tuong:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/co-vua:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/dat-vang:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/domino:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/ghep-lang:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/ham-nguc:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
   mini-apps/ice-bumper:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/khai-hoang:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/ma-soi:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/muu-trieu:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/noi-tu:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/o-an-quan:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/poker:
+    dependencies:
+      '@bang/party':
+        specifier: workspace:*
+        version: link:../../packages/party
+      '@bang/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@bang/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+
+  mini-apps/tien-len:
     dependencies:
       '@bang/party':
         specifier: workspace:*
@@ -175,6 +539,9 @@ importers:
       '@fontsource/be-vietnam-pro':
         specifier: ^5.3.0
         version: 5.3.0
+      '@fontsource/chakra-petch':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/ibm-plex-mono':
         specifier: ^5.3.0
         version: 5.3.0
@@ -182,6 +549,9 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@fontsource/vina-sans':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/vt323':
         specifier: ^5.3.0
         version: 5.3.0
     devDependencies:
@@ -755,6 +1125,9 @@ packages:
   '@fontsource/be-vietnam-pro@5.3.0':
     resolution: {integrity: sha512-xhAQBGHDxP5BF8IJxedy5MoWUmc1DlPCcZbMLhvnPkf8TaYCbbUVs3LjpuJ4BYdTrdiCLaewNaY8z+owq/FqFw==}
 
+  '@fontsource/chakra-petch@5.3.0':
+    resolution: {integrity: sha512-QZvbM/q2R6n1pg2x+TJPftZmBNS+ADU37L4Z4L/6UJIz+JZ/SRaEf8usPFRiP7Ht28sIideMu/Bm1SnGlSrwNw==}
+
   '@fontsource/ibm-plex-mono@5.3.0':
     resolution: {integrity: sha512-eTgnZjZEGk1QtD3ZstF+Vclo2HLAni8YMy34/DxllwZvyz1lR/1RF/xTiAquOBO7MvqBx8D2Ig2WCPMVfdZu7Q==}
 
@@ -763,6 +1136,9 @@ packages:
 
   '@fontsource/vina-sans@5.3.0':
     resolution: {integrity: sha512-Y2pjLnZ0dwY6Li5Y8w2gdDR2ljfE2gbwf/jPkmYuAD+V8hLRSqTjgsHD7WhS7/ngpqo0TiW94saIsn+lKh20qw==}
+
+  '@fontsource/vt323@5.3.0':
+    resolution: {integrity: sha512-3w33Rg/0+R1587HQfz4t7Q7e0GGeCqr3wmzIwqdGInUnrGEwMA5eX39GP4Z9wpTQnwfhVOhYuxuRwRUeIcicbw==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -3298,11 +3674,15 @@ snapshots:
 
   '@fontsource/be-vietnam-pro@5.3.0': {}
 
+  '@fontsource/chakra-petch@5.3.0': {}
+
   '@fontsource/ibm-plex-mono@5.3.0': {}
 
   '@fontsource/sriracha@5.3.0': {}
 
   '@fontsource/vina-sans@5.3.0': {}
+
+  '@fontsource/vt323@5.3.0': {}
 
   '@humanfs/core@0.19.2':
     dependencies:

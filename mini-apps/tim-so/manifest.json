@@ -1,7 +1,8 @@
 {
   "id": "tim-so",
   "name": "tìm số",
-  "group": "trò chơi",
+  "group": "khác",
+  "players": "2–8",
   "color": "auto",
   "description": "Các con số rải khắp màn hình, cả phòng thi nhau tìm cho nhanh. Tìm lần lượt từ bé đến lớn hoặc theo số máy ra.",
   "version": "1.0.0"

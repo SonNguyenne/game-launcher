@@ -1,0 +1,9 @@
+{
+  "id": "ma-soi",
+  "name": "ma sói",
+  "group": "board game",
+  "players": "5–12",
+  "color": "auto",
+  "description": "Trò nhập vai ma sói cho 5–12 người, app làm người dẫn trò: chia vai bí mật (sói, tiên tri, bảo vệ, phù thủy, thợ săn, dân), gọi từng vai ban đêm, đếm giờ thảo luận và đếm phiếu treo cổ ban ngày. Chơi qua phòng trên nhiều máy hoặc chuyền 1 máy.",
+  "version": "1.0.0"
+}

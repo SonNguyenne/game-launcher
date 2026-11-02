@@ -1,0 +1,36 @@
+export type QuanValue = '10' | '5';
+export type Toggle = 'on' | 'off';
+
+export const strings = {
+  title: 'ô ăn quan',
+  rule: 'Bàn 10 ô dân, mỗi ô 5 quân, hai đầu là hai ô quan. Tới lượt, chọn một ô bên mình và hướng rải, rải từng quân một. Hết quân trên tay mà ô kế có quân thì bốc lên rải tiếp; gặp một ô trống rồi tới ô có quân thì ăn ô đó, ăn liền được cách ô; gặp hai ô trống hoặc ô quan thì mất lượt. Hết dân bên mình thì lấy 5 quân đã ăn ra rải lại. Hết hai quan thì hết ván, ai nhiều điểm hơn thắng.',
+  quanLabel: 'mỗi quan tính',
+  quanOptions: { '10': '10 điểm', '5': '5 điểm' } satisfies Record<QuanValue, string>,
+  nonLabel: 'quan non',
+  nonOptions: { on: 'không được ăn', off: 'ăn được' } satisfies Record<Toggle, string>,
+
+  yourMove: 'tới lượt bạn, chọn ô để rải',
+  pickDir: 'rải về phía nào?',
+  waitMove: (name: string) => `${name} đang đi`,
+  sowing: (name: string) => `${name} đang rải…`,
+  watching: 'bạn đang xem',
+  left: 'rải sang trái',
+  right: 'rải sang phải',
+  cancel: 'thôi',
+  pit: (n: number) => `ô có ${n} quân`,
+  quanPit: (n: number, hasQuan: boolean) => (hasQuan ? `ô quan, có quan và ${n} quân` : `ô quan, ${n} quân`),
+  hand: (n: number) => `trên tay ${n}`,
+  score: (n: number) => `${n} điểm`,
+  eaten: (dan: number, quan: number) => (quan ? `ăn ${quan} quan, ${dan} dân` : `ăn ${dan} dân`),
+  debt: (n: number) => `nợ ${n}`,
+  spread: (name: string) => `${name} hết dân, lấy quân rải lại`,
+  borrowed: (name: string, n: number) => `${name} vay ${n} quân`,
+  ate: (name: string, n: number) => `${name} ăn được ${n} điểm`,
+  nothing: (name: string) => `${name} mất lượt`,
+  won: (name: string) => `${name} thắng`,
+  draw: 'hòa',
+  finalScore: (a: number, b: number) => `${a} – ${b}`,
+  newGame: 'ván mới',
+  waitNewGame: 'chờ chủ phòng mở ván mới',
+  wins: 'ván thắng',
+};

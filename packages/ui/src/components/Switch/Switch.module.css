@@ -3,8 +3,8 @@
 .switch[aria-checked="true"]::after { transform: translateX(26px); background: var(--accent); }
 .row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); margin: 0 0 var(--space-9); padding: var(--space-5) var(--space-6); border: var(--size-rule) solid var(--rule); border-radius: var(--control-radius); }
 
-:global(:root[data-look="quan"]) .switch { width: 54px; height: 32px; border: 0; border-radius: 999px; background: var(--cell-raised); transition: background var(--dur-base); }
-:global(:root[data-look="quan"]) .switch::after { top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: var(--ink-muted); transition: transform var(--dur-reveal) var(--ease-expo), background var(--dur-base); }
-:global(:root[data-look="quan"]) .switch[aria-checked="true"] { background: var(--accent); }
-:global(:root[data-look="quan"]) .switch[aria-checked="true"]::after { transform: translateX(22px); background: var(--on-accent); }
-:global(:root[data-look="quan"]) .row { border: 0; background: var(--cell); border-radius: 14px; padding: var(--space-6) var(--space-8); font-weight: var(--fw-medium); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .switch { width: 54px; height: 32px; border: 0; border-radius: 999px; background: var(--cell-raised); transition: background var(--dur-base); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .switch::after { top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: var(--ink-muted); transition: transform var(--dur-reveal) var(--ease-expo), background var(--dur-base); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .switch[aria-checked="true"] { background: var(--accent); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .switch[aria-checked="true"]::after { transform: translateX(22px); background: var(--on-accent); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .row { border: 0; background: var(--cell); border-radius: 14px; padding: var(--space-6) var(--space-8); font-weight: var(--fw-medium); }

@@ -1,0 +1,9 @@
+{
+  "id": "poker",
+  "name": "poker",
+  "group": "bài",
+  "players": "2–6",
+  "color": "auto",
+  "description": "Texas Hold’em cho 2–6 người bằng chip ảo, không có tiền thật. Blind tăng dần, bỏ bài, theo, tố, all-in, chia pot phụ và so bài đủ 9 hạng. Hết chip thì ra ngoài, còn một người là thắng.",
+  "version": "1.0.0"
+}

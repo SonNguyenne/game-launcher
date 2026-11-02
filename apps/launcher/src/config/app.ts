@@ -1,7 +1,7 @@
 /** Mọi hằng số hành vi của launcher. Đổi ở đây, không sửa trong component. */
 export const appConfig = {
   storageKey: 'bang-app-state-v1',
-  storageVersion: 2,
+  storageVersion: 3,
   exportFormat: 'bang-app',
   recentsLimit: 8,
   defaultGroup: 'khác',

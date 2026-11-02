@@ -15,7 +15,10 @@ export default defineConfig({
   build: { target: 'es2022' },
   // Game nhóm: chuyển WebSocket /party sang server phòng (partyServerPlugin tự bật nó khi dev).
   server: {
-    proxy: { '/party': { target: `ws://127.0.0.1:${PARTY_PORT}`, ws: true } },
+    proxy: {
+      '/party': { target: `ws://127.0.0.1:${PARTY_PORT}`, ws: true },
+      '/api/room': { target: `http://127.0.0.1:${PARTY_PORT}` },
+    },
   },
   resolve: {
     alias: {

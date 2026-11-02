@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
  * Hiệu ứng xáo ba nhịp, giống xáo bài thật:
  * gom các lá úp thành xấp giữa bàn, tách đôi rồi xáo kiểu riffle, cuối cùng chia từng lá bay vòng cung về chỗ.
  */
-const SHUFFLE_MS = 2200;
+const SHUFFLE_MS = 2000;
 
 export function useShuffleAnimation(board: RefObject<HTMLDivElement | null>, shuffles: number, fresh: boolean, sfx: (tone: 'tick' | 'tap') => void) {
   // Vào giữa ván thì không chạy lại; ván mới (chưa ai lật) thì xáo ngay khi mở.
@@ -45,7 +45,7 @@ export function useShuffleAnimation(board: RefObject<HTMLDivElement | null>, shu
       const bend = `translate(${dx + side * split * 0.8}px, ${dy + lift - 4}px) rotate(${side * 22}deg) scale(1.5)`;
       const gatherAt = 0.08 + (gatherRank.get(i)! / n) * 0.16;
       const backAt = 0.5 + (i / n) * 0.1;
-      const dealAt = 0.64 + (i / n) * 0.28;
+      const dealAt = 0.62 + (i / n) * 0.3;
       const flightMid = `translate(${dx * 0.45}px, ${dy * 0.45 - 28}px) rotate(${-tilt}deg) scale(1.14)`;
       return card.animate(
         [

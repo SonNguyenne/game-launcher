@@ -1,0 +1,9 @@
+{
+  "id": "co-tuong",
+  "name": "cờ tướng",
+  "group": "board game",
+  "players": "2",
+  "color": "auto",
+  "description": "Cờ tướng hai người theo luật chuẩn: tướng trong cung, không lộ mặt tướng, mã cản chân, tượng cản mắt, pháo cách quân mới ăn. Bị chiếu hết hay hết nước đi đều thua. Quân chữ Hán hoặc chữ Việt, có xin hòa và đầu hàng.",
+  "version": "1.0.0"
+}

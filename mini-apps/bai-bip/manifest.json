@@ -1,0 +1,9 @@
+{
+  "id": "bai-bip",
+  "name": "bài bịp",
+  "group": "bài",
+  "players": "2–4",
+  "color": "auto",
+  "description": "Trò nói dối dân gian cho 2–4 người, chia hết bộ 52 lá. Úp 1–4 lá và khai theo hạng của lượt, nói dối cũng được. Ai nghi thì lật tẩy: đúng thì người khai ôm cả chồng, sai thì người lật ôm. Ai hết bài trước thắng.",
+  "version": "1.0.0"
+}

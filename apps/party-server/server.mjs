@@ -349,6 +349,15 @@ async function serveStatic(req, res) {
     res.writeHead(200, { 'content-type': 'text/plain' }).end(`ok ${rooms.size} rooms`);
     return;
   }
+  // Trang chủ vào phòng bằng mã: chỉ cho biết mã thuộc game nào, không lộ người chơi hay trạng thái.
+  const roomMatch = /^\/api\/room\/(\d{4})$/.exec(path);
+  if (roomMatch) {
+    const room = rooms.get(roomMatch[1]);
+    res
+      .writeHead(room ? 200 : 404, { ...securityHeaders, 'content-type': 'application/json', 'cache-control': 'no-store' })
+      .end(JSON.stringify(room ? { game: room.game } : { error: 'not-found' }));
+    return;
+  }
 
   let file = resolve(STATIC_DIR, `.${path}`);
   if (file !== STATIC_DIR && !file.startsWith(STATIC_DIR + sep)) {

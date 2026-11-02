@@ -40,14 +40,14 @@
 .flush { padding: 0; }
 
 /* Kiểu sôi động (Arcade): drawer bo tròn hiện đại, thanh grab handle, tiêu đề cân đối. */
-:global(:root[data-look="quan"]) .sheet {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .sheet {
   border: 1px solid var(--rule-soft);
   border-bottom: 0;
   border-radius: 28px 28px 0 0;
   box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.28);
   background: var(--bg);
 }
-:global(:root[data-look="quan"]) .head {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .head {
   height: 52px;
   padding: var(--space-1) var(--space-5) 0 var(--space-7);
   border: 0;
@@ -55,14 +55,14 @@
   /* Tiêu đề dính trên cùng khi cuộn: nền đặc để nội dung cuộn qua không đè lên chữ. */
   background: var(--bg);
 }
-:global(:root[data-look="quan"]) .head h2 {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .head h2 {
   font-family: var(--font-ui);
   font-size: var(--fs-base);
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--ink);
 }
-:global(:root[data-look="quan"]) .close {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .close {
   width: 34px;
   height: 34px;
   border: 0;
@@ -71,12 +71,12 @@
   color: var(--ink-secondary);
   transition: transform var(--dur-base) var(--ease-out), background var(--dur-base);
 }
-:global(:root[data-look="quan"]) .close:active {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .close:active {
   transform: scale(0.92);
 }
-:global(:root[data-look="quan"]) .body {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .body {
   padding: var(--space-5) var(--space-7) var(--space-10);
 }
-:global(:root[data-look="quan"]) .flush {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .flush {
   padding: 0 0 var(--space-8);
 }

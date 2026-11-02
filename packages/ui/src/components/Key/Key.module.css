@@ -57,7 +57,7 @@
 /*
  * Kiểu sôi động (Arcade): mỗi phím là một cartridge rực rỡ, nhấn có độ lún cơ học đàn hồi.
  */
-:global(:root[data-look="quan"]) .key {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .key {
   --tone-bg: var(--paint-paper);
   --tone-ink: var(--paint-ink);
   --art-ink: var(--paint-ink);
@@ -75,21 +75,21 @@
   animation: key-in var(--dur-enter) var(--ease-expo) backwards;
   animation-delay: calc(var(--i, 0) * 32ms);
 }
-:global(:root[data-look="quan"]) .key:active {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .key:active {
   filter: none;
   transform: translateY(calc(var(--key-lip) - 1px));
   box-shadow: 0 1px 0 color-mix(in oklab, var(--face) 62%, var(--paint-ink));
 }
 /* Phím vừa dùng giữ màu sơn của nó; dấu hiệu là tem giá bên dưới. */
-:global(:root[data-look="quan"]) .hot { --key-fill: initial; --key-text: initial; }
-:global(:root[data-look="quan"]) .key[data-tone="0"] { --tone-bg: var(--paint-red); --tone-ink: var(--paint-paper); }
-:global(:root[data-look="quan"]) .key[data-tone="1"] { --tone-bg: var(--paint-yellow); --art-pop: var(--paint-red); }
-:global(:root[data-look="quan"]) .key[data-tone="2"] { --tone-bg: var(--paint-green); --tone-ink: var(--paint-paper); }
-:global(:root[data-look="quan"]) .key[data-tone="3"] { --tone-bg: var(--paint-blue); --tone-ink: var(--paint-paper); }
-:global(:root[data-look="quan"]) .key[data-color="yellow"] { --art-pop: var(--paint-red); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .hot { --key-fill: initial; --key-text: initial; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .key[data-tone="0"] { --tone-bg: var(--paint-red); --tone-ink: var(--paint-paper); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .key[data-tone="1"] { --tone-bg: var(--paint-yellow); --art-pop: var(--paint-red); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .key[data-tone="2"] { --tone-bg: var(--paint-green); --tone-ink: var(--paint-paper); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .key[data-tone="3"] { --tone-bg: var(--paint-blue); --tone-ink: var(--paint-paper); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .key[data-color="yellow"] { --art-pop: var(--paint-red); }
 
-:global(:root[data-look="quan"]) .art { display: block; width: 72px; height: 72px; margin: -4px 0 0 -6px; }
-:global(:root[data-look="quan"]) .mark {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .art { display: block; width: 72px; height: 72px; margin: -4px 0 0 -6px; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .mark {
   width: auto;
   height: auto;
   border-radius: 0;
@@ -100,7 +100,7 @@
   line-height: 0.9;
   text-shadow: none;
 }
-:global(:root[data-look="quan"]) .index {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .index {
   margin-left: auto;
   font-family: var(--font-display);
   font-size: var(--fs-lg);
@@ -109,8 +109,8 @@
   /* Số thứ tự trên nền sơn đỏ, xanh: để đủ đậm, mờ đi là tụt dưới 4.5:1. */
   opacity: 1;
 }
-:global(:root[data-look="quan"]) .top:has(.status) .index { visibility: hidden; }
-:global(:root[data-look="quan"]) .label {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .top:has(.status) .index { visibility: hidden; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .label {
   font-family: var(--font-display);
   font-size: 24px;
   font-weight: 700;
@@ -119,7 +119,7 @@
   padding-top: 2px;
 }
 /* Nhãn "link": chữ capsule nhỏ gọn. */
-:global(:root[data-look="quan"]) .status {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .status {
   position: absolute;
   top: var(--space-5);
   right: var(--space-6);
@@ -131,7 +131,7 @@
   letter-spacing: 0.05em;
 }
 /* App vừa dùng: huy hiệu capsule nổi bật, vắt qua mép phím. */
-:global(:root[data-look="quan"]) .hot .status {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .hot .status {
   top: -8px;
   right: -4px;
   z-index: 1;
@@ -150,18 +150,18 @@
   box-shadow: 0 3px 8px color-mix(in oklab, var(--paint-ink) 25%, transparent), 0 0 0 1px color-mix(in oklab, var(--accent) 30%, transparent);
   animation: stamp-in 420ms var(--ease-expo) 200ms backwards;
 }
-:global(:root[data-look="quan"]) .hot .status::before { content: none; }
-:global(:root[data-look="quan"]) .add {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .hot .status::before { content: none; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .add {
   background: transparent;
   box-shadow: inset 0 0 0 2px var(--rule);
   color: var(--ink-secondary);
 }
-:global(:root[data-look="quan"]) .compact { --key-ratio: 0.92; padding: var(--space-4); }
-:global(:root[data-look="quan"]) .compact .art { width: 44px; height: 44px; }
-:global(:root[data-look="quan"]) .compact .mark { font-size: 38px; }
-:global(:root[data-look="quan"]) .compact .label { font-size: 18px; }
-:global(:root[data-look="quan"]) .compact:not(.hot) .status { display: none; }
-:global(:root[data-look="quan"]) .compact.hot .status { font-size: 10px; right: -2px; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .compact { --key-ratio: 0.92; padding: var(--space-4); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .compact .art { width: 44px; height: 44px; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .compact .mark { font-size: 38px; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .compact .label { font-size: 18px; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .compact:not(.hot) .status { display: none; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .compact.hot .status { font-size: 10px; right: -2px; }
 
 @keyframes key-in {
   from { opacity: 0; transform: translateY(14px) rotate(-1.5deg); }

@@ -220,6 +220,7 @@ export default function CauCa({ ctx }: MiniAppProps<PartyData>) {
         rule: strings.rule,
         art: <span className={s.heroArt} dangerouslySetInnerHTML={{ __html: iconSvg }} />,
         settings: (p) => <FishSettings {...p} />,
+        settingsHint: strings.settingsHint,
       }}
     >
       {party.state && <FishGame party={party} />}

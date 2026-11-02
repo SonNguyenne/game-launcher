@@ -1,0 +1,9 @@
+{
+  "id": "ban-tau",
+  "name": "bắn tàu",
+  "group": "board game",
+  "players": "2",
+  "color": "auto",
+  "description": "Trò bắn tàu giấy bút cho hai người: mỗi bên giấu 5 con tàu trên biển 10×10 rồi thay nhau gọi ô để bắn. Trúng được bắn tiếp, ai đánh chìm hết hạm đội đối thủ trước thì thắng. Chơi 1 máy có màn che khi chuyền máy.",
+  "version": "1.0.0"
+}

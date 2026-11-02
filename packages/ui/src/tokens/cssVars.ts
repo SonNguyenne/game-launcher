@@ -42,8 +42,10 @@ export function buildTokenCss(): string {
       toVars('ls', l.letterSpacing) +
       toVars('size', l.size) +
       toVars('', l.shape);
+    // Kiểu chỉ có nền tối (cùng bảng màu cho sáng và tối) thì control gốc của trình duyệt cũng phải tối.
+    const scheme = l.light === l.dark ? 'color-scheme:dark;' : '';
     return [
-      `${sel}{${vars}${colorVars(l.light)}}`,
+      `${sel}{${vars}${colorVars(l.light)}${scheme}}`,
       `@media (prefers-color-scheme: dark){${sel}:not([data-theme="light"]){${colorVars(l.dark)}}}`,
       `${sel}[data-theme="dark"]{${colorVars(l.dark)}}`,
     ];

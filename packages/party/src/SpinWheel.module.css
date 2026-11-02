@@ -16,18 +16,18 @@
 .hub { fill: var(--bg); stroke: var(--ink); stroke-width: 3; }
 
 /* Kiểu quán: vòng sơn tay như hình vẽ của app: ô sơn phẳng, viền mực dày, chữ bảng hiệu; ô thoát là ô mực đen. */
-:global(:root[data-look="quan"]) .box {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .box {
   --wheel-a: var(--paint-red);
   --wheel-a-ink: var(--paint-paper);
   --wheel-safe: var(--paint-ink);
   --wheel-safe-ink: var(--paint-paper);
 }
-:global(:root[data-look="quan"]) .pointer {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .pointer {
   top: -10px; width: 26px; height: 34px;
   background: var(--accent);
   clip-path: polygon(0 0, 100% 0, 100% 34%, 50% 100%, 0 34%);
 }
-:global(:root[data-look="quan"]) .wheel path { stroke: var(--paint-ink); stroke-width: 3; stroke-linejoin: round; }
-:global(:root[data-look="quan"]) .label { font-family: var(--font-display); font-size: 22px; font-weight: 400; letter-spacing: 0.02em; }
-:global(:root[data-look="quan"]) .rim { stroke: var(--paint-ink); stroke-width: 7; }
-:global(:root[data-look="quan"]) .hub { fill: var(--paint-paper); stroke: var(--paint-ink); stroke-width: 5; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .wheel path { stroke: var(--paint-ink); stroke-width: 3; stroke-linejoin: round; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .label { font-family: var(--font-display); font-size: 22px; font-weight: 400; letter-spacing: 0.02em; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .rim { stroke: var(--paint-ink); stroke-width: 7; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .hub { fill: var(--paint-paper); stroke: var(--paint-ink); stroke-width: 5; }

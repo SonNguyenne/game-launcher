@@ -1,0 +1,9 @@
+{
+  "id": "o-an-quan",
+  "name": "ô ăn quan",
+  "group": "khác",
+  "players": "2",
+  "color": "auto",
+  "description": "Ô ăn quan dân gian cho 2 người: 10 ô dân, 2 ô quan. Chọn ô và hướng rải, bốc rải tiếp, ăn cách ô, có luật quan non và vay quân khi hết dân. Hết hai quan thì tính điểm.",
+  "version": "1.0.0"
+}

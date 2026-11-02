@@ -1,0 +1,50 @@
+export type DrawMode = 'block' | 'draw';
+export type Target = '50' | '100';
+
+export const strings = {
+  title: 'domino',
+  rule: 'Bộ đôi-sáu 28 quân, 2 đến 4 người. Lần lượt nối quân vào một trong hai đầu dãy, số chấm phải khớp. Không đi được thì bốc thêm (chế độ bốc) hoặc bỏ lượt. Ai hết quân trước, hoặc khi bàn bị chặn ai ít chấm nhất, thắng ván và được cộng số chấm còn trên tay đối thủ. Chơi tới khi có người đạt mục tiêu điểm.',
+  modeLabel: 'chế độ',
+  modeOptions: { block: 'chặn', draw: 'bốc' } satisfies Record<DrawMode, string>,
+  targetLabel: 'chơi tới',
+  targetOptions: { '50': '50 điểm', '100': '100 điểm' } satisfies Record<Target, string>,
+
+  yourMove: 'tới lượt bạn, chọn quân để nối',
+  yourMoveFirst: 'tới lượt bạn, đặt quân đầu tiên',
+  mustDraw: 'không có quân nối được, bốc thêm',
+  mustPass: 'không có quân nối được, bỏ lượt',
+  waitMove: (name: string) => `${name} đang đi`,
+  watching: 'bạn đang xem',
+  draw: 'bốc quân',
+  pass: 'bỏ lượt',
+  pickEnd: 'nối vào đầu nào?',
+  endLeft: (n: number) => `đầu trái · ${n}`,
+  endRight: (n: number) => `đầu phải · ${n}`,
+  cancel: 'thôi',
+  boneyard: (n: number) => `nọc ${n}`,
+  tilesLeft: (n: number) => `${n} quân`,
+  pips: (n: number) => `${n} chấm`,
+  points: (n: number) => `${n} điểm`,
+  target: (n: string) => `chơi tới ${n}`,
+  round: (n: number) => `ván ${n}`,
+  emptyBoard: 'bàn trống',
+  tile: (a: number, b: number) => `quân ${a}-${b}`,
+  yourHand: 'quân của bạn',
+  hiddenHand: (name: string, n: number) => `${name} còn ${n} quân`,
+
+  lastPlay: (name: string, a: number, b: number) => `${name} nối ${a}-${b}`,
+  lastDraw: (name: string) => `${name} bốc 1 quân`,
+  lastPass: (name: string) => `${name} bỏ lượt`,
+
+  roundDomino: (name: string, pts: number) => `${name} hết quân, được ${pts} điểm`,
+  roundBlocked: (name: string, pts: number) => `bàn chặn, ${name} ít chấm nhất, được ${pts} điểm`,
+  roundTie: 'bàn chặn, hòa chấm, không ai được điểm',
+  matchWon: (name: string) => `${name} thắng chung cuộc`,
+  nextRound: 'ván tiếp',
+  newGame: 'chơi lại từ đầu',
+  waitHost: 'chờ chủ phòng',
+
+  passTo: (name: string) => `chuyền máy cho ${name}`,
+  tapToSee: 'chạm để xem quân',
+  hideNote: 'người khác đừng nhìn nhé',
+};

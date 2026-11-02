@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { Avatar } from '@bang/party';
 import { cx } from '@bang/ui';
 import { getFinals, leaders, type FishParty } from './game';
@@ -39,6 +40,21 @@ export function Lots({ party }: { party: FishParty }) {
 
 /* ---------- Điểm ---------- */
 
+/** Điểm nảy lên mỗi khi tăng (câu được cặp). */
+function Pts({ n, final }: { n: number; final?: boolean }) {
+  const prev = useRef(n);
+  const [bump, setBump] = useState(0);
+  useEffect(() => {
+    if (n > prev.current) setBump((b) => b + 1);
+    prev.current = n;
+  }, [n]);
+  return (
+    <strong key={bump} className={cx(s.scorePts, bump > 0 && !final && s.ptsBump)}>
+      {final ? strings.pointsTotal(n) : n}
+    </strong>
+  );
+}
+
 export function Scores({ party, final }: { party: FishParty; final?: boolean }) {
   const st = party.state!;
   const { ids } = leaders(st, party.players);
@@ -49,7 +65,7 @@ export function Scores({ party, final }: { party: FishParty; final?: boolean }) 
         <li key={p.id} className={cx(s.score, !final && p.id === party.current?.id && s.scoreTurn, final && ids.includes(p.id) && pts > 0 && s.scoreWin)}>
           <Avatar name={p.name} dim={p.online === false} />
           <span className={s.scoreName}>{p.name}</span>
-          <strong className={s.scorePts}>{final ? strings.pointsTotal(pts) : pts}</strong>
+          <Pts n={pts} final={final} />
         </li>
       ))}
     </ol>

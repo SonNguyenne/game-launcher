@@ -7,6 +7,8 @@ export interface CodeAppDefinition {
   id: string;
   defaults: AppMeta;
   description?: string;
+  /** Số người chơi của game, ví dụ "2–6". */
+  players?: string;
   /** Mã SVG từ mini-apps/<id>/icon.svg, nếu app có hình vẽ. */
   art?: string;
   load: () => Promise<{ default: MiniAppComponent }>;
@@ -38,6 +40,7 @@ export const codeAppDefinitions: CodeAppDefinition[] = Object.entries(manifests)
     return {
       id: folder,
       description: m.description,
+      players: m.players,
       art: artByFolder.get(folder),
       load,
       defaults: {

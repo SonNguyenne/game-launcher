@@ -1,0 +1,9 @@
+{
+  "id": "dat-vang",
+  "name": "đất vàng",
+  "group": "board game",
+  "players": "2–6",
+  "color": "auto",
+  "description": "Đổ xúc xắc đi vòng quanh thành phố Phố Vàng, mua đất ở 4 phường, gom dãy đất liền nhau để tiền thuê nhân lên, đón sự kiện tin đồn và đẩy giá đất. Hết số vòng, ai giàu nhất thắng. 2–6 người.",
+  "version": "1.0.0"
+}

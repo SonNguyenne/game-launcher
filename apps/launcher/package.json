@@ -10,6 +10,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@bang/party": "workspace:^",
     "@bang/sdk": "workspace:*",
     "@bang/ui": "workspace:*",
     "react": "^19.2.0",

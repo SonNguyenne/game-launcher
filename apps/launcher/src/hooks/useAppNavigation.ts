@@ -16,10 +16,10 @@ export function useAppNavigation() {
   const markOpened = useLauncherStore((s) => s.markOpened);
 
   const openApp = useCallback(
-    (appId: string, originEl?: HTMLElement | null) => {
+    (appId: string, originEl?: HTMLElement | null, search = '') => {
       markOpened(appId);
       const state: RunnerLocationState = { origin: rectOf(originEl) };
-      navigate(paths.app(appId), { state });
+      navigate(paths.app(appId) + search, { state });
     },
     [navigate, markOpened],
   );

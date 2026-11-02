@@ -7,5 +7,5 @@ export const createInitialState = (): PersistedState => ({
   order: [],
   recents: [],
   appData: {},
-  settings: { theme: 'system', look: 'quan', custom: {}, columns: appConfig.defaultColumns },
+  settings: { theme: 'system', look: 'pixel', custom: {}, columns: appConfig.defaultColumns },
 });

@@ -6,6 +6,8 @@ export interface MiniAppManifest {
   id: string;
   name: string;
   group?: string;
+  /** Số người chơi hiện dưới icon game, ví dụ "2–6". */
+  players?: string;
   /** Một trong các màu phím của @bang/ui: auto | bone | yellow | blue | black. */
   color?: string;
   description?: string;

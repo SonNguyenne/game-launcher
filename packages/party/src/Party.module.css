@@ -207,13 +207,13 @@
  * Kiểu quán: mỗi màn có đúng một tấm biển "ồn" (tên game, mã phòng, lượt, kết quả),
  * phần còn lại là giấy ngà / nhựa đường yên tĩnh để đọc được trong quán tối.
  */
-:global(:root[data-look="quan"]) .stage { --card-border: transparent; }
-:global(:root[data-look="quan"]) .card { border: 0; border-radius: 14px; box-shadow: none; }
-:global(:root[data-look="quan"]) .settingsCard { gap: var(--space-8); padding: var(--space-8); }
-:global(:root[data-look="quan"]) .iconButton { border-radius: var(--control-radius); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .stage { --card-border: transparent; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .card { border: 0; border-radius: 14px; box-shadow: none; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .settingsCard { gap: var(--space-8); padding: var(--space-8); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .iconButton { border-radius: var(--control-radius); }
 
 /* Màn đầu: tấm biển sơn nghiêng bên trái, tên game chữ bảng hiệu xếp chồng bên phải. */
-:global(:root[data-look="quan"]) .hero {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .hero {
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   justify-items: start;
@@ -221,7 +221,7 @@
   text-align: left;
   padding: var(--space-10) 0 var(--space-4);
 }
-:global(:root[data-look="quan"]) .art {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .art {
   width: 168px; height: 168px;
   margin: 0 0 var(--space-3) var(--space-2);
   padding: var(--space-7);
@@ -231,7 +231,7 @@
   transform: rotate(-4deg);
   animation: tile-in var(--dur-enter) var(--ease-expo) backwards;
 }
-:global(:root[data-look="quan"]) .heroTitle {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .heroTitle {
   font-family: var(--font-display);
   font-weight: 400;
   font-size: clamp(46px, 14vw, 62px);
@@ -239,32 +239,32 @@
   letter-spacing: 0.005em;
   text-shadow: 0.045em 0.045em 0 var(--paint-red);
 }
-:global(:root[data-look="quan"]) .heroRule {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .heroRule {
   grid-column: 1 / -1;
   max-width: 40ch;
   margin-top: var(--space-12);
 }
-:global(:root[data-look="quan"]) .or {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .or {
   display: flex; align-items: baseline; gap: var(--space-5);
   margin-top: var(--space-6);
   font-family: var(--font-hand);
   font-size: var(--fs-lg);
 }
-:global(:root[data-look="quan"]) .or::after { content: ""; flex: 1; border-bottom: 3px dotted var(--rule); }
-:global(:root[data-look="quan"]) .joinRow .codeInput {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .or::after { content: ""; flex: 1; border-bottom: 3px dotted var(--rule); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .joinRow .codeInput {
   font-family: var(--font-display);
   font-size: 32px;
   letter-spacing: 0.3em;
   text-indent: 0.3em;
 }
-:global(:root[data-look="quan"]) .joinRow .codeInput:placeholder-shown {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .joinRow .codeInput:placeholder-shown {
   font-family: var(--font-ui);
   font-size: var(--fs-base);
   letter-spacing: normal;
   text-indent: 0;
 }
 /* Chơi một máy: tấm vé đường viền đứt, khác hẳn nút sơn phía trên. */
-:global(:root[data-look="quan"]) .local {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .local {
   min-height: 56px;
   margin-top: var(--space-6);
   padding: 0 var(--space-8);
@@ -276,12 +276,12 @@
   text-decoration: none;
   transition: transform 90ms var(--ease-out);
 }
-:global(:root[data-look="quan"]) .local:active { transform: translateY(2px); }
-:global(:root[data-look="quan"]) .local svg { color: var(--accent); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .local:active { transform: translateY(2px); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .local svg { color: var(--accent); }
 
 /* Tiêu đề như dòng trên bảng thực đơn: chữ bảng hiệu, chấm dẫn, số viết tay. */
-:global(:root[data-look="quan"]) .sectionHead { gap: var(--space-5); }
-:global(:root[data-look="quan"]) .sectionTitle {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .sectionHead { gap: var(--space-5); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .sectionTitle {
   display: flex; align-items: baseline; gap: var(--space-5);
   min-width: 0;
   font-family: var(--font-display);
@@ -289,14 +289,14 @@
   font-size: 36px;
   line-height: 1;
 }
-:global(:root[data-look="quan"]) .sectionTitle::after,
-:global(:root[data-look="quan"]) .listTitle::after {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .sectionTitle::after,
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .listTitle::after {
   content: "";
   flex: 1;
   min-width: var(--space-8);
   border-bottom: 3px dotted var(--rule);
 }
-:global(:root[data-look="quan"]) .count {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .count {
   min-width: 0;
   padding: 0 var(--space-3) 0 0;
   background: none;
@@ -305,7 +305,7 @@
   line-height: 1;
   color: var(--accent);
 }
-:global(:root[data-look="quan"]) .listTitle {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .listTitle {
   display: flex; align-items: baseline; gap: var(--space-5);
   margin-top: var(--space-8);
   font-family: var(--font-display);
@@ -316,8 +316,8 @@
 }
 
 /* Danh sách người: các dòng gom thành một tờ giấy, kẻ mảnh giữa các dòng. */
-:global(:root[data-look="quan"]) .people { gap: 0; }
-:global(:root[data-look="quan"]) .person {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .people { gap: 0; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .person {
   min-height: 64px;
   padding-left: var(--space-7);
   border: 0;
@@ -325,18 +325,18 @@
   border-radius: 0;
   background: var(--cell);
 }
-:global(:root[data-look="quan"]) .person:first-child { border-top-left-radius: 14px; border-top-right-radius: 14px; }
-:global(:root[data-look="quan"]) .person:last-child { border-bottom: 0; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
-:global(:root[data-look="quan"]) .tag {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .person:first-child { border-top-left-radius: 14px; border-top-right-radius: 14px; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .person:last-child { border-bottom: 0; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .tag {
   padding: 0;
   background: none;
   font-family: var(--font-hand);
   font-size: var(--fs-md);
   color: var(--ink-secondary);
 }
-:global(:root[data-look="quan"]) .tagYou { color: var(--accent); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .tagYou { color: var(--accent); }
 /* Chủ phòng: tem sơn đỏ dán lệch. */
-:global(:root[data-look="quan"]) .tagHost {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .tagHost {
   padding: 0 var(--space-5) var(--space-1);
   border-radius: 5px;
   background: var(--paint-red);
@@ -344,7 +344,7 @@
   transform: rotate(-4deg);
   box-shadow: 0 2px 0 color-mix(in oklab, var(--paint-red) 56%, var(--paint-ink));
 }
-:global(:root[data-look="quan"]) .wait {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .wait {
   padding: var(--space-6) var(--space-8);
   border: 2px dashed var(--rule);
   background: none;
@@ -353,7 +353,7 @@
 }
 
 /* Người chơi: miếng sơn vuông, chữ cái đầu viết bảng hiệu; màu và độ nghiêng cố định theo tên. */
-:global(:root[data-look="quan"]) .avatar {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .avatar {
   --face: var(--paint-yellow);
   --face-ink: var(--paint-ink);
   --tilt: -2deg;
@@ -369,13 +369,13 @@
   box-shadow: 0 3px 0 color-mix(in oklab, var(--face) 56%, var(--paint-ink));
   transform: rotate(var(--tilt));
 }
-:global(:root[data-look="quan"]) .avatar[data-tone="0"] { --face: var(--paint-red); --face-ink: var(--paint-paper); --tilt: -3deg; }
-:global(:root[data-look="quan"]) .avatar[data-tone="1"] { --face: var(--paint-yellow); --face-ink: var(--paint-ink); --tilt: 2deg; }
-:global(:root[data-look="quan"]) .avatar[data-tone="2"] { --face: var(--paint-green); --face-ink: var(--paint-paper); --tilt: -1.5deg; }
-:global(:root[data-look="quan"]) .avatar[data-tone="3"] { --face: var(--paint-blue); --face-ink: var(--paint-paper); --tilt: 2.5deg; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .avatar[data-tone="0"] { --face: var(--paint-red); --face-ink: var(--paint-paper); --tilt: -3deg; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .avatar[data-tone="1"] { --face: var(--paint-yellow); --face-ink: var(--paint-ink); --tilt: 2deg; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .avatar[data-tone="2"] { --face: var(--paint-green); --face-ink: var(--paint-paper); --tilt: -1.5deg; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .avatar[data-tone="3"] { --face: var(--paint-blue); --face-ink: var(--paint-paper); --tilt: 2.5deg; }
 
 /* Phòng chờ: mã phòng là tấm biển vàng bia treo hai đinh, số to đọc được từ đầu bàn kia. */
-:global(:root[data-look="quan"]) .codeCard {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .codeCard {
   position: relative;
   gap: 0;
   margin: var(--space-4) var(--space-3) var(--space-6);
@@ -388,8 +388,8 @@
   transform: rotate(-1.5deg);
   animation: sign-in var(--dur-enter) var(--ease-expo) backwards;
 }
-:global(:root[data-look="quan"]) .codeCard::before,
-:global(:root[data-look="quan"]) .codeCard::after {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .codeCard::before,
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .codeCard::after {
   content: "";
   position: absolute;
   top: var(--space-6);
@@ -397,15 +397,15 @@
   border-radius: 50%;
   background: color-mix(in oklab, var(--paint-yellow) 40%, var(--paint-ink));
 }
-:global(:root[data-look="quan"]) .codeCard::before { left: var(--space-7); }
-:global(:root[data-look="quan"]) .codeCard::after { right: var(--space-7); }
-:global(:root[data-look="quan"]) .codeLabel {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .codeCard::before { left: var(--space-7); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .codeCard::after { right: var(--space-7); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .codeLabel {
   color: var(--paint-ink);
   font-family: var(--font-hand);
   font-size: var(--fs-xl);
   transform: rotate(-2deg);
 }
-:global(:root[data-look="quan"]) .code {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .code {
   margin: var(--space-2) -0.06em var(--space-8) 0;
   font-family: var(--font-display);
   font-weight: 400;
@@ -414,7 +414,7 @@
   letter-spacing: 0.06em;
   text-shadow: 0.05em 0.05em 0 var(--paint-red);
 }
-:global(:root[data-look="quan"]) .codeCard .codeShare {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .codeCard .codeShare {
   padding: 0 var(--space-12);
   background: var(--paint-ink);
   color: var(--paint-paper);
@@ -423,16 +423,16 @@
   font-weight: 400;
   letter-spacing: 0.02em;
 }
-:global(:root[data-look="quan"]) .inviteLink {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .inviteLink {
   min-height: 48px;
   border: 2px dashed var(--rule);
   border-radius: var(--control-radius);
   background: none;
 }
-:global(:root[data-look="quan"]) .inviteLink:focus { outline: 0; border-style: solid; border-color: var(--ink); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .inviteLink:focus { outline: 0; border-style: solid; border-color: var(--ink); }
 
 /* Chip: kích thước vừa vặn, chia đều hàng, không bị to quá hay tràn chữ */
-:global(:root[data-look="quan"]) .chipsLabel {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .chipsLabel {
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
   font-weight: 700;
@@ -440,12 +440,12 @@
   letter-spacing: 0.04em;
   color: var(--ink-secondary);
 }
-:global(:root[data-look="quan"]) .chipRow {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .chipRow {
   gap: var(--space-2);
   padding: 0;
   width: 100%;
 }
-:global(:root[data-look="quan"]) .chip {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .chip {
   flex: 1;
   min-height: 40px;
   padding: 0 var(--space-3);
@@ -460,8 +460,8 @@
   box-shadow: none;
   transition: all var(--dur-base) var(--ease-out);
 }
-:global(:root[data-look="quan"]) .chip:not(:disabled):active { transform: scale(0.97); }
-:global(:root[data-look="quan"]) .chipOn {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .chip:not(:disabled):active { transform: scale(0.97); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .chipOn {
   background: var(--accent);
   color: var(--on-accent);
   border-color: var(--accent);
@@ -469,26 +469,26 @@
 }
 
 /* Thanh lượt: tên người tới lượt viết bảng hiệu; tới lượt mình thì cả thanh thành biển vàng. */
-:global(:root[data-look="quan"]) .turn {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .turn {
   position: relative; z-index: 1;
   min-height: 78px;
   padding: var(--space-5) var(--space-3) var(--space-5) var(--space-8);
   border-bottom: 3px dotted var(--rule);
   transition: background-color var(--dur-base), box-shadow var(--dur-base);
 }
-:global(:root[data-look="quan"]) .turn .avatar { width: 50px; height: 50px; font-size: 34px; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .turn .avatar { width: 50px; height: 50px; font-size: 34px; }
 /* Màn hẹp chơi chung: icon nhóm chỉ để trang trí, nhường chỗ cho "cả phòng cùng chơi" và số người. */
 @media (max-width: 420px) {
   .turn > span.avatar[aria-hidden="true"] { display: none; }
 }
-:global(:root[data-look="quan"]) .turnText small {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .turnText small {
   font-family: var(--font-hand);
   font-size: var(--fs-md);
   line-height: 1.3;
   color: var(--accent);
   opacity: 1;
 }
-:global(:root[data-look="quan"]) .turnText strong {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .turnText strong {
   padding: 0.08em 0.1em 0.1em 0;
   font-family: var(--font-display);
   font-weight: 400;
@@ -496,34 +496,34 @@
   font-size: clamp(26px, 8.5vw, 40px);
   line-height: 1;
 }
-:global(:root[data-look="quan"]) .turnMine {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .turnMine {
   border-bottom-color: transparent;
   background: var(--paint-yellow);
   color: var(--paint-ink);
   box-shadow: 0 5px 0 color-mix(in oklab, var(--paint-yellow) 52%, var(--paint-ink));
 }
-:global(:root[data-look="quan"]) .turnMine .turnText small { color: var(--paint-ink); }
-:global(:root[data-look="quan"]) .turnMine .turnText strong {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .turnMine .turnText small { color: var(--paint-ink); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .turnMine .turnText strong {
   text-shadow: 0.05em 0.05em 0 var(--paint-red);
   animation: name-in 520ms var(--ease-expo) backwards;
 }
-:global(:root[data-look="quan"]) .turnMine .avatar { box-shadow: 0 3px 0 var(--paint-ink); }
-:global(:root[data-look="quan"]) .turnMine .avatar[data-tone="1"] { --face: var(--paint-paper); }
-:global(:root[data-look="quan"]) .turnMine .iconButton:active { background: color-mix(in oklab, currentColor 12%, transparent); }
-:global(:root[data-look="quan"]) .roomChip {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .turnMine .avatar { box-shadow: 0 3px 0 var(--paint-ink); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .turnMine .avatar[data-tone="1"] { --face: var(--paint-paper); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .turnMine .iconButton:active { background: color-mix(in oklab, currentColor 12%, transparent); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .roomChip {
   padding: var(--space-2) var(--space-4) 0;
   border-radius: 6px;
   font-family: var(--font-display);
   font-size: 20px;
   line-height: 1.1;
 }
-:global(:root[data-look="quan"]) .notice {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .notice {
   padding: var(--space-5) var(--space-8);
   background: color-mix(in oklab, var(--paint-yellow) 24%, var(--bg));
   color: var(--ink);
   font-weight: var(--fw-medium);
 }
-:global(:root[data-look="quan"]) .noticeAction {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .noticeAction {
   flex: none;
   min-height: var(--size-touch);
   padding: var(--space-1) var(--space-8) 0;
@@ -536,13 +536,13 @@
 }
 
 /* Kết quả: tấm biển sơn treo lệch, đỏ khi bị phạt, xanh két khi thoát; tên người là tem dán ở góc. */
-:global(:root[data-look="quan"]) .result {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .result {
   gap: var(--space-10);
   padding: var(--space-14) var(--space-8) calc(var(--space-8) + env(safe-area-inset-bottom, 0px));
   border-top: 0;
   border-radius: 22px 22px 0 0;
 }
-:global(:root[data-look="quan"]) .resultHead {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .resultHead {
   --face: var(--paint-red);
   position: relative;
   gap: var(--space-2);
@@ -554,8 +554,8 @@
   transform: rotate(-1.2deg);
   animation: sign-in 620ms var(--ease-expo) 120ms backwards;
 }
-:global(:root[data-look="quan"]) .resultSafe .resultHead { --face: var(--paint-green); color: var(--paint-paper); }
-:global(:root[data-look="quan"]) .resultWho {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .resultSafe .resultHead { --face: var(--paint-green); color: var(--paint-paper); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .resultWho {
   position: absolute;
   top: calc(-1 * var(--space-8));
   right: var(--space-8);
@@ -573,7 +573,7 @@
   transform: rotate(4deg);
   box-shadow: 0 2px 0 color-mix(in oklab, var(--paint-ink) 30%, transparent);
 }
-:global(:root[data-look="quan"]) .resultText {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .resultText {
   font-family: var(--font-display);
   font-weight: 400;
   font-size: clamp(44px, 13vw, 60px);
@@ -581,14 +581,14 @@
   letter-spacing: 0.005em;
   text-shadow: 0.045em 0.045em 0 var(--paint-ink);
 }
-:global(:root[data-look="quan"]) .resultDetail { max-width: 34ch; margin-top: var(--space-5); opacity: 1; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .resultDetail { max-width: 34ch; margin-top: var(--space-5); opacity: 1; }
 /* Nút đi tiếp: sơn mực, để tấm biển kết quả là mảng màu duy nhất. */
-:global(:root[data-look="quan"]) .result .resultNext {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .result .resultNext {
   background: var(--ink);
   color: var(--bg);
   box-shadow: 0 4px 0 color-mix(in oklab, var(--ink) 55%, var(--bg));
 }
-:global(:root[data-look="quan"]) .result .resultNext:active { box-shadow: 0 1px 0 color-mix(in oklab, var(--ink) 55%, var(--bg)); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .result .resultNext:active { box-shadow: 0 1px 0 color-mix(in oklab, var(--ink) 55%, var(--bg)); }
 
 @keyframes fade { from { opacity: 0; } }
 @keyframes rise { from { transform: translate(-50%, 100%); } }
@@ -598,3 +598,73 @@
 @media (prefers-reduced-motion: reduce) {
   .scrim, .result, .art, .codeCard, .resultHead, .turnText strong { animation: none; }
 }
+
+/* Màn đầu game: đầu game gọn, luật gập, cài đặt ván ngay tại chỗ, hai nút chính ở đáy. */
+.gameHead { display: flex; align-items: center; gap: var(--space-8); }
+.gameArt {
+  width: 64px; height: 64px; flex: none; display: grid; place-items: center; padding: var(--space-4);
+  border-radius: var(--control-radius); background: var(--cell);
+  --art-ink: var(--paint-ink); --art-paper: var(--paint-paper); --art-pop: var(--pop, var(--paint-yellow));
+}
+.gameArt > * { display: block; width: 100%; height: 100%; }
+.gameArt svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.gameTitle { margin: 0; font-family: var(--font-display); font-size: var(--fs-2xl); font-weight: 700; line-height: var(--lh-snug); text-transform: uppercase; letter-spacing: 0.04em; }
+.ruleBox { border-radius: var(--control-radius); background: var(--cell); }
+.ruleSummary { padding: var(--space-6) var(--space-8); font-size: var(--fs-md); font-weight: 600; color: var(--ink-secondary); cursor: pointer; }
+.ruleSummary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.ruleText { margin: 0; padding: 0 var(--space-8) var(--space-8); color: var(--ink-secondary); font-size: var(--fs-md); line-height: var(--lh-normal); text-wrap: pretty; }
+.startRules:empty { display: none; }
+.who { display: flex; align-items: center; gap: var(--space-4); margin: 0; font-size: var(--fs-md); color: var(--ink-secondary); }
+.who strong { color: var(--ink); }
+.whoEdit { margin-left: auto; min-height: 36px; padding: 0 var(--space-6); border-radius: var(--control-radius); color: var(--accent); font-weight: 600; font-size: var(--fs-md); }
+.whoEdit:focus-visible { outline: 2px solid var(--accent); }
+.startActions { grid-template-columns: 1fr 1.4fr; border-top: var(--size-rule) solid var(--rule-soft); }
+
+/* Kiểu pixel: mã phòng và số chữ pixel, nút bấm có gờ đáy kiểu phím arcade. */
+:global(:root[data-look="pixel"]) .code { font-family: var(--font-pixel); font-weight: 400; font-size: 80px; color: var(--pop); letter-spacing: 0.18em; }
+:global(:root[data-look="pixel"]) .codeInput { font-family: var(--font-pixel); font-size: 28px; }
+:global(:root[data-look="pixel"]) .codeInput:placeholder-shown { font-family: var(--font-ui); font-size: var(--fs-md); }
+:global(:root[data-look="pixel"]) .card,
+:global(:root[data-look="pixel"]) .codeCard { border-radius: var(--control-radius); box-shadow: inset 0 calc(var(--key-lip) * -1) 0 var(--sunk); }
+:global(:root[data-look="pixel"]) .avatar { border-radius: 2px; }
+:global(:root[data-look="pixel"]) .turn { min-height: var(--size-bar); background: var(--cell); border-bottom: var(--size-rule) solid var(--rule-soft); }
+:global(:root[data-look="pixel"]) .turnMine { background: color-mix(in srgb, var(--accent) 24%, var(--cell)); color: var(--ink); box-shadow: inset 0 -3px 0 var(--accent); }
+:global(:root[data-look="pixel"]) .turnText small { text-transform: uppercase; letter-spacing: 0.06em; font-size: var(--fs-xs); }
+:global(:root[data-look="pixel"]) .roomChip { border-radius: 2px; font-family: var(--font-pixel); font-size: 20px; letter-spacing: 0.1em; }
+
+/* Kiểu pixel bỏ trang trí "quán" (biển nghiêng, đinh, tem lệch, chữ viết tay): mọi thứ thẳng, góc 4px, nhãn viết hoa. */
+:global(:root[data-look="pixel"]) .sectionTitle { font-weight: 700; font-size: var(--fs-2xl); text-transform: uppercase; letter-spacing: 0.04em; }
+:global(:root[data-look="pixel"]) .listTitle { font-weight: 700; font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+:global(:root[data-look="pixel"]) .sectionTitle::after,
+:global(:root[data-look="pixel"]) .listTitle::after { border-bottom: var(--size-rule) solid var(--rule-soft); align-self: center; }
+:global(:root[data-look="pixel"]) .count { font-family: var(--font-pixel); font-size: 22px; color: var(--ink-secondary); }
+:global(:root[data-look="pixel"]) .people { gap: var(--space-4); }
+:global(:root[data-look="pixel"]) .person,
+:global(:root[data-look="pixel"]) .person:first-child,
+:global(:root[data-look="pixel"]) .person:last-child { border: 0; border-radius: var(--control-radius); }
+:global(:root[data-look="pixel"]) .tag {
+  padding: 2px var(--space-3); border-radius: 2px; background: var(--cell-raised);
+  font-family: var(--font-ui); font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+}
+:global(:root[data-look="pixel"]) .tagHost { transform: none; box-shadow: none; background: var(--pop); color: var(--on-pop); }
+:global(:root[data-look="pixel"]) .wait { border: var(--size-rule) solid var(--rule-soft); border-radius: var(--control-radius); font-family: var(--font-ui); font-size: var(--fs-md); color: var(--ink-secondary); text-align: center; }
+:global(:root[data-look="pixel"]) .avatar { width: 40px; height: 40px; padding-top: 0; border-radius: 2px; font-family: var(--font-ui); font-weight: 700; font-size: 18px; transform: none; box-shadow: none; }
+:global(:root[data-look="pixel"]) .codeCard {
+  margin: 0; padding: var(--space-8); transform: none; animation: none;
+  background: var(--cell); color: var(--ink);
+}
+:global(:root[data-look="pixel"]) .codeCard::before,
+:global(:root[data-look="pixel"]) .codeCard::after { content: none; }
+:global(:root[data-look="pixel"]) .codeLabel { color: var(--ink-secondary); font-family: var(--font-ui); font-size: var(--fs-sm); }
+:global(:root[data-look="pixel"]) .code { margin: var(--space-2) 0 var(--space-6); color: var(--pop); }
+:global(:root[data-look="pixel"]) .codeCard .codeShare { transform: none; }
+:global(:root[data-look="pixel"]) .inviteLink { border-radius: var(--control-radius); border-style: solid; border-color: var(--rule-soft); background: var(--sunk); }
+:global(:root[data-look="pixel"]) .chip { border-radius: var(--control-radius); }
+:global(:root[data-look="pixel"]) .codeCard .codeShare {
+  background: var(--pop); color: var(--on-pop); font-family: var(--font-ui); font-size: var(--fs-base); font-weight: 700;
+  box-shadow: inset 0 calc(var(--key-lip) * -1) 0 var(--pop-edge);
+}
+:global(:root[data-look="pixel"]) .chip { border: 0; box-shadow: inset 0 -2px 0 var(--rule-soft); }
+:global(:root[data-look="pixel"]) .chipOn { box-shadow: inset 0 -2px 0 var(--accent-edge); }
+/* Chữ pixel không đổ bóng sơn kiểu biển hiệu. */
+:global(:root[data-look="pixel"]) .stage :not(.play, .play *) { text-shadow: none; }

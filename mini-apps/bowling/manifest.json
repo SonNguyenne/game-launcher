@@ -1,0 +1,9 @@
+{
+  "id": "bowling",
+  "name": "bowling",
+  "group": "khác",
+  "players": "1–4",
+  "color": "auto",
+  "description": "Bowling 10 khung cho 1-4 người. Vuốt để ném: chọn chỗ đứng, hướng, lực và độ xoáy; tính điểm strike, spare chuẩn, có bảng điểm đầy đủ.",
+  "version": "1.0.0"
+}

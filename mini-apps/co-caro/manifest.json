@@ -1,0 +1,9 @@
+{
+  "id": "co-caro",
+  "name": "cờ caro",
+  "group": "board game",
+  "players": "2",
+  "color": "auto",
+  "description": "Hai người thay nhau đánh X và O trên bàn 15×15. Ai xếp được 5 quân liền hàng ngang, dọc hoặc chéo trước thì thắng.",
+  "version": "1.0.0"
+}

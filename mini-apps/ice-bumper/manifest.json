@@ -1,7 +1,8 @@
 {
   "id": "ice-bumper",
   "name": "snowar.io",
-  "group": "trò chơi",
+  "group": "khác",
+  "players": "2–6",
   "color": "auto",
   "description": "Đấu trường cánh cụt trên tảng băng giữa biển, 2-6 người. Lăn cầu tuyết, bắn và húc đối thủ xuống nước; ai trụ lại cuối cùng thắng hiệp.",
   "version": "1.0.0"

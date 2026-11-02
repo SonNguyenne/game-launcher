@@ -1,0 +1,9 @@
+{
+  "id": "domino",
+  "name": "domino",
+  "group": "board game",
+  "players": "2–4",
+  "color": "auto",
+  "description": "Domino đôi-sáu 28 quân cho 2 đến 4 người, chơi chặn hoặc bốc. Nối quân khớp chấm vào hai đầu dãy, ai hết quân trước hoặc ít chấm nhất khi bàn chặn thì ăn điểm, chơi tới 50 hoặc 100 điểm.",
+  "version": "1.0.0"
+}

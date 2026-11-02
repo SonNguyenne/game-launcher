@@ -44,6 +44,20 @@ export function partyServerUrl() {
   return `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/party`;
 }
 
+/** Mã phòng thuộc game nào (để trang chủ mở đúng game). null: không có phòng, hoặc không hỏi được server. */
+export async function findRoomGame(code: string): Promise<string | null> {
+  const ws = new URL(partyServerUrl());
+  const url = `${ws.protocol === 'wss:' ? 'https:' : 'http:'}//${ws.host}/api/room/${encodeURIComponent(code)}`;
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { game?: unknown };
+    return typeof body.game === 'string' ? body.game : null;
+  } catch {
+    return null;
+  }
+}
+
 interface RoomClientOptions {
   url: string;
   /** Tin gửi mỗi lần kết nối (lại): tạo phòng lần đầu, về sau là vào lại phòng cũ. */

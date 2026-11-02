@@ -8,6 +8,7 @@ import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { AppBoard } from './AppBoard';
 import { BottomTools } from './BottomTools';
 import { ClockStrip } from './ClockStrip';
+import { PixelHome } from './PixelHome';
 import { SearchBar } from './SearchBar';
 import s from './HomePage.module.css';
 
@@ -18,10 +19,28 @@ export function HomePage() {
   const columns = useLauncherStore((st) => st.settings.columns);
   const hotId = useLauncherStore((st) => st.recents[0]);
   const openSheet = useUiStore((st) => st.openSheet);
-  const { openApp, openSettings } = useAppNavigation();
+  const look = useLauncherStore((st) => st.settings.look);
+  const { openApp, openSettings, openManage } = useAppNavigation();
 
   const shown = query ? visible.filter((a) => matchesQuery(query, a.name, a.group)) : visible;
   const openForm = () => openSheet({ kind: 'app-form' });
+
+  if (look === 'pixel') {
+    return (
+      <>
+        <PixelHome
+          apps={visible}
+          hotId={hotId}
+          onOpen={(app, el, search) => openApp(app.id, el, search)}
+          onLongPress={(app) => openSheet({ kind: 'app-actions', appId: app.id })}
+          onAdd={openForm}
+          onManage={openManage}
+          onSettings={openSettings}
+        />
+        <Outlet />
+      </>
+    );
+  }
 
   return (
     <>

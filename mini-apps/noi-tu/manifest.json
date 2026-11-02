@@ -1,0 +1,9 @@
+{
+  "id": "noi-tu",
+  "name": "nối từ",
+  "group": "khác",
+  "players": "2–6",
+  "color": "auto",
+  "description": "Nối từ tiếng Việt cho 2 đến 6 người: từ 2 tiếng, tiếng đầu trùng tiếng cuối của từ trước, không lặp từ. Mỗi lượt có đồng hồ, hết giờ bị loại. Có từ điển gợi ý và bỏ phiếu cho từ lạ.",
+  "version": "1.0.0"
+}

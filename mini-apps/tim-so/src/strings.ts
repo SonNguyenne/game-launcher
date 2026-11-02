@@ -56,6 +56,7 @@ export const strings = {
   target: (n: number) => `tìm số ${n}`,
   timeLeft: (s: number) => `còn ${s} giây`,
   progress: (found: number, total: number) => `${found}/${total}`,
+  gain: (n: number) => `+${n}`,
   progressLabel: (found: number, total: number) => `đã tìm ${found} trên ${total} số`,
   dot: (n: number) => `số ${n}`,
   dotFound: (n: number, name: string) => `số ${n}, ${name} đã tìm`,

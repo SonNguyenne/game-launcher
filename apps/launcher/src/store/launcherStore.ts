@@ -132,7 +132,11 @@ export const useLauncherStore = create<LauncherStore>()(
         settings: s.settings,
       }),
       // Đọc được cả dữ liệu thô của bản HTML trước (không có vỏ { state, version }).
-      migrate: (persisted) => normalizeState(persisted),
+      migrate: (persisted, version) => {
+        const state = normalizeState(persisted);
+        // Bản 3 đổi giao diện mặc định từ "quan" sang "pixel"; ai còn để mặc định cũ thì chuyển theo.
+        return version < 3 && state.settings.look === 'quan' ? { ...state, settings: { ...state.settings, look: 'pixel' } } : state;
+      },
       merge: (persisted, current) => ({ ...current, ...normalizeState(persisted) }),
     },
   ),

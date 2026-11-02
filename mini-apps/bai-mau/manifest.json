@@ -1,0 +1,9 @@
+{
+  "id": "bai-mau",
+  "name": "bài màu",
+  "group": "bài",
+  "players": "2–6",
+  "color": "auto",
+  "description": "Bài ngũ hành 2–6 người, ai đánh hết bài trước thì về: nối lá cùng hệ, cùng số hoặc theo tương sinh, đánh bộ cùng số hay bộ ngũ hành, dùng lá gửi, sinh, khắc. Chơi nhiều ván, ít điểm phạt nhất thắng.",
+  "version": "1.0.0"
+}

@@ -51,7 +51,7 @@ const PROFILE_KEY = 'bang-party-profile';
 const ID_KEY = 'bang-party-key';
 
 /** Tên và danh sách người chơi dùng chung giữa các game trên cùng máy, để khỏi nhập lại. */
-function readProfile(): PartyData {
+export function readProfile(): PartyData {
   try {
     return JSON.parse(localStorage.getItem(PROFILE_KEY) ?? '{}') as PartyData;
   } catch {
@@ -59,7 +59,7 @@ function readProfile(): PartyData {
   }
 }
 
-function writeProfile(p: PartyData) {
+export function writeProfile(p: PartyData) {
   try {
     localStorage.setItem(PROFILE_KEY, JSON.stringify({ name: p.name, players: p.players }));
   } catch {

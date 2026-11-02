@@ -11,7 +11,7 @@
 .input:focus { outline: 2px solid var(--accent); outline-offset: -2px; }
 .invalid { border-color: var(--danger); outline-color: var(--danger); }
 
-:global(:root[data-look="quan"]) .label { color: var(--ink); font-weight: var(--fw-medium); }
-:global(:root[data-look="quan"]) .input { border: 2px solid var(--rule-soft); background: var(--cell); font-size: var(--fs-lg); transition: border-color var(--dur-base); }
-:global(:root[data-look="quan"]) .input:focus { outline: 0; border-color: var(--ink); }
-:global(:root[data-look="quan"]) .invalid, :global(:root[data-look="quan"]) .invalid:focus { border-color: var(--danger); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .label { color: var(--ink); font-weight: var(--fw-medium); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .input { border: 2px solid var(--rule-soft); background: var(--cell); font-size: var(--fs-lg); transition: border-color var(--dur-base); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .input:focus { outline: 0; border-color: var(--ink); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .invalid, :global(:root:is([data-look="quan"], [data-look="pixel"])) .invalid:focus { border-color: var(--danger); }

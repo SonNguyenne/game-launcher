@@ -18,7 +18,7 @@
 .iconButton:disabled { opacity: 0.2; cursor: default; }
 
 /* Kiểu quán: tiêu đề mục chữ bảng hiệu; các dòng giữa hai tiêu đề gom thành một tấm giấy bo góc. */
-:global(:root[data-look="quan"]) .section {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .section {
   align-items: baseline;
   border: 0;
   padding: var(--space-12) var(--space-9) var(--space-4);
@@ -27,16 +27,16 @@
   line-height: 1;
   color: var(--ink);
 }
-:global(:root[data-look="quan"]) .section > :nth-child(2) { font-family: var(--font-hand); font-size: var(--fs-md); color: var(--accent); }
-:global(:root[data-look="quan"]) .row {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .section > :nth-child(2) { font-family: var(--font-hand); font-size: var(--fs-md); color: var(--accent); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .row {
   width: calc(100% - 2 * var(--space-8));
   margin: 0 var(--space-8);
   padding-left: var(--space-8);
   background: var(--cell);
   border-bottom-color: var(--rule-soft);
 }
-:global(:root[data-look="quan"]) .row:first-child,
-:global(:root[data-look="quan"]) .section + .row { border-top-left-radius: 14px; border-top-right-radius: 14px; }
-:global(:root[data-look="quan"]) .row:has(+ .section),
-:global(:root[data-look="quan"]) .row:last-child { border-bottom: 0; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
-:global(:root[data-look="quan"]) .tag { border: 0; border-radius: 6px; padding: 1px var(--space-3); background: var(--cell-raised); font-family: var(--font-hand); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .row:first-child,
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .section + .row { border-top-left-radius: 14px; border-top-right-radius: 14px; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .row:has(+ .section),
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .row:last-child { border-bottom: 0; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .tag { border: 0; border-radius: 6px; padding: 1px var(--space-3); background: var(--cell-raised); font-family: var(--font-hand); }

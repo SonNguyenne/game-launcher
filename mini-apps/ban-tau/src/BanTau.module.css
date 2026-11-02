@@ -1,0 +1,187 @@
+.game { flex: 1; display: flex; flex-direction: column; gap: var(--space-5); }
+.heroArt { display: block; width: 100%; height: 100%; }
+.heroArt > svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+/* Hai ghế, số tàu còn lại và tỉ số */
+.score { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.seat {
+  display: flex; align-items: center; gap: var(--space-3); min-width: 0;
+  padding: var(--space-3) var(--space-4); border-radius: var(--control-radius);
+  background: var(--cell); border: var(--size-rule) solid var(--rule-soft);
+  transition: border-color var(--dur-base) var(--ease-out);
+}
+.seatOn { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.seatMain { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.seatName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--fw-medium); }
+.seatSub { color: var(--ink-secondary); font-size: var(--fs-xs); }
+.wins { font-family: var(--font-display); font-size: var(--fs-xl); font-variant-numeric: tabular-nums; min-width: 1.2em; text-align: right; }
+
+.head { display: flex; align-items: center; gap: var(--space-4); }
+.status { margin: 0; font-size: var(--fs-lg); font-weight: var(--fw-medium); }
+.title { margin: 0; font-size: var(--fs-xl); font-weight: var(--fw-medium); }
+.hint { margin: 0; color: var(--ink-secondary); font-size: var(--fs-sm); }
+
+/* Biển 10 × 10 kèm nhãn A–J, 1–10 */
+.sea {
+  --sea: var(--paint-blue);
+  display: grid; grid-template-columns: 16px repeat(10, 1fr);
+  width: 100%; max-width: 440px; margin-inline: auto;
+  user-select: none; -webkit-user-select: none;
+}
+.seaSmall { max-width: 260px; }
+.seaSmall .axis { font-size: 8px; }
+.axis, .corner { display: grid; place-items: center; font-size: 10px; color: var(--ink-secondary); line-height: 1.6; }
+.cell {
+  position: relative; aspect-ratio: 1; min-width: 0; padding: 0;
+  border: 0.5px solid color-mix(in srgb, var(--paint-paper) 45%, var(--sea));
+  background: color-mix(in srgb, var(--sea) 22%, var(--paint-paper));
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent; cursor: pointer;
+}
+.cell:disabled { cursor: default; }
+.cell:not(:disabled):active { background: color-mix(in srgb, var(--paint-yellow) 50%, var(--paint-paper)); }
+.cell:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; z-index: 1; }
+
+/* Thân tàu: các ô liền nhau, bo tròn mũi và đuôi */
+.ship::before {
+  content: ''; position: absolute; inset: 14%;
+  background: var(--paint-ink); border-radius: 2px;
+}
+.ship.h::before { left: -1px; right: -1px; }
+.ship.v::before { top: -1px; bottom: -1px; }
+.ship.h.head::before { left: 14%; border-radius: 50% 2px 2px 50%; }
+.ship.h.tail::before { right: 14%; border-radius: 2px 50% 50% 2px; }
+.ship.v.head::before { top: 14%; border-radius: 50% 50% 2px 2px; }
+.ship.v.tail::before { bottom: 14%; border-radius: 2px 2px 50% 50%; }
+
+/* Phát bắn: trượt là chấm, trúng là dấu nổ */
+.miss::after {
+  content: ''; position: absolute; inset: 38%; border-radius: 50%;
+  background: color-mix(in srgb, var(--paint-ink) 55%, transparent);
+  animation: drop 320ms var(--ease-out) both;
+}
+.hit { background: color-mix(in srgb, var(--paint-red) 30%, var(--paint-paper)); }
+.hit::after {
+  content: ''; position: absolute; inset: 18%; border-radius: 50%;
+  background: var(--paint-red); box-shadow: 0 0 0 2px var(--paint-yellow);
+  animation: boom 420ms var(--ease-out) both;
+}
+.last { outline: 2px solid var(--paint-yellow); outline-offset: -2px; z-index: 1; }
+
+/* Xếp tàu */
+.place { display: flex; flex-direction: column; gap: var(--space-5); }
+.tray { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.trayShip {
+  display: flex; gap: 2px; padding: var(--space-3); min-height: 34px; align-items: center;
+  border-radius: var(--control-radius); border: 2px solid var(--rule); background: var(--cell);
+  touch-action: manipulation;
+}
+.trayBlock { width: 14px; height: 14px; border-radius: 3px; background: var(--ink); }
+.trayOn { border-color: var(--paint-blue); box-shadow: 0 0 0 2px color-mix(in srgb, var(--paint-blue) 35%, transparent); }
+.trayDone { opacity: 0.35; }
+.trayDone.trayOn { opacity: 1; }
+.tools { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.pill {
+  min-height: 36px; padding: 0 var(--space-6); border-radius: 999px;
+  background: var(--cell-raised); color: var(--ink); border: var(--size-rule) solid var(--rule);
+  font-size: var(--fs-sm); font-weight: var(--fw-medium); touch-action: manipulation;
+}
+.pill:disabled { opacity: 0.45; }
+.pill:not(:disabled):active { transform: scale(0.96); }
+
+/* Trận bắn */
+.battle { display: flex; flex-direction: column; gap: var(--space-5); }
+.zone { display: flex; flex-direction: column; gap: var(--space-2); }
+.zoneTitle { margin: 0; font-size: var(--fs-sm); color: var(--ink-secondary); font-weight: var(--fw-medium); text-align: center; }
+.shot {
+  margin: 0; padding: var(--space-3) var(--space-5); border-radius: var(--control-radius);
+  background: var(--cell); text-align: center; font-weight: var(--fw-medium);
+  animation: pop 320ms var(--ease-out) both;
+}
+.shotHit { background: color-mix(in srgb, var(--paint-red) 18%, var(--cell)); color: var(--ink); }
+.shotSunk { background: var(--paint-red); color: var(--paint-paper); }
+.again { color: inherit; opacity: 0.8; }
+
+/* Màn che chuyền máy */
+.cover {
+  flex: 1; min-height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-5);
+  padding: var(--space-10); border-radius: var(--control-radius);
+  background: color-mix(in srgb, var(--paint-blue) 85%, var(--paint-ink)); color: var(--paint-paper);
+  text-align: center; touch-action: manipulation;
+}
+.cover .hint { color: color-mix(in srgb, var(--paint-paper) 75%, transparent); }
+.coverNote { padding: var(--space-3) var(--space-6); border-radius: 999px; background: color-mix(in srgb, var(--paint-paper) 18%, transparent); font-weight: var(--fw-medium); }
+.coverTitle { font-family: var(--font-display); font-size: var(--fs-display); line-height: var(--lh-tight); }
+.coverTap { margin-top: var(--space-6); padding: var(--space-4) var(--space-10); border-radius: 999px; background: var(--paint-paper); color: var(--paint-ink); font-weight: var(--fw-medium); }
+
+/* Radar: quét xanh lướt qua biển đối thủ, sáng hơn khi tới lượt bắn */
+.radar { position: relative; overflow: hidden; width: 100%; max-width: 440px; margin-inline: auto; border-radius: var(--control-radius); }
+.radar::after {
+  content: ''; position: absolute; left: 50%; top: 50%; width: 150%; aspect-ratio: 1; pointer-events: none;
+  translate: -50% -50%;
+  background: conic-gradient(from 0deg, transparent 0 300deg, color-mix(in srgb, var(--paint-green) 26%, transparent) 355deg, color-mix(in srgb, var(--paint-green) 45%, transparent) 360deg);
+  opacity: 0.45; animation: sweep 4.5s linear infinite;
+}
+.radarLive::after { opacity: 1; }
+.radar .sea { max-width: none; }
+@keyframes sweep { to { rotate: 360deg; } }
+
+/* Xem trước khi kéo tàu */
+.pvOk { background: color-mix(in srgb, var(--paint-green) 55%, var(--paint-paper)); }
+.pvBad { background: color-mix(in srgb, var(--paint-red) 50%, var(--paint-paper)); }
+.trayShip { user-select: none; -webkit-user-select: none; touch-action: none; cursor: grab; }
+
+/* Tàu chìm nổi lên khi lộ */
+.reveal::before { animation: reveal 520ms var(--ease-out) 380ms both; }
+@keyframes reveal { 0% { opacity: 0; transform: scale(1.5); } 100% { opacity: 1; transform: scale(1); } }
+
+/* Đạn pháo bay vòng cung, rồi bắn tung nước hoặc nổ */
+.cell > i { position: absolute; pointer-events: none; z-index: 2; border-radius: 50%; }
+.shell {
+  left: 30%; top: 30%; width: 40%; height: 40%; background: var(--paint-ink);
+  animation: shellX 440ms linear both, shellY 440ms both;
+}
+@keyframes shellX { from { translate: -280% 0; } to { translate: 0 0; } }
+@keyframes shellY {
+  0% { transform: translateY(0) scale(0.6); animation-timing-function: ease-out; }
+  50% { transform: translateY(-260%) scale(1.4); animation-timing-function: ease-in; }
+  99% { transform: translateY(0) scale(0.7); opacity: 1; }
+  100% { transform: translateY(0) scale(0.7); opacity: 0; }
+}
+.splash {
+  inset: 10%; border: 2px solid var(--paint-blue); opacity: 0;
+  animation: splash 620ms var(--ease-out) 440ms both;
+}
+@keyframes splash { 0% { transform: scale(0.2); opacity: 0.9; } 100% { transform: scale(2.4); opacity: 0; } }
+.blast {
+  inset: -30%; opacity: 0;
+  background: radial-gradient(circle, var(--paint-yellow) 0 25%, var(--paint-red) 45%, transparent 70%);
+  animation: blast 520ms var(--ease-out) 440ms both;
+}
+@keyframes blast { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
+.last.hit::after, .last.miss::after { animation-delay: 440ms; }
+
+/* Banner kết quả */
+.banner {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-1);
+  padding: var(--space-5); border-radius: var(--control-radius); background: var(--accent); color: var(--bg);
+  font-family: var(--font-display); font-size: var(--fs-xl); text-align: center;
+  animation: bannerPop 520ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.bannerTag { font-size: var(--fs-xs); letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.85; }
+@keyframes bannerPop { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes seatGlow { 50% { box-shadow: 0 0 0 1px var(--accent), 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent); } }
+.seatOn { animation: seatGlow 1.6s ease-in-out infinite; }
+
+@keyframes pop { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes drop { 0% { transform: scale(2.2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes boom { 0% { transform: scale(0.2); opacity: 0; } 60% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .miss::after, .hit::after, .shot, .banner, .seatOn, .reveal::before { animation: none; }
+  .radar::after, .shell, .splash, .blast { display: none; }
+}
+
+/* Kiểu pixel: biển tối, ô trúng đỏ trên nền tối. */
+:global(:root[data-look="pixel"]) .cell { background: color-mix(in srgb, var(--sea) 30%, var(--sunk)); }
+:global(:root[data-look="pixel"]) .cell:not(:disabled):active { background: color-mix(in srgb, var(--paint-yellow) 40%, var(--sunk)); }
+:global(:root[data-look="pixel"]) .hit { background: color-mix(in srgb, var(--paint-red) 45%, var(--sunk)); }
+:global(:root[data-look="pixel"]) .cell { border-color: color-mix(in srgb, var(--sea) 40%, var(--sunk)); }

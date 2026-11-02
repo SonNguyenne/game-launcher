@@ -1,0 +1,9 @@
+{
+  "id": "ghep-lang",
+  "name": "ghép làng",
+  "group": "board game",
+  "players": "2–5",
+  "color": "auto",
+  "description": "Lần lượt chọn mảnh ở chợ và ghép ruộng, nhà, ao, tre, chợ, đình thành một ngôi làng 7×7 quanh giếng. Mỗi mảnh ghi điểm theo hàng xóm của nó, mỗi người còn có 2 ước nguyện riêng. Làng kín thì ai nhiều điểm nhất thắng. 2–5 người.",
+  "version": "1.0.0"
+}

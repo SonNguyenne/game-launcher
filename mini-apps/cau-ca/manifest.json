@@ -1,7 +1,8 @@
 {
   "id": "cau-ca",
   "name": "câu cá",
-  "group": "trò chơi",
+  "group": "bài",
+  "players": "2–8",
   "color": "auto",
   "description": "52 lá úp, lật 2 lá: trùng số +1 điểm, trượt thì nhận thử thách. Hết bài, người ít điểm nhất chịu phạt cuối ván.",
   "version": "1.0.0"

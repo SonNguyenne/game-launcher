@@ -51,6 +51,8 @@ export const lookDefaults: Record<UiLook, StyleCustom> = {
   board: { accent: 'orange', scale: 'md', font: 'mono', corners: 'square', spacing: 'tight' },
   readable: { accent: 'orange', scale: 'md', font: 'sans', corners: 'round', spacing: 'airy' },
   quan: { accent: 'red', scale: 'md', font: 'sans', corners: 'round', spacing: 'airy' },
+  // Bo 4px của pixel nằm giữa "vuông" và "mềm"; chọn "mềm" thì giữ nguyên 4px của kiểu.
+  pixel: { accent: 'violet', scale: 'md', font: 'sans', corners: 'soft', spacing: 'airy' },
 };
 
 const oneOf = <T extends string>(ids: readonly T[]) => (v: unknown): v is T => typeof v === 'string' && (ids as readonly string[]).includes(v);

@@ -64,13 +64,14 @@ interface DotProps {
   ring: string | undefined;
   found: boolean;
   wrong: boolean;
+  fly: boolean;
   hidden: boolean;
   label: string;
   onTap: (d: Dot) => void;
 }
 
 /** Một con số trên bàn; chỉ vẽ lại khi chính nó đổi, để bàn 200 số không khựng mỗi lần có người tìm được. */
-const DotButton = memo(function DotButton({ d, look, ring, found, wrong, hidden, label, onTap }: DotProps) {
+const DotButton = memo(function DotButton({ d, look, ring, found, wrong, fly, hidden, label, onTap }: DotProps) {
   return (
     <button
       type="button"
@@ -81,6 +82,7 @@ const DotButton = memo(function DotButton({ d, look, ring, found, wrong, hidden,
       onClick={() => onTap(d)}
     >
       {d.n}
+      {fly && <span className={s.fly} aria-hidden="true">{strings.gain(1)}</span>}
     </button>
   );
 });
@@ -144,10 +146,20 @@ export function RoundView({ party, round }: { party: FindParty; round: Round }) 
     return () => clearTimeout(id);
   }, [wrong]);
 
+  // Số vừa tìm đúng: "+1" bay lên rồi tan.
+  const [flyN, setFlyN] = useState<number | null>(null);
+  useEffect(() => {
+    if (flyN === null) return;
+    const id = setTimeout(() => setFlyN(null), 900);
+    return () => clearTimeout(id);
+  }, [flyN]);
+
   const tap = (d: Dot) => {
     if (!canTap || locked || foundBy(d.n)) return;
     if (d.n === target) {
       sfxRef.current('tap');
+      vibrate(10);
+      setFlyN(d.n);
       setPending((list) => [...list, { round: round.id, n: d.n, at: performance.now() }]);
       dispatch({ type: 'find', round: round.id, n: d.n });
     } else {
@@ -220,6 +232,7 @@ export function RoundView({ party, round }: { party: FindParty; round: Round }) 
               ring={by ? ringOf(by) : undefined}
               found={!!by}
               wrong={wrong?.n === d.n}
+              fly={flyN === d.n}
               hidden={counting}
               label={by ? strings.dotFound(d.n, party.nameOf(by)) : strings.dot(d.n)}
               onTap={onTap}

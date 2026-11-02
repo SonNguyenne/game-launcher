@@ -1,0 +1,9 @@
+{
+  "id": "khai-hoang",
+  "name": "khai hoang",
+  "group": "board game",
+  "players": "2–4",
+  "color": "auto",
+  "description": "Chia nhau khai hoang bãi bồi 6×6: xúc xắc chọn hàng và cột cho mùa màng, mùa xuân hạ thu đông đổi loại được mùa, đắp đê chống lũ, dựng nhà, ra chợ đổi hàng. Ai đủ điểm trước thì thắng. 2–4 người.",
+  "version": "1.0.0"
+}

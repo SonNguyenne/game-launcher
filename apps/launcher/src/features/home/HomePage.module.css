@@ -74,8 +74,8 @@
 .dockMain:active { transform: translateY(2px) scale(0.94); }
 .dockMain:active .dockMainPad { box-shadow: 0 2px 8px color-mix(in oklab, var(--accent) 40%, transparent), 0 0 0 4px var(--dock); }
 /* Kiểu sôi động (Party & Arcade): đồng hồ to nổi bật, lời chào dạng pill trẻ trung, không mái bạt quán nhậu. */
-:global(:root[data-look="quan"]) .home { border: 0; }
-:global(:root[data-look="quan"]) .strip {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .home { border: 0; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .strip {
   grid-template-columns: 1fr auto;
   grid-template-areas: "clock meta" "mood mood";
   align-items: center;
@@ -83,8 +83,8 @@
   border: 0;
   border-bottom: var(--size-rule) solid var(--rule-soft);
 }
-:global(:root[data-look="quan"]) .awning { display: none; }
-:global(:root[data-look="quan"]) .clock {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .awning { display: none; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .clock {
   grid-area: clock;
   padding: 0;
   font-family: var(--font-display);
@@ -95,13 +95,13 @@
   color: var(--ink);
   text-shadow: none;
 }
-:global(:root[data-look="quan"]) .colon {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .colon {
   display: inline-block;
   margin: 0 0.04em;
   color: var(--accent);
   animation: blink 2s steps(1) infinite;
 }
-:global(:root[data-look="quan"]) .meta {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .meta {
   grid-area: meta;
   display: flex;
   flex-direction: column;
@@ -111,14 +111,14 @@
   border: 0;
   text-align: right;
 }
-:global(:root[data-look="quan"]) .metaStrong {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .metaStrong {
   font-weight: 700;
   font-size: var(--fs-lg);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--ink);
 }
-:global(:root[data-look="quan"]) .appPill {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .appPill {
   display: inline-block;
   padding: 3px var(--space-4);
   border-radius: 999px;
@@ -127,7 +127,7 @@
   font-weight: 600;
   color: var(--ink-secondary);
 }
-:global(:root[data-look="quan"]) .mood {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .mood {
   display: inline-flex;
   align-items: center;
   grid-area: mood;
@@ -143,7 +143,7 @@
   color: var(--accent);
   transform: none;
 }
-:global(:root[data-look="quan"]) .search {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .search {
   margin: var(--space-3) var(--space-8);
   padding: 0 var(--space-5);
   height: 48px;
@@ -152,24 +152,24 @@
   border: 1.5px solid var(--rule-soft);
   transition: border-color var(--dur-base), box-shadow var(--dur-base);
 }
-:global(:root[data-look="quan"]) .search:focus-within {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .search:focus-within {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 15%, transparent);
 }
-:global(:root[data-look="quan"]) .searchLabel {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .searchLabel {
   border: 0;
   padding: 0 var(--space-3) 0 0;
   color: var(--ink-muted);
 }
-:global(:root[data-look="quan"]) .searchIcon { display: grid; }
-:global(:root[data-look="quan"]) .searchText { display: none; }
-:global(:root[data-look="quan"]) .searchInput {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .searchIcon { display: grid; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .searchText { display: none; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .searchInput {
   padding: 0;
   font-size: var(--fs-md);
   font-weight: 500;
 }
-:global(:root[data-look="quan"]) .searchInput:focus { background: none; }
-:global(:root[data-look="quan"]) .searchInput::-webkit-search-cancel-button {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .searchInput:focus { background: none; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .searchInput::-webkit-search-cancel-button {
   -webkit-appearance: none;
   width: 20px;
   height: 20px;

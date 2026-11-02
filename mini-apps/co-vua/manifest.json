@@ -1,0 +1,9 @@
+{
+  "id": "co-vua",
+  "name": "cờ vua",
+  "group": "board game",
+  "players": "2",
+  "color": "auto",
+  "description": "Cờ vua hai người theo luật FIDE: nhập thành, bắt tốt qua đường, phong cấp, chiếu hết, hòa khi hết nước đi hoặc không đủ quân. Có xin hòa, đầu hàng và đồng hồ 5 hoặc 10 phút.",
+  "version": "1.0.0"
+}

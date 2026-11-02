@@ -17,7 +17,7 @@
 .block { width: 100%; }
 
 /* Kiểu quán: nút phẳng bo vừa, nút chính là biển sơn đỏ chữ bảng hiệu, có gờ nhựa. */
-:global(:root[data-look="quan"]) .button {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .button {
   min-height: 44px;
   padding: 0 var(--space-6);
   border: 1.5px solid var(--rule-soft);
@@ -29,9 +29,9 @@
   font-weight: 600;
   transition: transform 90ms var(--ease-out), box-shadow 90ms var(--ease-out);
 }
-:global(:root[data-look="quan"]) .button:active { filter: none; transform: translateY(1px); }
-:global(:root[data-look="quan"]) .button:disabled { opacity: 0.45; transform: none; cursor: default; }
-:global(:root[data-look="quan"]) .primary {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .button:active { filter: none; transform: translateY(1px); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .button:disabled { opacity: 0.45; transform: none; cursor: default; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .primary {
   border: 0;
   background: var(--accent);
   color: var(--on-accent);
@@ -41,6 +41,20 @@
   letter-spacing: 0.01em;
   box-shadow: 0 2px 0 color-mix(in oklab, var(--accent) 58%, var(--paint-ink));
 }
-:global(:root[data-look="quan"]) .primary:active { transform: translateY(2px); box-shadow: 0 1px 0 color-mix(in oklab, var(--accent) 58%, var(--paint-ink)); }
-:global(:root[data-look="quan"]) .ghost { background: var(--cell-raised); }
-:global(:root[data-look="quan"]) .danger { background: color-mix(in oklab, var(--danger) 12%, var(--bg)); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .primary:active { transform: translateY(2px); box-shadow: 0 1px 0 color-mix(in oklab, var(--accent) 58%, var(--paint-ink)); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .ghost { background: var(--cell-raised); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .danger { background: color-mix(in oklab, var(--danger) 12%, var(--bg)); }
+
+/* Kiểu pixel: nút như phím máy arcade, gờ đáy đậm, nhấn thì lún xuống đúng bằng gờ. */
+:global(:root[data-look="pixel"]) .button {
+  min-height: var(--size-button);
+  border: 0;
+  background: var(--cell-raised);
+  font-weight: 700;
+  box-shadow: inset 0 calc(var(--key-lip) * -1) 0 var(--rule);
+}
+:global(:root[data-look="pixel"]) .button:active:not(:disabled) { transform: translateY(2px); box-shadow: inset 0 -1px 0 var(--rule); }
+:global(:root[data-look="pixel"]) .primary { box-shadow: inset 0 calc(var(--key-lip) * -1) 0 var(--accent-edge); }
+:global(:root[data-look="pixel"]) .primary:active:not(:disabled) { transform: translateY(2px); box-shadow: inset 0 -1px 0 var(--accent-edge); }
+:global(:root[data-look="pixel"]) .ghost { background: transparent; box-shadow: inset 0 0 0 var(--size-rule) var(--rule); }
+:global(:root[data-look="pixel"]) .danger { background: color-mix(in oklab, var(--danger) 14%, var(--cell)); box-shadow: inset 0 calc(var(--key-lip) * -1) 0 color-mix(in oklab, var(--danger) 40%, var(--cell)); }

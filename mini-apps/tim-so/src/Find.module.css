@@ -52,6 +52,16 @@
   animation: circle 320ms var(--ease-out);
 }
 .wrong { color: var(--danger); opacity: 1; animation: shake 360ms; }
+/* Số mới tìm nảy lên một nhịp (dùng thuộc tính scale để không đụng transform xoay) */
+.found { animation: tilePop 380ms var(--ease-out); }
+@keyframes tilePop { 0% { scale: 1.45; } 55% { scale: 0.9; } 100% { scale: 1; } }
+.fly {
+  position: absolute; left: 50%; top: -30%; translate: -50% 0; z-index: 2; pointer-events: none;
+  font-size: var(--fs-xl); font-weight: var(--fw-medium); color: var(--ring, var(--accent));
+  text-shadow: 0 0 3px var(--cell), 0 0 3px var(--cell); rotate: calc(var(--rot) * -1);
+  animation: flyUp 900ms var(--ease-out) both;
+}
+@keyframes flyUp { 0% { transform: translateY(8px) scale(0.6); opacity: 0; } 25% { opacity: 1; transform: translateY(-6px) scale(1.15); } 100% { transform: translateY(-34px); opacity: 0; } }
 .hidden .dot { visibility: hidden; }
 .countdown { position: absolute; inset: 0; display: grid; place-items: center; }
 .countdown span {
@@ -94,7 +104,8 @@
 @keyframes pulse { 50% { opacity: 0.45; } }
 @keyframes count { from { transform: scale(0.6); opacity: 0; } 30% { transform: scale(1); opacity: 1; } 85% { opacity: 1; } to { opacity: 0.2; transform: scale(0.9); } }
 @media (prefers-reduced-motion: reduce) {
-  .target, .found::after, .wrong, .urgent, .countdown span { animation: none; }
+  .target, .found, .found::after, .wrong, .urgent, .countdown span, .fly, .legendTurn { animation: none; }
+  .fly { display: none; }
 }
 
 /* Tóm tắt cài đặt ở màn chờ; chỉnh trong bảng trượt. */
@@ -112,7 +123,9 @@
 .customInput { text-align: center; font-variant-numeric: tabular-nums; }
 .customHint { grid-column: 1 / -1; color: var(--ink-muted); font-size: var(--fs-xs); }
 
-.legendTurn { padding: var(--space-1) var(--space-4); border-radius: 999px; background: color-mix(in srgb, var(--accent) 24%, transparent); }
+.legendTurn { padding: var(--space-1) var(--space-4); border-radius: 999px; background: color-mix(in srgb, var(--accent) 24%, transparent); animation: legendGlow 1.4s ease-in-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) { .legendTurn { animation: none; } }
+@keyframes legendGlow { from { box-shadow: 0 0 0 1px var(--accent), 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); } to { box-shadow: 0 0 0 1px var(--accent), 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent); } }
 .legendTurn .legendName { color: var(--ink); font-weight: var(--fw-medium); }
 
 /* Vòng phạt khi hết giờ: trượt lên che nửa dưới, bàn số vẫn thấy ở trên. */

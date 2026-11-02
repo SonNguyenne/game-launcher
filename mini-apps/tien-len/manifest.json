@@ -1,0 +1,9 @@
+{
+  "id": "tien-len",
+  "name": "tiến lên",
+  "group": "bài",
+  "players": "2–4",
+  "color": "auto",
+  "description": "Tiến lên miền Nam cho 2–4 người, mỗi người 13 lá. Đánh rác, đôi, sám, sảnh, đôi thông, tứ quý chặn bài lớn hơn, chặt heo bằng đôi thông hoặc tứ quý. Ai hết bài trước về nhất, điểm cộng dồn qua các ván.",
+  "version": "1.0.0"
+}

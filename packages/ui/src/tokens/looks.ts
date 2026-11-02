@@ -5,9 +5,11 @@ import { basePaints, signPaint, type ColorRoles } from './colors';
  * - board: bảng phím gốc, chữ mono nhỏ, phím sát nhau.
  * - readable: dễ nhìn, chữ sans to hơn, nút cao hơn, phím tách rời bo góc, tương phản cao.
  * - quan: quán nhậu vỉa hè; phím là biển sơn nhiều màu có hình vẽ, chữ bảng hiệu, nhấn lún như nhựa.
+ * - pixel: phòng game tối, góc vuông nhỏ, nút có gờ đáy như phím máy arcade, số và mã phòng chữ pixel.
+ *   Dùng chung khung CSS với "quan" (selector :is(quan, pixel)), chỉ khác token và vài chỗ đè riêng.
  */
-export type UiLook = 'board' | 'readable' | 'quan';
-export const uiLooks: readonly UiLook[] = ['board', 'readable', 'quan'];
+export type UiLook = 'board' | 'readable' | 'quan' | 'pixel';
+export const uiLooks: readonly UiLook[] = ['pixel', 'quan', 'readable', 'board'];
 export const isUiLook = (v: unknown): v is UiLook => (uiLooks as readonly unknown[]).includes(v);
 
 /** Phần token một kiểu ghi đè; cùng tên với token gốc nên sinh ra cùng biến CSS. */
@@ -160,5 +162,75 @@ const quan: LookTokens = {
   },
 };
 
+/** Phòng game tối: tím cho nút chính, vàng cho điểm nhấn và mã phòng. */
+const arcade = {
+  bg: '#13131C',
+  cell: '#1C1C28',
+  cellRaised: '#262635',
+  sunk: '#0E0E15',
+  ink: '#ECECF4',
+  inkMid: '#A3A3B8',
+  // Chữ phụ trên nền ô (#1C1C28) cần 4.5:1.
+  inkLow: '#8A8AA3',
+  line: '#44445C',
+  lineSoft: '#2F2F42',
+  // Chữ trắng trên tím đạt 5.3:1.
+  violet: '#6E4FF2',
+  violetEdge: '#4A2FC9',
+  gold: '#F2B124',
+  goldEdge: '#B9800A',
+  onGold: '#1A1406',
+  danger: '#FF6B6B',
+} as const;
+
+const pixelStack = '"VT323", "IBM Plex Mono", ui-monospace, monospace';
+const techStack = '"Chakra Petch", "Be Vietnam Pro", system-ui, sans-serif';
+
+/** Chỉ có nền tối: cả hai chế độ sáng/tối dùng cùng bảng màu. */
+const arcadeColors: ColorRoles = {
+  bg: arcade.bg, cell: arcade.cell, cellRaised: arcade.cellRaised,
+  ink: arcade.ink, inkSecondary: arcade.inkMid, inkMuted: arcade.inkLow,
+  rule: arcade.line, ruleSoft: arcade.lineSoft,
+  accent: arcade.violet, onAccent: '#FFFFFF',
+  danger: arcade.danger, onDanger: arcade.bg,
+  scrim: 'rgba(5, 5, 10, 0.72)', frameBg: arcade.cell,
+  dock: arcade.cell, onDock: arcade.ink, shadow: 'rgba(0, 0, 0, 0.5)',
+  paintRed: signPaint.red, paintYellow: arcade.gold, paintGreen: signPaint.green, paintBlue: signPaint.blue,
+  paintInk: '#12121A', paintPaper: '#F4F1E8',
+};
+
+const pixel: LookTokens = {
+  fontFamily: { ui: techStack, display: techStack, hand: techStack },
+  fontSize: {
+    xs: '12px', sm: '13px', md: '15px', base: '16px', lg: '17px', xl: '19px', '2xl': '24px',
+    display: '56px', hero: 'clamp(64px, 18vw, 88px)',
+  },
+  fontWeight: { medium: '600' },
+  letterSpacing: { tight: '0', tighter: '0' },
+  size: { control: '48px', button: '48px', bar: '56px', row: '56px', tool: '64px' },
+  shape: {
+    gridGap: '12px 8px',
+    gridPad: '0 16px 24px',
+    gridLine: 'var(--bg)',
+    keyRadius: '4px',
+    keyOutline: '0',
+    keyShadow: '0 0 0 transparent',
+    keyLip: '3px',
+    controlRadius: '4px',
+    markDisplay: 'grid',
+    indexDisplay: 'none',
+    // Token chỉ kiểu pixel có; component dùng kèm giá trị dự phòng.
+    accentEdge: arcade.violetEdge,
+    pop: arcade.gold,
+    popEdge: arcade.goldEdge,
+    onPop: arcade.onGold,
+    sunk: arcade.sunk,
+    // Chữ pixel chỉ cho số, mã phòng, điểm; chữ dài tiếng Việt dùng --font-display.
+    fontPixel: pixelStack,
+  },
+  light: arcadeColors,
+  dark: arcadeColors,
+};
+
 /** Token riêng của mọi kiểu trừ "board" (board dùng token gốc). */
-export const lookTokens: Record<Exclude<UiLook, 'board'>, LookTokens> = { readable, quan };
+export const lookTokens: Record<Exclude<UiLook, 'board'>, LookTokens> = { readable, quan, pixel };

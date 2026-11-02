@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Button, Field, Icon, Sheet, TextInput, cx } from '@bang/ui';
 import type { BaseState, GameAction, Player } from './engine';
 import { partyStrings as t } from './strings';
@@ -22,6 +22,8 @@ export interface GameInfo<S = BaseState> {
   art: ReactNode;
   /** Cài đặt ván chơi, hiện ở phòng chờ và màn nhập người chơi (game cần có configOf). */
   settings?: (props: SettingsProps<S>) => ReactNode;
+  /** Dòng nhỏ dưới nút cài đặt, nói game có những gì để chỉnh. */
+  settingsHint?: string;
 }
 
 /** Khung cài đặt ở phòng chờ cho game chỉ có vài lựa chọn: đặt các Chips vào trong, khách chỉ xem. */
@@ -75,12 +77,15 @@ export function PartyShell<S extends BaseState, A extends GameAction>({ party, i
 
 function Start<S extends BaseState, A extends GameAction>({ party, info }: { party: Party<S, A>; info: GameInfo<S> }) {
   const [name, setName] = useState(party.name);
+  const [editName, setEditName] = useState(!party.name);
   const [code, setCode] = useState(party.initialCode);
   const [needName, setNeedName] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const withName = (go: (n: string) => void) => {
     const n = name.trim();
-    if (!n) return setNeedName(true);
+    if (!n) {
+      setEditName(true);
+      return setNeedName(true);
+    }
     go(n);
   };
   const join = (e: FormEvent) => {
@@ -88,35 +93,64 @@ function Start<S extends BaseState, A extends GameAction>({ party, info }: { par
     if (code.length === 4) withName((n) => party.joinRoom(n, code));
   };
 
+  // Mở từ link mời hoặc ô mã phòng ở trang chủ (?phong=1234) mà đã có tên: vào phòng luôn.
+  // Hẹn sang nhịp sau và hủy khi dọn effect: React StrictMode (dev) chạy effect hai lần, lần đầu bị dọn ngay.
+  const autoJoined = useRef(false);
+  const { initialCode, name: savedName, error, joinRoom } = party;
+  useEffect(() => {
+    if (autoJoined.current || initialCode.length !== 4 || !savedName.trim() || error) return;
+    const id = setTimeout(() => {
+      autoJoined.current = true;
+      joinRoom(savedName.trim(), initialCode);
+    }, 0);
+    return () => clearTimeout(id);
+  }, [initialCode, savedName, error, joinRoom]);
+
   return (
     <div className={s.stage}>
       <div className={s.scroll}>
-        <header className={s.hero}>
-          <div className={s.art} aria-hidden="true">{info.art}</div>
-          <h2 className={s.heroTitle}>{info.title}</h2>
-          <p className={s.heroRule}>{info.rule}</p>
+        <header className={s.gameHead}>
+          <div className={s.gameArt} aria-hidden="true">{info.art}</div>
+          <h2 className={s.gameTitle}>{info.title}</h2>
         </header>
+
+        <details className={s.ruleBox}>
+          <summary className={s.ruleSummary}>{t.rules}</summary>
+          <p className={s.ruleText}>{info.rule}</p>
+        </details>
 
         {party.error && <p className={s.error} role="alert">{t.errors[party.error]}</p>}
 
-        <Field label={t.yourName} htmlFor="party-name" error={needName ? t.needName : null}>
-          <TextInput
-            id="party-name"
-            value={name}
-            maxLength={20}
-            autoComplete="nickname"
-            placeholder={t.namePlaceholder}
-            invalid={needName}
-            onChange={(e) => {
-              setName(e.target.value);
-              setNeedName(false);
-            }}
-          />
-        </Field>
+        {info.settings && party.config && (
+          <section className={s.startRules} aria-label={t.settings}>
+            <LobbySettings party={party} info={info} />
+          </section>
+        )}
 
-        <Button variant="primary" block onClick={() => withName(party.createRoom)}>
-          <Icon name="plus" /> {t.createRoom}
-        </Button>
+        {editName ? (
+          <Field label={t.yourName} htmlFor="party-name" error={needName ? t.needName : null}>
+            <TextInput
+              id="party-name"
+              value={name}
+              maxLength={20}
+              autoComplete="nickname"
+              placeholder={t.namePlaceholder}
+              invalid={needName}
+              onChange={(e) => {
+                setName(e.target.value);
+                setNeedName(false);
+              }}
+            />
+          </Field>
+        ) : (
+          <p className={s.who}>
+            <Avatar name={name} />
+            <span>
+              {t.playingAs} <strong>{name}</strong>
+            </span>
+            <button className={s.whoEdit} onClick={() => setEditName(true)}>{t.change}</button>
+          </p>
+        )}
 
         <form className={s.join} onSubmit={join}>
           <p className={s.or}>{t.or}</p>
@@ -134,35 +168,15 @@ function Start<S extends BaseState, A extends GameAction>({ party, info }: { par
             <Button type="submit" disabled={code.length !== 4}>{t.joinRoom}</Button>
           </div>
         </form>
+      </div>
 
-        <button className={s.local} onClick={party.goSetup}>
-          <Icon name="users" /> {t.playLocal}
-        </button>
-
-        {info.settings && (
-          <div className={s.startSettings}>
-            <button className={s.lobbySettingsBtn} onClick={() => setSettingsOpen(true)}>
-              <span className={s.lobbySettingsBtnLabel}>
-                <Icon name="sliders" size={18} />
-                <span>{t.settings}</span>
-              </span>
-              <span className={s.lobbySettingsBtnHint}>Tùy chỉnh luật, ô quay & hình phạt</span>
-            </button>
-            <Sheet
-              open={settingsOpen}
-              title={`${t.settings} · ${info.title}`}
-              closeLabel="Xong"
-              onClose={() => setSettingsOpen(false)}
-            >
-              <div className={s.drawerBody}>
-                <LobbySettings party={party} info={info} />
-                <Button variant="primary" block onClick={() => setSettingsOpen(false)}>
-                  Hoàn tất
-                </Button>
-              </div>
-            </Sheet>
-          </div>
-        )}
+      <div className={cx(s.footer, s.startActions)}>
+        <Button onClick={party.goSetup}>
+          <Icon name="users" /> {t.playLocalShort}
+        </Button>
+        <Button variant="primary" onClick={() => withName(party.createRoom)}>
+          <Icon name="plus" /> {t.createRoom}
+        </Button>
       </div>
     </div>
   );
@@ -219,7 +233,7 @@ function LocalSetup<S extends BaseState, A extends GameAction>({ party, info }: 
               <Icon name="sliders" size={18} />
               <span>{t.settings}</span>
             </span>
-            <span className={s.lobbySettingsBtnHint}>Chạm để tùy chỉnh</span>
+            <span className={s.lobbySettingsBtnHint}>{info.settingsHint ?? t.settingsHint}</span>
           </button>
         )}
         {info.settings && (
@@ -352,7 +366,7 @@ function Lobby<S extends BaseState, A extends GameAction>({ party, info }: { par
                   <span>{t.settings}</span>
                 </span>
                 <span className={s.lobbySettingsBtnHint}>
-                  {party.isHost ? 'Chạm để tùy chỉnh luật & hình phạt' : 'Xem cài đặt ván chơi'}
+                  {party.isHost ? (info.settingsHint ?? t.settingsHint) : t.viewSettings}
                 </span>
               </button>
             )}

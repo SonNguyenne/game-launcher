@@ -11,6 +11,7 @@ export type Finale = PunishMode | 'off';
 
 export const strings = {
   title: 'câu cá',
+  settingsHint: 'Tùy chỉnh luật, ô quay & hình phạt',
   rule: 'Lật 2 lá: trùng số thì câu được, +1 điểm; không trùng thì quay vòng thử thách hoặc chỉ mất lượt. Hết bài, ai nhiều điểm nhất thắng, những người còn lại chịu phạt cuối ván. Chủ phòng chọn cách phạt và cho câu được thì lật tiếp ở phòng chờ.',
   ranks: ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'],
   suits: ['♠', '♣', '♥', '♦'],

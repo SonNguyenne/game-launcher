@@ -138,6 +138,18 @@ describe('party-server', () => {
     guest.close();
   });
 
+  it('tra mã phòng ra tên game, mã sai thì 404', async () => {
+    const host = await open();
+    hello(host, { t: 'create', id: 'host-key-lookup', name: 'Chủ', game: 'co-caro' });
+    const { code } = await next(host, 'joined');
+    const res = await fetch(`http://127.0.0.1:${PORT}/api/room/${code}`);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ game: 'co-caro' });
+    const missing = code === '0000' ? '0001' : '0000';
+    expect((await fetch(`http://127.0.0.1:${PORT}/api/room/${missing}`)).status).toBe(404);
+    host.close();
+  });
+
   it('phục vụ file tĩnh có nén và header bảo mật', async () => {
     const res = await fetch(`http://127.0.0.1:${PORT}/app/abc`, { headers: { 'accept-encoding': 'gzip' } });
     expect(res.status).toBe(200);

@@ -31,7 +31,7 @@
 .panelArt { margin: 0 0 var(--space-8) calc(-1 * var(--space-4)); }
 
 /* Kiểu quán: thanh trên không kẻ ô, tên app chữ bảng hiệu, số thứ tự viết tay; màn trạng thái có hình vẽ. */
-:global(:root[data-look="quan"]) .bar {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .bar {
   grid-template-columns: 44px 1fr 44px 44px;
   gap: var(--space-4);
   align-items: center;
@@ -39,9 +39,9 @@
   padding-right: var(--space-7);
   border: 0;
 }
-:global(:root[data-look="quan"]) .barButton { width: 44px; height: 44px; border: 0; border-radius: var(--control-radius); background: var(--cell-raised); }
-:global(:root[data-look="quan"]) .barButton:active { transform: translateY(2px); }
-:global(:root[data-look="quan"]) .title {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .barButton { width: 44px; height: 44px; border: 0; border-radius: var(--control-radius); background: var(--cell-raised); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .barButton:active { transform: translateY(2px); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .title {
   gap: var(--space-4);
   padding: 0 var(--space-3);
   border: 0;
@@ -50,11 +50,11 @@
   font-weight: 400;
   line-height: 1;
 }
-:global(:root[data-look="quan"]) .titleIndex { font-family: var(--font-hand); font-size: var(--fs-md); color: var(--accent); transform: rotate(-4deg); }
-:global(:root[data-look="quan"]) .progress { left: var(--space-7); right: var(--space-7); height: 3px; border-radius: 3px; }
-:global(:root[data-look="quan"]) .panel { padding: var(--space-14) var(--space-10); }
-:global(:root[data-look="quan"]) .panel:has(.panelArt) .code { display: none; }
-:global(:root[data-look="quan"]) .code {
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .titleIndex { font-family: var(--font-hand); font-size: var(--fs-md); color: var(--accent); transform: rotate(-4deg); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .progress { left: var(--space-7); right: var(--space-7); height: 3px; border-radius: 3px; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .panel { padding: var(--space-14) var(--space-10); }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .panel:has(.panelArt) .code { display: none; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .code {
   font-family: var(--font-display);
   font-size: 120px;
   line-height: 0.85;
@@ -62,5 +62,7 @@
   text-shadow: 0.035em 0.035em 0 var(--paint-red);
   animation: pulse 1.4s var(--ease-out) infinite alternate;
 }
-:global(:root[data-look="quan"]) .panelTitle { font-family: var(--font-display); font-size: 36px; font-weight: 400; line-height: 0.95; }
+:global(:root:is([data-look="quan"], [data-look="pixel"])) .panelTitle { font-family: var(--font-display); font-size: 36px; font-weight: 400; line-height: 0.95; }
 @keyframes pulse { to { opacity: 0.55; } }
+
+:global(:root[data-look="pixel"]) .code { text-shadow: none; font-family: var(--font-pixel); color: var(--pop); }
